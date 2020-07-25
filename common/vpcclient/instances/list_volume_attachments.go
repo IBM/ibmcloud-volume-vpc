@@ -1,0 +1,56 @@
+/**
+ * Copyright 2020 IBM Corp.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package instances
+
+import (
+	"github.com/IBM/ibmcloud-storage-volume-lib/lib/metrics"
+	"github.com/IBM/ibmcloud-storage-volume-lib/lib/utils"
+	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client"
+	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
+	"go.uber.org/zap"
+	"time"
+)
+
+// ListVolumeAttachments retrives the list volume attachments with givne volume attachment details
+func (vs *VolumeAttachService) ListVolumeAttachments(volumeAttachmentTemplate *models.VolumeAttachment, ctxLogger *zap.Logger) (*models.VolumeAttachmentList, error) {
+
+	methodName := "VolumeAttachService.ListVolumeAttachments"
+	defer util.TimeTracker(methodName, time.Now())
+	defer metrics.UpdateDurationFromStart(ctxLogger, methodName, time.Now())
+
+	operation := &client.Operation{
+		Name:        "ListVolumeAttachment",
+		Method:      "GET",
+		PathPattern: vs.pathPrefix + instanceIDvolumeAttachmentPath,
+	}
+
+	var volumeAttachmentList models.VolumeAttachmentList
+	apiErr := vs.receiverError
+
+	operationRequest := vs.client.NewRequest(operation)
+
+	ctxLogger.Info("Equivalent curl command details", zap.Reflect("URL", operationRequest.URL()), zap.Reflect("volumeAttachmentTemplate", volumeAttachmentTemplate), zap.Reflect("Operation", operation))
+	operationRequest = vs.populatePathPrefixParameters(operationRequest, volumeAttachmentTemplate)
+
+	_, err := operationRequest.JSONSuccess(&volumeAttachmentList).JSONError(apiErr).Invoke()
+	if err != nil {
+		ctxLogger.Error("Error occured while getting volume attachments list", zap.Error(err))
+		return nil, err
+	}
+	ctxLogger.Info("Successfuly retrieved the volume attachments")
+	return &volumeAttachmentList, nil
+}
