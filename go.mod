@@ -1,6 +1,6 @@
 module github.com/IBM/ibmcloud-volume-vpc
 
-go 1.14
+go 1.13.8
 
 require (
 	
