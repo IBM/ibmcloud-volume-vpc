@@ -4,8 +4,8 @@ package vpcvolumefakes
 import (
 	sync "sync"
 
-	models "github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
-	vpcvolume "github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/vpcvolume"
+	models "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	vpcvolume "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
 	zap "go.uber.org/zap"
 )
 

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/instances"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/instances"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	"go.uber.org/zap"
 )
 
