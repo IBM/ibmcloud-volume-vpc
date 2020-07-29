@@ -52,18 +52,6 @@ func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers,
 		haveProviders = true
 	}
 
-	// IKS provider registration
-	// if conf.IKS != nil && conf.IKS.Enabled {
-	// 	logger.Info("Configuring IKS-VPC Block Provider")
-	// 	prov, err := iks_vpc_provider.NewProvider(conf, logger)
-	// 	if err != nil {
-	// 		logger.Info("VPC block provider error!")
-	// 		return nil, err
-	// 	}
-	// 	providerRegistry.Register(conf.IKS.IKSBlockProviderName, prov)
-	// 	haveProviders = true
-	// }
-
 	if haveProviders {
 		logger.Info("Provider registration done!!!")
 		return providerRegistry, nil
@@ -91,7 +79,7 @@ func OpenProviderSessionWithContext(ctx context.Context, conf *config.Config, pr
 		return
 	}
 
-	ccf, err := prov.ContextCredentialsFactory(&conf.Softlayer.SoftlayerDataCenter)
+	ccf, err := prov.ContextCredentialsFactory(nil)
 	if err != nil {
 		fatal = true
 		return
@@ -113,26 +101,13 @@ func OpenProviderSessionWithContext(ctx context.Context, conf *config.Config, pr
 func GenerateContextCredentials(conf *config.Config, providerID string, contextCredentialsFactory local.ContextCredentialsFactory, ctxLogger *zap.Logger) (provider.ContextCredentials, error) {
 	ctxLogger.Info("Generating generateContextCredentials for ", zap.String("Provider ID", providerID))
 
-	AccountID := conf.Bluemix.IamClientID
-	slUser := conf.Softlayer.SoftlayerUsername
-	slAPIKey := conf.Softlayer.SoftlayerAPIKey
 	iamAPIKey := conf.Bluemix.IamAPIKey
 
 	// Select appropriate authentication strategy
-	isSLProvider := providerID == conf.Softlayer.SoftlayerBlockProviderName || providerID == conf.Softlayer.SoftlayerFileProviderName
 	switch {
-	case isSLProvider && !isEmptyStringValue(&slUser) && !isEmptyStringValue(&slAPIKey):
-		return contextCredentialsFactory.ForIaaSAPIKey(util.SafeStringValue(&AccountID), slUser, slAPIKey, ctxLogger)
-
 	case (conf.VPC != nil && providerID == conf.VPC.VPCBlockProviderName):
 		ctxLogger.Info("Calling provider/init_provider.go ForIAMAccessToken")
 		return contextCredentialsFactory.ForIAMAccessToken(conf.VPC.APIKey, ctxLogger)
-
-	case isSLProvider && !isEmptyStringValue(&iamAPIKey):
-		return contextCredentialsFactory.ForIAMAPIKey(AccountID, iamAPIKey, ctxLogger)
-
-	case (conf.IKS != nil && providerID == conf.IKS.IKSBlockProviderName):
-		return provider.ContextCredentials{}, nil // Get credentials  in OpenSession method
 
 	default:
 		return provider.ContextCredentials{}, util.NewError("ErrorInsufficientAuthentication",
