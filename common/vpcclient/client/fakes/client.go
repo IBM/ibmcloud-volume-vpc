@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client"
 )
 
 type SessionClient struct {

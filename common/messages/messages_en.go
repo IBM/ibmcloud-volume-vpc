@@ -17,7 +17,7 @@
 package messages
 
 import (
-	util "github.com/IBM/ibmcloud-storage-volume-lib/lib/utils"
+	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 )
 
 // messagesEn ...

@@ -17,9 +17,10 @@
 package provider
 
 import (
-	"github.com/IBM/ibmcloud-storage-volume-lib/lib/provider"
-	vpcprovider "github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/provider"
 	"net/http"
+
+	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
+	vpcprovider "github.com/IBM/ibmcloud-volume-vpc/block/provider"
 )
 
 // IksVpcSession implements lib.Session for VPC IKS dual session

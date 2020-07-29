@@ -19,7 +19,7 @@ package client_test
 import (
 	"testing"
 
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client"
 	"github.com/stretchr/testify/assert"
 )
 

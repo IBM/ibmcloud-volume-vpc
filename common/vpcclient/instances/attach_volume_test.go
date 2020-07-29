@@ -17,15 +17,16 @@
 package instances_test
 
 import (
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/instances"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/riaas/test"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"net/http"
 	"os"
 	"testing"
+
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/instances"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/test"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func TestAttachVolume(t *testing.T) {

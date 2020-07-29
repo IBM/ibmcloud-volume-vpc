@@ -17,9 +17,10 @@
 package models
 
 import (
-	"github.com/IBM/ibmcloud-storage-volume-lib/lib/provider"
 	"strconv"
 	"time"
+
+	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 )
 
 const (

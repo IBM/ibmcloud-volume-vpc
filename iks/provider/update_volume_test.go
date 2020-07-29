@@ -18,11 +18,12 @@ package provider
 
 import (
 	//"errors"
-	"github.com/IBM/ibmcloud-storage-volume-lib/lib/provider"
-	volumeServiceFakes "github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/vpcvolume/fakes"
+	"testing"
+
+	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
+	volumeServiceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"testing"
 )
 
 func TestUpdateVolume(t *testing.T) {

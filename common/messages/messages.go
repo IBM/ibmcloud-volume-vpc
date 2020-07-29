@@ -18,7 +18,8 @@ package messages
 
 import (
 	"fmt"
-	util "github.com/IBM/ibmcloud-storage-volume-lib/lib/utils"
+
+	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 )
 
 // MessagesEn ...

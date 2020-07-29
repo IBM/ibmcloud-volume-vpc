@@ -30,9 +30,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/riaas/test"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/test"
 )
 
 var getOperation = &client.Operation{

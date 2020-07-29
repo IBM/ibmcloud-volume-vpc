@@ -18,11 +18,12 @@ package riaas
 
 import (
 	"bytes"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client/fakes"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"testing"
+
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client/fakes"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLogin(t *testing.T) {

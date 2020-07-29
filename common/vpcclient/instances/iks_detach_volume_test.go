@@ -17,12 +17,13 @@
 package instances_test
 
 import (
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/instances"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/riaas/test"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
+
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/instances"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/test"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIKSDetachVolume(t *testing.T) {

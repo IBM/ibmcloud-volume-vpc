@@ -17,12 +17,13 @@
 package instances
 
 import (
-	"github.com/IBM/ibmcloud-storage-volume-lib/lib/utils"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
+
+	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"go.uber.org/zap"
 )
 
 // DetachVolume retrives the volume attach status with givne volume attachment details

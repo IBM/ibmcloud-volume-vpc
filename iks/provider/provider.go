@@ -18,13 +18,14 @@ package provider
 
 import (
 	"context"
-	"github.com/IBM/ibmcloud-storage-volume-lib/config"
-	"github.com/IBM/ibmcloud-storage-volume-lib/lib/provider"
-	"github.com/IBM/ibmcloud-storage-volume-lib/provider/local"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/auth"
-	userError "github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/messages"
-	vpcprovider "github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/provider"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/riaas"
+
+	"github.com/IBM/ibmcloud-volume-interface/config"
+	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
+	"github.com/IBM/ibmcloud-volume-interface/provider/local"
+	vpcprovider "github.com/IBM/ibmcloud-volume-vpc/block/provider"
+	"github.com/IBM/ibmcloud-volume-vpc/common/auth"
+	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
 
 	"go.uber.org/zap"
 )

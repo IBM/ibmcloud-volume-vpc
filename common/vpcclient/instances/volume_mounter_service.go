@@ -17,10 +17,11 @@
 package instances
 
 import (
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
-	"go.uber.org/zap"
 	"net/http"
+
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"go.uber.org/zap"
 )
 
 // VolumeAttachManager operations

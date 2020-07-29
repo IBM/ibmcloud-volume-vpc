@@ -18,10 +18,11 @@ package client
 
 import (
 	"context"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 )
 
 // handler ...

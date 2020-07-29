@@ -18,12 +18,13 @@ package riaas
 
 import (
 	"context"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/instances"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/vpcvolume"
 	"net/url"
 	"strconv"
+
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/instances"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
 )
 
 // RegionalAPI is the main interface for the RIAAS API client. From here, service

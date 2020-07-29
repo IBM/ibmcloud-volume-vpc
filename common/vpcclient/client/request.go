@@ -28,7 +28,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client/payload"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client/payload"
 	"github.com/fatih/structs"
 )
 

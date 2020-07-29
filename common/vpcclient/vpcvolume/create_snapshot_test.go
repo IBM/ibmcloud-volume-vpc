@@ -17,14 +17,15 @@
 package vpcvolume_test
 
 import (
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/riaas/test"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/vpcvolume"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/test"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestCreateSnapshot(t *testing.T) {

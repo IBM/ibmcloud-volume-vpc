@@ -17,8 +17,8 @@
 package vpcvolume
 
 import (
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/client"
-	"github.com/IBM/ibmcloud-storage-volume-lib/volume-providers/vpc/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 )
 
 const (
