@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -85,7 +86,6 @@ func TestListSnapshots(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t, snapshots, err)
 			}
-
 		})
 	}
 }

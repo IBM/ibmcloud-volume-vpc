@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package utils ...
 package utils
 
 import (
@@ -57,7 +58,7 @@ func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers,
 		return providerRegistry, nil
 	}
 
-	return nil, errors.New("No providers registered")
+	return nil, errors.New("no providers registered")
 }
 
 // isEmptyStringValue ...
@@ -100,8 +101,6 @@ func OpenProviderSessionWithContext(ctx context.Context, conf *config.Config, pr
 // GenerateContextCredentials ...
 func GenerateContextCredentials(conf *config.Config, providerID string, contextCredentialsFactory local.ContextCredentialsFactory, ctxLogger *zap.Logger) (provider.ContextCredentials, error) {
 	ctxLogger.Info("Generating generateContextCredentials for ", zap.String("Provider ID", providerID))
-
-	iamAPIKey := conf.Bluemix.IamAPIKey
 
 	// Select appropriate authentication strategy
 	switch {

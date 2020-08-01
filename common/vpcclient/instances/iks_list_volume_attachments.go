@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances ...
 package instances
 
 import (
@@ -47,9 +48,9 @@ func (vs *IKSVolumeAttachService) ListVolumeAttachments(volumeAttachmentTemplate
 
 	_, err := operationRequest.JSONSuccess(&volumeAttachmentList).JSONError(apiErr).Invoke()
 	if err != nil {
-		ctxLogger.Error("Error occured while getting volume attachments list", zap.Error(err))
+		ctxLogger.Error("Error occurred while getting volume attachments list", zap.Error(err))
 		return nil, err
 	}
-	ctxLogger.Info("Successfuly retrieved the volume attachments")
+	ctxLogger.Info("Successfully retrieved the volume attachments")
 	return &volumeAttachmentList, nil
 }

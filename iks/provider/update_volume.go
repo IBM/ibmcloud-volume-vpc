@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -64,7 +65,6 @@ func (vpcIks *IksVpcSession) UpdateVolume(volumeRequest provider.Volume) (err er
 
 // validateVolumeRequest validating volume request
 func validateVolumeRequest(volumeRequest provider.Volume) error {
-
 	// Volume name should not be empty
 	if len(volumeRequest.VolumeID) == 0 {
 		return userError.GetUserError("ErrorRequiredFieldMissing", nil, "VolumeID")

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package client_test ...
 package client_test
 
 import (
@@ -31,5 +32,4 @@ func TestParams(t *testing.T) {
 	clone := params.Copy()
 
 	assert.Equal(t, params, clone)
-
 }

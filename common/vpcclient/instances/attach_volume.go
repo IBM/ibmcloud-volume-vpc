@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances ...
 package instances
 
 import (
@@ -49,6 +50,6 @@ func (vs *VolumeAttachService) AttachVolume(volumeAttachmentTemplate *models.Vol
 		return nil, err
 	}
 
-	ctxLogger.Info("Successfuly attached the volume")
+	ctxLogger.Info("Successfully attached the volume")
 	return &volumeAttachment, nil
 }

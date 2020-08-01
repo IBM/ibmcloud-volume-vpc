@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -66,7 +67,6 @@ func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error
 
 	//vpcBlockProvider.ApiConfig.BaseURL = conf.Bluemix.APIEndpointURL
 	return iksVpcBlockProvider, nil
-
 }
 
 // OpenSession opens a session on the provider
@@ -81,13 +81,13 @@ func (iksp *IksVpcBlockProvider) OpenSession(ctx context.Context, contextCredent
 	ctxLogger.Info("Its IKS dual session. Getttng IAM token for  VPC block session")
 	vpcContextCredentials, err := ccf.ForIAMAccessToken(iksp.globalConfig.VPC.APIKey, ctxLogger)
 	if err != nil {
-		ctxLogger.Error("Error occured while generating IAM token for VPC", zap.Error(err))
+		ctxLogger.Error("Error occurred while generating IAM token for VPC", zap.Error(err))
 		userErr := userError.GetUserError(string(userError.AuthenticationFailed), err)
 		return nil, userErr
 	}
 	session, err := iksp.vpcBlockProvider.OpenSession(ctx, vpcContextCredentials, ctxLogger)
 	if err != nil {
-		ctxLogger.Error("Error occured while opening VPCSession", zap.Error(err))
+		ctxLogger.Error("Error occurred while opening VPCSession", zap.Error(err))
 		return nil, err
 	}
 	vpcSession, _ := session.(*vpcprovider.VPCSession)
@@ -105,12 +105,12 @@ func (iksp *IksVpcBlockProvider) OpenSession(ctx context.Context, contextCredent
 	ctxLogger.Info("Its ISK dual session. Getttng IAM token for  IKS block session")
 	iksContextCredentials, err := ccf.ForIAMAccessToken(iksp.globalConfig.Bluemix.IamAPIKey, ctxLogger)
 	if err != nil {
-		ctxLogger.Warn("Error occured while generating IAM token for IKS. But continue with VPC session alone. \n Volume Mount operation will fail but volume provisioning will work", zap.Error(err))
+		ctxLogger.Warn("Error occurred while generating IAM token for IKS. But continue with VPC session alone. \n Volume Mount operation will fail but volume provisioning will work", zap.Error(err))
 		session = &vpcprovider.VPCSession{} // Empty session to avoid Nil references.
 	} else {
 		session, err = iksp.iksBlockProvider.OpenSession(ctx, iksContextCredentials, ctxLogger)
 		if err != nil {
-			ctxLogger.Error("Error occured while opening IKSSession", zap.Error(err))
+			ctxLogger.Error("Error occurred while opening IKSSession", zap.Error(err))
 		}
 	}
 
@@ -130,7 +130,7 @@ func (iksp *IksVpcBlockProvider) OpenSession(ctx context.Context, contextCredent
 // ContextCredentialsFactory ...
 func (iksp *IksVpcBlockProvider) ContextCredentialsFactory(zone *string) (local.ContextCredentialsFactory, error) {
 	//  Datacenter hint not required by IKS provider implementation
-	// VPC provider use differnt APIkey and Auth Endpoints
+	// VPC provider use different APIkey and Auth Endpoints
 	authConfig := &config.BluemixConfig{
 		IamURL:          iksp.globalConfig.Bluemix.IamURL,
 		IamAPIKey:       iksp.globalConfig.Bluemix.IamAPIKey,

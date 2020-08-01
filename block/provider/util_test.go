@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -128,7 +129,7 @@ func TestRetryWithError(t *testing.T) {
 	var err error
 	err = retry(logger, func() error {
 		logger.Info("Testing retry with error")
-		err = errors.New("Trace Code:, testerr Please check ")
+		err = errors.New("trace Code:, testerr Please check ")
 		return err
 	})
 }

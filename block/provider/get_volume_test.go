@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -123,7 +124,6 @@ func TestGetVolume(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t, volume, err)
 			}
-
 		})
 	}
 }
@@ -231,7 +231,6 @@ func TestGetVolumeByName(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t, volume, err)
 			}
-
 		})
 	}
 }

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -57,7 +58,6 @@ const (
 var _ local.ContextCredentialsFactory = &auth.ContextCredentialsFactory{}
 
 func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
-
 	atom := zap.NewAtomicLevel()
 	atom.SetLevel(zap.DebugLevel)
 
@@ -77,7 +77,6 @@ func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
 	)
 
 	teardown = func() {
-
 		logger.Sync()
 
 		if t.Failed() {
@@ -86,7 +85,6 @@ func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
 	}
 
 	return
-
 }
 
 func TestNewProvider(t *testing.T) {

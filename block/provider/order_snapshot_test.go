@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -128,7 +129,6 @@ func TestOrderSnapshot(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t, err)
 			}
-
 		})
 	}
 }
@@ -179,7 +179,7 @@ func TestOrderSnapshotTwo(t *testing.T) {
 	assert.NotNil(t, volumeService)
 	uc.VolumeServiceReturns(volumeService)
 
-	snapshotService.CreateSnapshotReturns(baseSnapshot, errors.New("ErrorUnclassified"))
+	snapshotService.CreateSnapshotReturns(baseSnapshot, errors.New("errorUnclassified"))
 	volumeService.GetVolumeReturns(baseVolume, nil)
 	err = vpcs.OrderSnapshot(providerVolume)
 	assert.NotNil(t, err)

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -165,7 +166,7 @@ func (fRetry *FlexyRetry) FlexyRetry(logger *zap.Logger, funcToRetry func() (err
 		if i > 0 {
 			time.Sleep(time.Duration(retryGap) * time.Second)
 		}
-		// Call function which required retry, retry is decided by funtion itself
+		// Call function which required retry, retry is decided by function itself
 		err, stopRetry = funcToRetry()
 		if stopRetry {
 			break
@@ -197,7 +198,7 @@ func (fRetry *FlexyRetry) FlexyRetryWithConstGap(logger *zap.Logger, funcToRetry
 		if i > 0 {
 			time.Sleep(time.Duration(ConstantRetryGap) * time.Second)
 		}
-		// Call function which required retry, retry is decided by funtion itself
+		// Call function which required retry, retry is decided by function itself
 		err, stopRetry = funcToRetry()
 		if stopRetry {
 			break

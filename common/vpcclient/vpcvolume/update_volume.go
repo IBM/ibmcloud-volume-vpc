@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package vpcvolume ...
 package vpcvolume
 
 import (
@@ -25,6 +26,5 @@ import (
 
 // UpdateVolume POSTs to /volumes. Riaas/VPC does have volume update support yet
 func (vs *VolumeService) UpdateVolume(volumeTemplate *models.Volume, ctxLogger *zap.Logger) error {
-
-	return errors.New("Unsupported Operation")
+	return errors.New("unsupported Operation")
 }

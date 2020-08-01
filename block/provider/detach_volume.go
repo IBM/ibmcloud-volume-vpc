@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -48,7 +49,7 @@ func (vpcs *VPCSession) DetachVolume(volumeAttachmentTemplate provider.VolumeAtt
 		vpcs.Logger.Info("Checking if volume is already attached ")
 		currentVolAttachment, err := vpcs.GetVolumeAttachment(volumeAttachmentTemplate)
 		if err == nil && currentVolAttachment.Status != StatusDetaching {
-			// If no error and current volume is not already in detaching state ( i.e in attached or attaching state) attemp to detach
+			// If no error and current volume is not already in detaching state ( i.e in attached or attaching state) attempt to detach
 			vpcs.Logger.Info("Found volume attachment", zap.Reflect("currentVolAttachment", currentVolAttachment))
 			volumeAttachment := models.NewVolumeAttachment(volumeAttachmentTemplate)
 			volumeAttachment.ID = currentVolAttachment.VPCVolumeAttachment.ID

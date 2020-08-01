@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances ...
 package instances
 
 import (
@@ -28,7 +29,6 @@ import (
 
 // GetVolumeAttachment retrives the volume attach status with given volume attachment details
 func (vs *VolumeAttachService) GetVolumeAttachment(volumeAttachmentTemplate *models.VolumeAttachment, ctxLogger *zap.Logger) (*models.VolumeAttachment, error) {
-
 	methodName := "VolumeAttachService.GetVolumeAttachment"
 	defer util.TimeTracker(methodName, time.Now())
 	defer metrics.UpdateDurationFromStart(ctxLogger, methodName, time.Now())
@@ -50,9 +50,9 @@ func (vs *VolumeAttachService) GetVolumeAttachment(volumeAttachmentTemplate *mod
 
 	_, err := operationRequest.JSONSuccess(&volumeAttachment).JSONError(apiErr).Invoke()
 	if err != nil {
-		ctxLogger.Error("Error occured while getting volume attachment", zap.Error(err))
+		ctxLogger.Error("Error occurred while getting volume attachment", zap.Error(err))
 		return nil, err
 	}
-	ctxLogger.Info("Successfuly retrieved the volume attachment", zap.Reflect("volumeAttachment", volumeAttachment))
+	ctxLogger.Info("Successfully retrieved the volume attachment", zap.Reflect("volumeAttachment", volumeAttachment))
 	return &volumeAttachment, err
 }

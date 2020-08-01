@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -44,12 +45,12 @@ func (vpcs *VPCSession) DeleteVolume(volume *provider.Volume) (err error) {
 		return err
 	})
 	if err != nil {
-		return userError.GetUserError("FailedToDeleteVolume", err, volume.VolumeID)
+		return userError.GetUserError("failedToDeleteVolume", err, volume.VolumeID)
 	}
 
 	err = WaitForVolumeDeletion(vpcs, volume.VolumeID)
 	if err != nil {
-		return userError.GetUserError("FailedToDeleteVolume", err, volume.VolumeID)
+		return userError.GetUserError("failedToDeleteVolume", err, volume.VolumeID)
 	}
 
 	vpcs.Logger.Info("Successfully deleted volume from VPC provider")

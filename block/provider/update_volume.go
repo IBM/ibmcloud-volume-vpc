@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -24,6 +25,5 @@ import (
 
 // UpdateVolume POSTs to /volumes
 func (vpc *VPCSession) UpdateVolume(volumeTemplate provider.Volume) error {
-
-	return errors.New("Unsupported Operation")
+	return errors.New("unsupported Operation")
 }

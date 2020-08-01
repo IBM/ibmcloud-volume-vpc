@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -141,7 +142,6 @@ func TestDeleteVolume(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t, err)
 			}
-
 		})
 	}
 }
@@ -193,13 +193,13 @@ func TestDeleteVolumeTwo(t *testing.T) {
 	err = vpcs.DeleteVolume(providerVolume)
 	assert.NotNil(t, err)
 
-	volumeService.DeleteVolumeReturns(errors.New("FailedToDeleteVolume"))
+	volumeService.DeleteVolumeReturns(errors.New("failedToDeleteVolume"))
 	volumeService.GetVolumeReturns(baseVolume, nil)
 
 	err = vpcs.DeleteVolume(providerVolume)
 	assert.NotNil(t, err)
 
-	volumeService.DeleteVolumeReturns(errors.New("FailedToDeleteVolume"))
+	volumeService.DeleteVolumeReturns(errors.New("failedToDeleteVolume"))
 	volumeService.GetVolumeReturns(nil, errors.New("wrong code"))
 
 	err = vpcs.DeleteVolume(providerVolume)

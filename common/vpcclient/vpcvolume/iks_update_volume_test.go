@@ -58,7 +58,7 @@ func TestUpdateVolume(t *testing.T) {
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
 		}, {
-			name:          "Verify that the volume is updated succesfully",
+			name:          "Verify that the volume is updated successfully",
 			status:        http.StatusOK,
 			volumeRequest: volumeTemplate,
 		},
