@@ -49,3 +49,4 @@ linters:
       - staticcheck
     enable-all: false
     disable-all: true
+    
