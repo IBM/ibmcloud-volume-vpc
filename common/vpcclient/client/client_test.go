@@ -171,6 +171,8 @@ func TestClient(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t)
 			}
+
+			defer resp.Body.Close()
 		})
 	}
 }
@@ -257,11 +259,13 @@ func TestDebugMode(t *testing.T) {
 				testcase.setup()
 			}
 
-			_, err := request.Invoke()
+			resp, err := request.Invoke()
 
 			assert.NoError(t, err)
 
 			testcase.verify(t)
+
+			defer resp.Body.Close()
 		})
 	}
 }

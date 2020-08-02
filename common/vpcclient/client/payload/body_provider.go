@@ -97,6 +97,6 @@ func (p *MultipartFileBody) copyBody() {
 
 // Close ...
 func (p *MultipartFileBody) Close() {
-	p.multipartWriter.Close()
-	p.pipeWriter.Close()
+	p.multipartWriter.Close() //nolint:gosec
+	p.pipeWriter.Close()      //nolint:gosec
 }

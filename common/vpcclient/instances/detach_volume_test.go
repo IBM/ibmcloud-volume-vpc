@@ -100,6 +100,7 @@ func TestDetachVolume(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, response)
 			}
+			defer response.Body.Close()
 		})
 	}
 }

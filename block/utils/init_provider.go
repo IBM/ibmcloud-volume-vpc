@@ -32,10 +32,6 @@ import (
 	"github.com/IBM/ibmcloud-volume-vpc/common/registry"
 )
 
-const maxTimeout = 300  //secondsPerDay
-const retryInterval = 5 //seconds
-const maxRetryAttempts = maxTimeout / retryInterval
-
 // InitProviders initialization for all providers as per configurations
 func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers, error) {
 	var haveProviders bool
@@ -61,14 +57,9 @@ func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers,
 	return nil, errors.New("no providers registered")
 }
 
-// isEmptyStringValue ...
-func isEmptyStringValue(value *string) bool {
-	return value == nil || *value == ""
-}
-
 // OpenProviderSession ...
 func OpenProviderSession(conf *config.Config, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
-	return OpenProviderSessionWithContext(nil, conf, providers, providerID, ctxLogger)
+	return OpenProviderSessionWithContext(nil, conf, providers, providerID, ctxLogger) //nolint:staticcheck
 }
 
 // OpenProviderSessionWithContext ...

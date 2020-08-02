@@ -76,7 +76,8 @@ func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
 	)
 
 	teardown = func() {
-		logger.Sync()
+		err := logger.Sync()
+		assert.Nil(t, err)
 
 		if t.Failed() {
 			t.Log(buf)
@@ -158,8 +159,6 @@ func TestNewProvider(t *testing.T) {
 	zone := "Test Zone"
 	contextCF, _ := prov.ContextCredentialsFactory(&zone)
 	assert.NotNil(t, contextCF)
-
-	return
 }
 
 func GetTestProvider(t *testing.T, logger *zap.Logger) (local.Provider, error) {
@@ -240,7 +239,8 @@ func TestOpenSession(t *testing.T) {
 
 	vpcp, err := GetTestProvider(t, logger)
 	assert.Nil(t, err)
-	sessn, err := vpcp.OpenSession(context.Background(), provider.ContextCredentials{
+	//nolint:gosec
+	vpcp.OpenSession(context.Background(), provider.ContextCredentials{
 		AuthType:     provider.IAMAccessToken,
 		Credential:   TestProviderAccessToken,
 		IAMAccountID: TestIKSAccountID,
@@ -249,7 +249,7 @@ func TestOpenSession(t *testing.T) {
 	//require.NoError(t, err)
 	//assert.NotNil(t, sessn)
 
-	sessn, err = vpcp.OpenSession(context.Background(), provider.ContextCredentials{
+	sessn, err := vpcp.OpenSession(context.Background(), provider.ContextCredentials{
 		AuthType:     provider.IAMAccessToken,
 		IAMAccountID: TestIKSAccountID,
 	}, logger)
@@ -264,8 +264,6 @@ func TestOpenSession(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, sessn)
-
-	return
 }
 
 func GetTestOpenSession(t *testing.T, logger *zap.Logger) (sessn *IksVpcSession, uc, sc *fakes.RegionalAPI, err error) {

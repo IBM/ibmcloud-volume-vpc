@@ -29,8 +29,6 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var logger *zap.Logger
-
 func TestSetRetryParameters(t *testing.T) {
 	SetRetryParameters(2, 5)
 	assert.Equal(t, maxRetryAttempt, 2)

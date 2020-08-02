@@ -28,11 +28,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	customProfile = "custom"
-	minSize       = 10
-)
-
 // UpdateVolume updates the volume with given information
 func (vpcIks *IksVpcSession) UpdateVolume(volumeRequest provider.Volume) (err error) {
 	vpcIks.Logger.Debug("Entry of UpdateVolume method...")
