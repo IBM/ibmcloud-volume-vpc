@@ -32,13 +32,7 @@ makefmt:
 
 .PHONY: test
 test:
-ifeq ($(ARCH), ppc64le)
-	# POWER
 	$(GOPATH)/bin/gotestcover -v -coverprofile=cover.out ${GOPACKAGES} -timeout 90m
-else
-	# x86_64
-	$(GOPATH)/bin/gotestcover -v -race -coverprofile=cover.out ${GOPACKAGES} -timeout 90m
-endif
 
 .PHONY: coverage
 coverage:
@@ -47,4 +41,3 @@ coverage:
 .PHONY: vet
 vet:
 	go vet ${GOPACKAGES}
-	
