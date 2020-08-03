@@ -239,17 +239,16 @@ func TestOpenSession(t *testing.T) {
 
 	vpcp, err := GetTestProvider(t, logger)
 	assert.Nil(t, err)
-	//nolint:gosec
-	vpcp.OpenSession(context.Background(), provider.ContextCredentials{
+	sessn, err := vpcp.OpenSession(context.Background(), provider.ContextCredentials{
 		AuthType:     provider.IAMAccessToken,
 		Credential:   TestProviderAccessToken,
 		IAMAccountID: TestIKSAccountID,
 	}, logger)
 
-	//require.NoError(t, err)
-	//assert.NotNil(t, sessn)
+	require.NoError(t, err)
+	assert.NotNil(t, sessn)
 
-	sessn, err := vpcp.OpenSession(context.Background(), provider.ContextCredentials{
+	sessn, err = vpcp.OpenSession(context.Background(), provider.ContextCredentials{
 		AuthType:     provider.IAMAccessToken,
 		IAMAccountID: TestIKSAccountID,
 	}, logger)

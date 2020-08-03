@@ -59,7 +59,7 @@ func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers,
 
 // OpenProviderSession ...
 func OpenProviderSession(conf *config.Config, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
-	return OpenProviderSessionWithContext(nil, conf, providers, providerID, ctxLogger) //nolint:staticcheck
+	return OpenProviderSessionWithContext(context.TODO(), conf, providers, providerID, ctxLogger)
 }
 
 // OpenProviderSessionWithContext ...

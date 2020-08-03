@@ -57,8 +57,7 @@ func (tg *tokenGenerator) readConfig(logger zap.Logger) (err error) {
 
 	path := filepath.Join(config.GetEtcPath(), tg.tokenKID)
 
-	//nolint:gosec
-	pem, err := ioutil.ReadFile(path)
+	pem, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		logger.Error("Error reading PEM", local.ZapError(err))
 		return
