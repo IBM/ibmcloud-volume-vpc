@@ -44,8 +44,8 @@ var messagesEn = map[string]util.Message{
 		RC:          500,
 		Action:      "Review the error that is returned. If the volume creation service is currently unavailable, try to manually create the volume with the 'ibmcloud is volume-create' command.",
 	},
-	"failedToDeleteVolume": {
-		Code:        "failedToDeleteVolume",
+	"FailedToDeleteVolume": {
+		Code:        "FailedToDeleteVolume",
 		Description: "The volume ID '%d' could not be deleted from your VPC.",
 		Type:        util.DeletionFailed,
 		RC:          500,
