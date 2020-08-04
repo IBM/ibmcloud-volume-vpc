@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -57,7 +58,6 @@ const (
 var _ local.ContextCredentialsFactory = &auth.ContextCredentialsFactory{}
 
 func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
-
 	atom := zap.NewAtomicLevel()
 	atom.SetLevel(zap.DebugLevel)
 
@@ -77,8 +77,8 @@ func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
 	)
 
 	teardown = func() {
-
-		logger.Sync()
+		err := logger.Sync()
+		assert.Nil(t, err)
 
 		if t.Failed() {
 			t.Log(buf)
@@ -86,7 +86,6 @@ func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
 	}
 
 	return
-
 }
 
 func TestNewProvider(t *testing.T) {
@@ -203,8 +202,6 @@ func TestNewProvider(t *testing.T) {
 	zone := "Test Zone"
 	contextCF, _ := prov.ContextCredentialsFactory(&zone)
 	assert.NotNil(t, contextCF)
-
-	return
 }
 
 func GetTestProvider(t *testing.T, logger *zap.Logger) (*VPCBlockProvider, error) {
@@ -292,7 +289,7 @@ func TestOpenSession(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
-	vpcp, err := GetTestProvider(t, logger)
+	vpcp, _ := GetTestProvider(t, logger)
 
 	sessn, err := vpcp.OpenSession(context.Background(), provider.ContextCredentials{
 		AuthType:     provider.IAMAccessToken,
@@ -318,8 +315,6 @@ func TestOpenSession(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Nil(t, sessn)
-
-	return
 }
 
 func GetTestOpenSession(t *testing.T, logger *zap.Logger) (sessn *VPCSession, uc, sc *fakes.RegionalAPI, err error) {

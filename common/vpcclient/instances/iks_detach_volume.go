@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances ...
 package instances
 
 import (
@@ -47,13 +48,13 @@ func (vs *IKSVolumeAttachService) DetachVolume(volumeAttachmentTemplate *models.
 
 	resp, err := operationRequest.JSONError(apiErr).Invoke()
 	if err != nil {
-		ctxLogger.Error("Error occured while deleting volume attachment", zap.Error(err))
+		ctxLogger.Error("Error occurred while deleting volume attachment", zap.Error(err))
 		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			// volume attachment is deleted, no need to retry
 			return resp, apiErr
 		}
 	}
 
-	ctxLogger.Info("Successfuly deleted the volume attachment")
+	ctxLogger.Info("Successfully deleted the volume attachment")
 	return resp, err
 }

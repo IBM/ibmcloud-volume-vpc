@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances_test ...
 package instances_test
 
 import (
@@ -59,7 +60,6 @@ func TestGetVolumeAttachment(t *testing.T) {
 
 	for _, testcase := range testCases {
 		t.Run(testcase.name, func(t *testing.T) {
-
 			template := &models.VolumeAttachment{
 				ID:         "volumeattachmentid",
 				Name:       "volumeattachment",

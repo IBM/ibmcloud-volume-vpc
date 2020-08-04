@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package models ...
 package models
 
 import (
@@ -63,7 +64,6 @@ func NewVolumeAttachment(volumeAttachmentRequest provider.VolumeAttachmentReques
 		va.Href = volumeAttachmentRequest.VPCVolumeAttachment.Href
 		va.Name = volumeAttachmentRequest.VPCVolumeAttachment.Name
 		va.DeleteVolumeOnInstanceDelete = volumeAttachmentRequest.VPCVolumeAttachment.DeleteVolumeOnInstanceDelete
-
 	}
 	if volumeAttachmentRequest.IKSVolumeAttachment != nil {
 		va.ClusterID = volumeAttachmentRequest.IKSVolumeAttachment.ClusterID

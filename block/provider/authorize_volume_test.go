@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -82,7 +83,6 @@ func TestAuthorizeVolume(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t, err)
 			}
-
 		})
 	}
 }

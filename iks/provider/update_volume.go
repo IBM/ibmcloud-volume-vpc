@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -25,11 +26,6 @@ import (
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	"go.uber.org/zap"
-)
-
-const (
-	customProfile = "custom"
-	minSize       = 10
 )
 
 // UpdateVolume updates the volume with given information
@@ -64,7 +60,6 @@ func (vpcIks *IksVpcSession) UpdateVolume(volumeRequest provider.Volume) (err er
 
 // validateVolumeRequest validating volume request
 func validateVolumeRequest(volumeRequest provider.Volume) error {
-
 	// Volume name should not be empty
 	if len(volumeRequest.VolumeID) == 0 {
 		return userError.GetUserError("ErrorRequiredFieldMissing", nil, "VolumeID")

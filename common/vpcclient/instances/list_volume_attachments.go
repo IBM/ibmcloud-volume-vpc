@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances ...
 package instances
 
 import (
@@ -28,7 +29,6 @@ import (
 
 // ListVolumeAttachments retrives the list volume attachments with givne volume attachment details
 func (vs *VolumeAttachService) ListVolumeAttachments(volumeAttachmentTemplate *models.VolumeAttachment, ctxLogger *zap.Logger) (*models.VolumeAttachmentList, error) {
-
 	methodName := "VolumeAttachService.ListVolumeAttachments"
 	defer util.TimeTracker(methodName, time.Now())
 	defer metrics.UpdateDurationFromStart(ctxLogger, methodName, time.Now())
@@ -49,9 +49,9 @@ func (vs *VolumeAttachService) ListVolumeAttachments(volumeAttachmentTemplate *m
 
 	_, err := operationRequest.JSONSuccess(&volumeAttachmentList).JSONError(apiErr).Invoke()
 	if err != nil {
-		ctxLogger.Error("Error occured while getting volume attachments list", zap.Error(err))
+		ctxLogger.Error("Error occurred while getting volume attachments list", zap.Error(err))
 		return nil, err
 	}
-	ctxLogger.Info("Successfuly retrieved the volume attachments")
+	ctxLogger.Info("Successfully retrieved the volume attachments")
 	return &volumeAttachmentList, nil
 }

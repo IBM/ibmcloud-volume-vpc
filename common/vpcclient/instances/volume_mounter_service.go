@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances ...
 package instances
 
 import (
@@ -47,10 +48,9 @@ type VolumeAttachService struct {
 
 // IKSVolumeAttachService ...
 type IKSVolumeAttachService struct {
-	client                  client.SessionClient
-	pathPrefix              string
-	receiverError           error
-	populateQueryParameters func(request *client.Request, volumeAttachmentTemplate *models.VolumeAttachment) *client.Request
+	client        client.SessionClient
+	pathPrefix    string
+	receiverError error
 }
 
 var _ VolumeAttachManager = &VolumeAttachService{}

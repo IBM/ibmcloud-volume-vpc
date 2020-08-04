@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -39,14 +40,6 @@ import (
 )
 
 const (
-	// displayName ...
-	displayName = "IBM Cloud container service"
-	// vpcProviderDisplayName ...
-	vpcProviderDisplayName = "IBM Cloud infrastructure"
-	// vpcExceptionPrefix ...
-	vpcExceptionPrefix = "IBM Cloud infrastructure exception"
-	// timeoutDefault ...
-	timeoutDefault = "120s"
 	// VPCClassic ...
 	VPCClassic = "gc"
 	// VPCNextGen ...
@@ -81,7 +74,7 @@ func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error
 	logger.Info("Entering NewProvider")
 
 	if conf.Bluemix == nil || conf.VPC == nil {
-		return nil, errors.New("Incomplete config for VPCBlockProvider")
+		return nil, errors.New("incomplete config for VPCBlockProvider")
 	}
 
 	//Do config validation and enable only one generationType (i.e VPC-Classic | VPC-NG)
@@ -90,7 +83,6 @@ func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error
 	//if both config found, look for VPCTypeEnabled, otherwise default to GC
 	//Incase of NG configurations, override the base properties.
 	if (gcConfigFound && g2ConfigFound && conf.VPC.VPCTypeEnabled == VPCNextGen) || (!gcConfigFound && g2ConfigFound) {
-
 		// overwrite the common variable in case of g2 i.e gen2, first preferences would be private endpoint
 		if conf.VPC.G2EndpointPrivateURL != "" {
 			conf.VPC.EndpointURL = conf.VPC.G2EndpointPrivateURL
@@ -110,7 +102,7 @@ func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error
 		}
 		conf.VPC.VPCAPIGeneration = conf.VPC.G2VPCAPIGeneration
 
-		//Set the APIVersion Date, it can be diffrent in GC and NG
+		//Set the APIVersion Date, it can be different in GC and NG
 		if conf.VPC.G2APIVersion != "" {
 			conf.VPC.APIVersion = conf.VPC.G2APIVersion
 		}
@@ -283,7 +275,7 @@ func getAccessToken(creds provider.ContextCredentials, logger *zap.Logger) (toke
 	case provider.IAMAccessToken:
 		token = &iam.AccessToken{Token: creds.Credential}
 	default:
-		err = errors.New("Unknown AuthType")
+		err = errors.New("unknown AuthType")
 	}
 	return
 }

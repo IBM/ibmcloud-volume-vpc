@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -26,7 +27,6 @@ import (
 )
 
 func Test_Errors(t *testing.T) {
-
 	testCases := []struct {
 		testName        string
 		errorCode       reasoncode.ReasonCode

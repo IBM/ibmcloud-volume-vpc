@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package client_test ...
 package client_test
 
 import (
@@ -47,7 +48,6 @@ var postOperation = &client.Operation{
 }
 
 func TestClient(t *testing.T) {
-
 	var (
 		request   *client.Request
 		result    interface{}
@@ -95,7 +95,6 @@ func TestClient(t *testing.T) {
 			},
 			responseBody: "{}",
 			muxVerify: func(t *testing.T, r *http.Request) {
-
 				ct := r.Header.Get("content-type")
 				assert.True(t, strings.HasPrefix(ct, "multipart/form-data"))
 
@@ -135,9 +134,7 @@ func TestClient(t *testing.T) {
 	}
 
 	for _, testcase := range testcases {
-
 		t.Run(testcase.name, func(t *testing.T) {
-
 			mux, riaas, teardown := test.SetupServer(t)
 			defer teardown()
 
@@ -174,12 +171,13 @@ func TestClient(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t)
 			}
+
+			defer resp.Body.Close()
 		})
 	}
 }
 
 func TestDebugMode(t *testing.T) {
-
 	var (
 		riaas   client.SessionClient
 		request *client.Request
@@ -235,13 +233,11 @@ func TestDebugMode(t *testing.T) {
 	}
 
 	queryValues := map[string][]string{
-		"version": []string{"2019-01-01"},
+		"version": {"2019-01-01"},
 	}
 
 	for _, testcase := range testcases {
-
 		t.Run(testcase.name, func(t *testing.T) {
-
 			mux := http.NewServeMux()
 			s := httptest.NewServer(mux)
 
@@ -263,17 +259,18 @@ func TestDebugMode(t *testing.T) {
 				testcase.setup()
 			}
 
-			_, err := request.Invoke()
+			resp, err := request.Invoke()
 
 			assert.NoError(t, err)
 
 			testcase.verify(t)
+
+			defer resp.Body.Close()
 		})
 	}
 }
 
 func TestOperationURLProcessing(t *testing.T) {
-
 	testcases := []struct {
 		name        string
 		baseURL     string
@@ -319,12 +316,11 @@ func TestOperationURLProcessing(t *testing.T) {
 	}
 
 	queryValues := map[string][]string{
-		"generation": []string{strconv.Itoa(models.APIGeneration)},
-		"version":    []string{models.APIVersion},
+		"generation": {strconv.Itoa(models.APIGeneration)},
+		"version":    {models.APIVersion},
 	}
 
 	for _, testcase := range testcases {
-
 		t.Run(testcase.name, func(t *testing.T) {
 			c := client.New(context.Background(), testcase.baseURL, queryValues, http.DefaultClient, "test-context", "default")
 			actualURL := c.NewRequest(testcase.operation).URL()
@@ -340,8 +336,8 @@ func TestWithPathParameter(t *testing.T) {
 	log := &bytes.Buffer{}
 
 	queryValues := map[string][]string{
-		"version":    []string{models.APIVersion},
-		"generation": []string{strconv.Itoa(models.APIGeneration)},
+		"version":    {models.APIVersion},
+		"generation": {strconv.Itoa(models.APIGeneration)},
 	}
 
 	riaas := client.New(context.Background(), s.URL, queryValues, http.DefaultClient, "test-context", "default").WithDebug(log).WithAuthToken("auth-token").WithPathParameter("test", "test")
@@ -356,8 +352,8 @@ func TestWithQueryValue(t *testing.T) {
 	log := &bytes.Buffer{}
 
 	queryValues := map[string][]string{
-		"version":    []string{models.APIVersion},
-		"generation": []string{strconv.Itoa(models.APIGeneration)},
+		"version":    {models.APIVersion},
+		"generation": {strconv.Itoa(models.APIGeneration)},
 	}
 
 	riaas := client.New(context.Background(), s.URL, queryValues, http.DefaultClient, "test-context", "default").WithDebug(log).WithAuthToken("auth-token").WithQueryValue("test", "test")

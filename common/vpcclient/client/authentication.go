@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package client ...
 package client
 
 import (
@@ -22,7 +23,7 @@ import (
 
 // ErrAuthenticationRequired is returned if a request is made before an authentication
 // token has been provided to the client
-var ErrAuthenticationRequired = errors.New("Authentication token required")
+var ErrAuthenticationRequired = errors.New("authentication token required")
 
 type authenticationHandler struct {
 	authToken     string

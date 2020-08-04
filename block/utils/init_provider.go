@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package utils ...
 package utils
 
 import (
@@ -30,10 +31,6 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	"github.com/IBM/ibmcloud-volume-vpc/common/registry"
 )
-
-const maxTimeout = 300  //secondsPerDay
-const retryInterval = 5 //seconds
-const maxRetryAttempts = maxTimeout / retryInterval
 
 // InitProviders initialization for all providers as per configurations
 func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers, error) {
@@ -57,17 +54,12 @@ func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers,
 		return providerRegistry, nil
 	}
 
-	return nil, errors.New("No providers registered")
-}
-
-// isEmptyStringValue ...
-func isEmptyStringValue(value *string) bool {
-	return value == nil || *value == ""
+	return nil, errors.New("no providers registered")
 }
 
 // OpenProviderSession ...
 func OpenProviderSession(conf *config.Config, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
-	return OpenProviderSessionWithContext(nil, conf, providers, providerID, ctxLogger)
+	return OpenProviderSessionWithContext(context.TODO(), conf, providers, providerID, ctxLogger)
 }
 
 // OpenProviderSessionWithContext ...
@@ -100,8 +92,6 @@ func OpenProviderSessionWithContext(ctx context.Context, conf *config.Config, pr
 // GenerateContextCredentials ...
 func GenerateContextCredentials(conf *config.Config, providerID string, contextCredentialsFactory local.ContextCredentialsFactory, ctxLogger *zap.Logger) (provider.ContextCredentials, error) {
 	ctxLogger.Info("Generating generateContextCredentials for ", zap.String("Provider ID", providerID))
-
-	iamAPIKey := conf.Bluemix.IamAPIKey
 
 	// Select appropriate authentication strategy
 	switch {

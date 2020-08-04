@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances ...
 package instances
 
 import (
@@ -50,7 +51,7 @@ func (vs *VolumeAttachService) DetachVolume(volumeAttachmentTemplate *models.Vol
 
 	resp, err := operationRequest.JSONError(apiErr).Invoke()
 	if err != nil {
-		ctxLogger.Error("Error occured while deleting volume attachment", zap.Error(err))
+		ctxLogger.Error("Error occurred while deleting volume attachment", zap.Error(err))
 		if resp != nil && resp.StatusCode == http.StatusNotFound {
 			// volume Attachment is deleted. So do not want to retry
 			ctxLogger.Info("Exit DetachVolume", zap.Any("resp", resp.StatusCode), zap.Error(err), zap.Error(apiErr))

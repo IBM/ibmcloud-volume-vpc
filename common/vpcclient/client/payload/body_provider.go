@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package payload ...
 package payload
 
 import (
@@ -96,6 +97,6 @@ func (p *MultipartFileBody) copyBody() {
 
 // Close ...
 func (p *MultipartFileBody) Close() {
-	p.multipartWriter.Close()
-	p.pipeWriter.Close()
+	_ = p.multipartWriter.Close()
+	_ = p.pipeWriter.Close()
 }

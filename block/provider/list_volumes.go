@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -87,7 +88,7 @@ func (vpcs *VPCSession) ListVolumes(limit int, start string, tags map[string]str
 		}
 
 		volumeslist := volumes.Volumes
-		if volumeslist != nil && len(volumeslist) > 0 {
+		if len(volumeslist) > 0 {
 			for _, volItem := range volumeslist {
 				volumeResponse := FromProviderToLibVolume(volItem, vpcs.Logger)
 				respVolumesList.Volumes = append(respVolumesList.Volumes, volumeResponse)

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package test ...
 package test
 
 import (
@@ -33,7 +34,6 @@ import (
 
 // SetupServer ...
 func SetupServer(t *testing.T) (m *http.ServeMux, c client.SessionClient, teardown func()) {
-
 	m = http.NewServeMux()
 	s := httptest.NewServer(m)
 
@@ -46,7 +46,6 @@ func SetupServer(t *testing.T) (m *http.ServeMux, c client.SessionClient, teardo
 	teardown = func() {
 		s.Close()
 		CheckTestFail(t, log)
-
 	}
 
 	return
@@ -54,9 +53,7 @@ func SetupServer(t *testing.T) (m *http.ServeMux, c client.SessionClient, teardo
 
 // SetupMuxResponse ...
 func SetupMuxResponse(t *testing.T, m *http.ServeMux, path string, expectedMethod string, expectedContent *string, statusCode int, body string, verify func(t *testing.T, r *http.Request)) {
-
 	m.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-
 		assert.Equal(t, expectedMethod, r.Method)
 
 		authHeader := r.Header.Get("Authorization")
@@ -85,7 +82,6 @@ func SetupMuxResponse(t *testing.T, m *http.ServeMux, path string, expectedMetho
 
 // CheckTestFail ...
 func CheckTestFail(t *testing.T, buf *bytes.Buffer) {
-
 	if t.Failed() {
 		t.Log(buf)
 	}

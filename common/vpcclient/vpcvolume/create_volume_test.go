@@ -83,7 +83,6 @@ func TestCreateVolume(t *testing.T) {
 
 	for _, testcase := range testCases {
 		t.Run(testcase.name, func(t *testing.T) {
-
 			template := &models.Volume{
 				Name:     "volume-name",
 				Capacity: 10,
@@ -116,7 +115,6 @@ func TestCreateVolume(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t, volume, err)
 			}
-
 		})
 	}
 }

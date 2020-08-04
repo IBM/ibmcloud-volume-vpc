@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -111,7 +112,7 @@ func skipRetry(err *models.Error) bool {
 func SkipRetryForIKS(err error) bool {
 	iksError, iksok := err.(*models.IksError)
 	if iksok {
-		skipStatus, ok := skipErrorCodes[string(iksError.Code)]
+		skipStatus, ok := skipErrorCodes[iksError.Code]
 		if ok {
 			return skipStatus
 		}
@@ -165,7 +166,7 @@ func (fRetry *FlexyRetry) FlexyRetry(logger *zap.Logger, funcToRetry func() (err
 		if i > 0 {
 			time.Sleep(time.Duration(retryGap) * time.Second)
 		}
-		// Call function which required retry, retry is decided by funtion itself
+		// Call function which required retry, retry is decided by function itself
 		err, stopRetry = funcToRetry()
 		if stopRetry {
 			break
@@ -197,7 +198,7 @@ func (fRetry *FlexyRetry) FlexyRetryWithConstGap(logger *zap.Logger, funcToRetry
 		if i > 0 {
 			time.Sleep(time.Duration(ConstantRetryGap) * time.Second)
 		}
-		// Call function which required retry, retry is decided by funtion itself
+		// Call function which required retry, retry is decided by function itself
 		err, stopRetry = funcToRetry()
 		if stopRetry {
 			break
@@ -272,10 +273,7 @@ func FromProviderToLibVolume(vpcVolume *models.Volume, logger *zap.Logger) (libV
 // IsValidVolumeIDFormat validating(gc has 5 parts and NG has 6 parts)
 func IsValidVolumeIDFormat(volID string) bool {
 	parts := strings.Split(volID, "-")
-	if len(parts) < volumeIDPartsCount {
-		return false
-	}
-	return true
+	return len(parts) >= volumeIDPartsCount
 }
 
 // SetRetryParameters sets the retry logic parameters

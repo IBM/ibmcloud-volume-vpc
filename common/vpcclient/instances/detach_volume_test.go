@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package instances_test ...
 package instances_test
 
 import (
@@ -66,7 +67,6 @@ func TestDetachVolume(t *testing.T) {
 
 	for _, testcase := range testCases {
 		t.Run(testcase.name, func(t *testing.T) {
-
 			template := &models.VolumeAttachment{
 				ID:         "volumeattachmentid",
 				Name:       "volumeattachment",
@@ -100,6 +100,7 @@ func TestDetachVolume(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, response)
 			}
+			defer response.Body.Close()
 		})
 	}
 }

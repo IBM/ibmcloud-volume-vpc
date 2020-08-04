@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -38,7 +39,7 @@ func (vpcs *VPCSession) GetVolumeAttachment(volumeAttachmentRequest provider.Vol
 	var volumeAttachmentResponse *provider.VolumeAttachmentResponse
 	volumeAttachment := models.NewVolumeAttachment(volumeAttachmentRequest)
 	if len(volumeAttachment.ID) > 0 {
-		//Get volume attachmet by ID if it is specified
+		//Get volume attachments by ID if it is specified
 		volumeAttachmentResponse, err = vpcs.getVolumeAttachmentByID(volumeAttachment)
 	} else {
 		// Get volume attachment by Volume ID. This is inefficient operation which requires iteration over volume attachment list
@@ -46,7 +47,6 @@ func (vpcs *VPCSession) GetVolumeAttachment(volumeAttachmentRequest provider.Vol
 	}
 	vpcs.Logger.Info("Volume attachment response", zap.Reflect("volumeAttachmentResponse", volumeAttachmentResponse), zap.Error(err))
 	return volumeAttachmentResponse, err
-
 }
 
 func (vpcs *VPCSession) getVolumeAttachmentByID(volumeAttachmentRequest models.VolumeAttachment) (*provider.VolumeAttachmentResponse, error) {
@@ -76,7 +76,7 @@ func (vpcs *VPCSession) getVolumeAttachmentByID(volumeAttachmentRequest models.V
 	}
 
 	volumeAttachmentResponse := volumeAttachmentResult.ToVolumeAttachmentResponse(vpcs.Config.VPCBlockProviderType)
-	vpcs.Logger.Info("Successfuly retrived volume attachment", zap.Reflect("volumeAttachmentResponse", volumeAttachmentResponse))
+	vpcs.Logger.Info("Successfully retrieved volume attachment", zap.Reflect("volumeAttachmentResponse", volumeAttachmentResponse))
 	return volumeAttachmentResponse, err
 }
 
@@ -111,7 +111,7 @@ func (vpcs *VPCSession) getVolumeAttachmentByVolumeID(volumeAttachmentRequest mo
 		}
 	}
 	// No volume attahment found in the  list. So return error
-	userErr := userError.GetUserError(string(userError.VolumeAttachFindFailed), errors.New("No VolumeAttachment Found"), volumeAttachmentRequest.Volume.ID, *volumeAttachmentRequest.InstanceID)
+	userErr := userError.GetUserError(string(userError.VolumeAttachFindFailed), errors.New("no VolumeAttachment Found"), volumeAttachmentRequest.Volume.ID, *volumeAttachmentRequest.InstanceID)
 	vpcs.Logger.Error("Volume attachment not found", zap.Error(err))
 	return nil, userErr
 }

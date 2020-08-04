@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
+// Package instances ...
 package instances
 
 const (
 	instanceIDParam                = "instance-id"
-	clusterIDParam                 = "cluster-id"
-	volumeIDParam                  = "volume-id"
 	attachmentIDParam              = "id"
 	instanceIDPath                 = "/{" + instanceIDParam + "}"
 	volumeAttachmentPath           = "volume_attachments"

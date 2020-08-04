@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package riaas ...
 package riaas
 
 import (

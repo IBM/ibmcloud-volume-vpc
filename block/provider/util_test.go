@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -27,8 +28,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
-
-var logger *zap.Logger
 
 func TestSetRetryParameters(t *testing.T) {
 	SetRetryParameters(2, 5)
@@ -128,7 +127,7 @@ func TestRetryWithError(t *testing.T) {
 	var err error
 	err = retry(logger, func() error {
 		logger.Info("Testing retry with error")
-		err = errors.New("Trace Code:, testerr Please check ")
+		err = errors.New("trace Code:, testerr Please check ")
 		return err
 	})
 }

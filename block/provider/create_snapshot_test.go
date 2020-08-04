@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -178,7 +179,7 @@ func TestCreateSnapshot(t *testing.T) {
 
 			if testcase.skipErrTest == true {
 				snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, nil)
-				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New("ErrorUnclassified"))
+				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New("errorUnclassified"))
 			} else {
 				if testcase.expectedErr != "" {
 					snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, errors.New(testcase.expectedReasonCode))
@@ -201,7 +202,6 @@ func TestCreateSnapshot(t *testing.T) {
 			if testcase.verify != nil {
 				testcase.verify(t, snapshot, err)
 			}
-
 		})
 	}
 }
@@ -253,7 +253,7 @@ func TestCreateSnapshotTwo(t *testing.T) {
 	assert.NotNil(t, volumeService)
 	uc.VolumeServiceReturns(volumeService)
 
-	snapshotService.CreateSnapshotReturns(baseSnapshot, errors.New("ErrorUnclassified"))
+	snapshotService.CreateSnapshotReturns(baseSnapshot, errors.New("errorUnclassified"))
 	volumeService.GetVolumeReturns(baseVolume, nil)
 
 	snapshot, err := vpcs.CreateSnapshot(providerVolume, tags)

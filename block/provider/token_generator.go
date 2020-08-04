@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package provider ...
 package provider
 
 import (
@@ -56,7 +57,7 @@ func (tg *tokenGenerator) readConfig(logger zap.Logger) (err error) {
 
 	path := filepath.Join(config.GetEtcPath(), tg.tokenKID)
 
-	pem, err := ioutil.ReadFile(path)
+	pem, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		logger.Error("Error reading PEM", local.ZapError(err))
 		return
@@ -104,7 +105,6 @@ func (tg *tokenGenerator) buildToken(contextCredentials provider.ContextCredenti
 
 	default:
 		claims["ims_username"] = contextCredentials.UserID
-
 	}
 
 	token = jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
