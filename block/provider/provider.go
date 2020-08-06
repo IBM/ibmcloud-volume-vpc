@@ -152,7 +152,7 @@ func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error
 		authConfig.CSRFToken = conf.Bluemix.CSRFToken // required for IKS endpoint to get IAM token
 	}
 
-	contextCF, err := vpcauth.NewVpcontextCredentialsFactory(authConfig, conf.VPC)
+	contextCF, err := vpcauth.NewVpcContextCredentialsFactory(authConfig, conf.VPC)
 	if err != nil {
 		return nil, err
 	}

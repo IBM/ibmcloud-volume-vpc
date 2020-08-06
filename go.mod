@@ -10,5 +10,3 @@ require (
 	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 )
-
-replace github.com/IBM/ibmcloud-volume-interface => /Users/meghna/go_workspace/src/github.com/IBM/ibmcloud-volume-interface

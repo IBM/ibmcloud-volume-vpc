@@ -22,7 +22,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 )
 
-// NewVpcontextCredentialsFactory ...
-func NewVpcontextCredentialsFactory(bluemixConfig *config.BluemixConfig, vpcConfig *config.VPCProviderConfig) (*auth.ContextCredentialsFactory, error) {
+// NewVpcContextCredentialsFactory ...
+func NewVpcContextCredentialsFactory(bluemixConfig *config.BluemixConfig, vpcConfig *config.VPCProviderConfig) (*auth.ContextCredentialsFactory, error) {
 	return auth.NewContextCredentialsFactory(bluemixConfig, nil, vpcConfig)
 }
