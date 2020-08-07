@@ -35,6 +35,7 @@ func TestNewContextCredentialsFactory(t *testing.T) {
 	}
 
 	contextCredentials, err := NewVpcContextCredentialsFactory(bluemixConfig, vpcProviderConfig)
+
 	assert.NoError(t, err)
 	assert.NotNil(t, contextCredentials)
 }

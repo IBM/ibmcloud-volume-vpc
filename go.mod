@@ -3,6 +3,7 @@ module github.com/IBM/ibmcloud-volume-vpc
 go 1.13
 
 require (
+	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
 	github.com/IBM/ibmcloud-volume-interface v1.0.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/structs v1.1.0

@@ -20,9 +20,19 @@ package auth
 import (
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
+	vpciam "github.com/IBM/ibmcloud-volume-vpc/common/iam"
 )
 
 // NewVpcContextCredentialsFactory ...
 func NewVpcContextCredentialsFactory(bluemixConfig *config.BluemixConfig, vpcConfig *config.VPCProviderConfig) (*auth.ContextCredentialsFactory, error) {
-	return auth.NewContextCredentialsFactory(bluemixConfig, nil, vpcConfig)
+
+	ccf, err := auth.NewContextCredentialsFactory(bluemixConfig, nil, vpcConfig)
+	if bluemixConfig.PrivateAPIRoute != "" {
+		ccf.TokenExchangeService, err = vpciam.NewTokenExchangeIKSService(bluemixConfig)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return ccf, nil
+
 }
