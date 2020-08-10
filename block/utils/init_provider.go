@@ -111,6 +111,9 @@ func GenerateContextCredentials(conf *config.Config, providerID string, contextC
 		ctxLogger.Info("Calling provider/init_provider.go ForIAMAccessToken")
 		return contextCredentialsFactory.ForIAMAccessToken(conf.VPC.APIKey, ctxLogger)
 
+	case (conf.IKS != nil && providerID == conf.IKS.IKSBlockProviderName):
+		return provider.ContextCredentials{}, nil // Get credentials  in OpenSession method
+
 	default:
 		return provider.ContextCredentials{}, util.NewError("ErrorInsufficientAuthentication",
 			"Insufficient authentication credentials")
