@@ -34,7 +34,7 @@ func TestNewContextCredentialsFactory(t *testing.T) {
 		EndpointURL: "http://myEndpointUrl",
 	}
 
-	contextCredentials, err := NewVpcContextCredentialsFactory(bluemixConfig, vpcProviderConfig)
+	contextCredentials, err := NewVPCContextCredentialsFactory(bluemixConfig, vpcProviderConfig)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, contextCredentials)

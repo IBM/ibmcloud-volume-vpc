@@ -23,8 +23,8 @@ import (
 	vpciam "github.com/IBM/ibmcloud-volume-vpc/common/iam"
 )
 
-// NewVpcContextCredentialsFactory ...
-func NewVpcContextCredentialsFactory(bluemixConfig *config.BluemixConfig, vpcConfig *config.VPCProviderConfig) (*auth.ContextCredentialsFactory, error) {
+// NewVPCContextCredentialsFactory ...
+func NewVPCContextCredentialsFactory(bluemixConfig *config.BluemixConfig, vpcConfig *config.VPCProviderConfig) (*auth.ContextCredentialsFactory, error) {
 
 	ccf, err := auth.NewContextCredentialsFactory(bluemixConfig, nil, vpcConfig)
 	if bluemixConfig.PrivateAPIRoute != "" {
