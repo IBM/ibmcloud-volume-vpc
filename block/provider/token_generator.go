@@ -29,8 +29,8 @@ import (
 
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
+	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
-	"github.com/IBM/ibmcloud-volume-vpc/common/auth"
 )
 
 // tokenGenerator ...

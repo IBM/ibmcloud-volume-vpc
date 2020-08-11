@@ -23,13 +23,13 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
 
-	vpc_provider "github.com/IBM/ibmcloud-volume-vpc/block/provider"
-
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
+	vpc_provider "github.com/IBM/ibmcloud-volume-vpc/block/provider"
 	"github.com/IBM/ibmcloud-volume-vpc/common/registry"
+	iks_vpc_provider "github.com/IBM/ibmcloud-volume-vpc/iks/provider"
 )
 
 // InitProviders initialization for all providers as per configurations
@@ -46,6 +46,18 @@ func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers,
 			return nil, err
 		}
 		providerRegistry.Register(conf.VPC.VPCBlockProviderName, prov)
+		haveProviders = true
+	}
+
+	// IKS provider registration
+	if conf.IKS != nil && conf.IKS.Enabled {
+		logger.Info("Configuring IKS-VPC Block Provider")
+		prov, err := iks_vpc_provider.NewProvider(conf, logger)
+		if err != nil {
+			logger.Info("VPC block provider error!")
+			return nil, err
+		}
+		providerRegistry.Register(conf.IKS.IKSBlockProviderName, prov)
 		haveProviders = true
 	}
 
@@ -98,6 +110,9 @@ func GenerateContextCredentials(conf *config.Config, providerID string, contextC
 	case (conf.VPC != nil && providerID == conf.VPC.VPCBlockProviderName):
 		ctxLogger.Info("Calling provider/init_provider.go ForIAMAccessToken")
 		return contextCredentialsFactory.ForIAMAccessToken(conf.VPC.APIKey, ctxLogger)
+
+	case (conf.IKS != nil && providerID == conf.IKS.IKSBlockProviderName):
+		return provider.ContextCredentials{}, nil // Get credentials  in OpenSession method
 
 	default:
 		return provider.ContextCredentials{}, util.NewError("ErrorInsufficientAuthentication",

@@ -30,9 +30,9 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/lib/metrics"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
+	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
-	"github.com/IBM/ibmcloud-volume-vpc/common/auth"
-	"github.com/IBM/ibmcloud-volume-vpc/common/iam"
+	vpcauth "github.com/IBM/ibmcloud-volume-vpc/common/auth"
 	"github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
@@ -152,7 +152,7 @@ func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error
 		authConfig.CSRFToken = conf.Bluemix.CSRFToken // required for IKS endpoint to get IAM token
 	}
 
-	contextCF, err := auth.NewContextCredentialsFactory(authConfig, nil, conf.VPC)
+	contextCF, err := vpcauth.NewVPCContextCredentialsFactory(authConfig, conf.VPC)
 	if err != nil {
 		return nil, err
 	}

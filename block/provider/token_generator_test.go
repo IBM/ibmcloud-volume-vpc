@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
-	"github.com/IBM/ibmcloud-volume-vpc/common/auth"
+	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 )
 
 func TestTokenGenerator(t *testing.T) {

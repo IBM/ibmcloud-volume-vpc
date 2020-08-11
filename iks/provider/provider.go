@@ -24,7 +24,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	vpcprovider "github.com/IBM/ibmcloud-volume-vpc/block/provider"
-	"github.com/IBM/ibmcloud-volume-vpc/common/auth"
+	vpcauth "github.com/IBM/ibmcloud-volume-vpc/common/auth"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
 
@@ -139,5 +139,5 @@ func (iksp *IksVpcBlockProvider) ContextCredentialsFactory(zone *string) (local.
 		PrivateAPIRoute: iksp.globalConfig.Bluemix.PrivateAPIRoute, // Only for private cluster
 		CSRFToken:       iksp.globalConfig.Bluemix.CSRFToken,       // required for private cluster
 	}
-	return auth.NewContextCredentialsFactory(authConfig, nil, iksp.globalConfig.VPC)
+	return vpcauth.NewVPCContextCredentialsFactory(authConfig, iksp.globalConfig.VPC)
 }
