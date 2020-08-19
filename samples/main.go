@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package main ...
 package main
 
 import (
@@ -78,7 +79,7 @@ func main() {
 
 	// Load config file
 	goPath := os.Getenv("GOPATH")
-	conf, err := config.ReadConfig(goPath+"/src/github.com/IBM/ibmcloud-storage-volume-lib/etc/libconfig.toml", logger)
+	conf, err := config.ReadConfig(goPath+"/src/github.com/IBM/ibmcloud-volume-vpc/etc/libconfig.toml", logger)
 	if err != nil {
 		logger.Fatal("Error loading configuration")
 	}
@@ -108,7 +109,6 @@ func main() {
 
 	valid := true
 	for valid {
-
 		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- Create volume \n 5- Snapshot details \n 6- Snapshot Order \n 7- Create volume from snapshot\n 8- Delete volume \n 9- Delete Snapshot \n 10- List all Snapshot \n 12- Authorize volume \n 13- Create VPC Volume \n 14- Create VPC Snapshot \n 15- Attach VPC volume \n 16- Detach VPC volume \n 17- Get volume by name \n 18- List volumes \n Your choice?:")
 
 		var choiceN int
@@ -116,7 +116,7 @@ func main() {
 		var snapshotID string
 		var er11 error
 		if *defaultChoice == 0 {
-			_, er11 = fmt.Scanf("%d", &choiceN)
+			_, _ = fmt.Scanf("%d", &choiceN)
 		} else {
 			choiceN = *defaultChoice
 		}
@@ -128,7 +128,7 @@ func main() {
 		ctxLogger, _ := getContextLogger()
 		requestID := uid.NewV4().String()
 		ctxLogger = ctxLogger.With(zap.String("RequestID", requestID))
-		ctx := context.WithValue(nil, provider.RequestID, requestID)
+		ctx := context.WithValue(context.TODO(), provider.RequestID, requestID)
 		sess, _, err := provider_util.OpenProviderSessionWithContext(ctx, conf, providerRegistry, providerName, ctxLogger)
 		if err != nil {
 			ctxLogger.Error("Failed to get session", zap.Reflect("Error", err))
@@ -142,7 +142,7 @@ func main() {
 		if choiceN == 1 {
 			fmt.Println("You selected choice to get volume details")
 			fmt.Printf("Please enter volume ID: ")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			volume, errr := sess.GetVolume(volumeID)
 			if errr == nil {
 				ctxLogger.Info("SUCCESSFULLY get volume details ================>", zap.Reflect("VolumeDetails", volume))
@@ -155,11 +155,10 @@ func main() {
 		} else if choiceN == 2 {
 			fmt.Println("You selected choice to create snapshot")
 			fmt.Printf("Please enter volume ID: ")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			volume := &provider.Volume{}
 			volume.VolumeID = volumeID
-			var tags map[string]string
-			tags = make(map[string]string)
+			tags := make(map[string]string)
 			tags["tag1"] = "snapshot-tag1"
 			snapshot, errr := sess.CreateSnapshot(volume, tags)
 			if errr == nil {
@@ -173,7 +172,7 @@ func main() {
 		} else if choiceN == 3 {
 			fmt.Println("You selected choice to list snapshot from volume")
 			fmt.Printf("Please enter volume ID to get the snapshots: ")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			fmt.Printf("\n")
 			snapshots, errr := sess.ListAllSnapshots(volumeID)
 			if errr == nil {
@@ -199,7 +198,7 @@ func main() {
 
 			var choice int
 			fmt.Printf("\nPlease enter storage type choice 1- for endurance  2- for performance: ")
-			_, er11 = fmt.Scanf("%d", &choice)
+			_, _ = fmt.Scanf("%d", &choice)
 			if choice == 1 {
 				providerType = "endurance"
 				volume.ProviderType = provider.VolumeProviderType(providerType)
@@ -209,21 +208,21 @@ func main() {
 			}
 
 			fmt.Printf("\nPlease enter datacenter name like dal09, dal10 or mex01  etc: ")
-			_, er11 = fmt.Scanf("%s", &dcName)
+			_, _ = fmt.Scanf("%s", &dcName)
 			volume.Az = dcName
 
 			fmt.Printf("\nPlease enter volume size in GB like 20, 40 80 etc : ")
-			_, er11 = fmt.Scanf("%d", &volSize)
+			_, _ = fmt.Scanf("%d", &volSize)
 			volume.Capacity = &volSize
 
 			if volume.ProviderType == "performance" {
 				fmt.Printf("\nPlease enter iops from 1-48000 with multiple of 100: ")
-				_, er11 = fmt.Scanf("%s", &Iops)
+				_, _ = fmt.Scanf("%s", &Iops)
 				volume.Iops = &Iops
 			}
 			if volume.ProviderType == "endurance" {
 				fmt.Printf("\nPlease enter tier like 0.25, 2, 4, 10 iops per GB: ")
-				_, er11 = fmt.Scanf("%s", &tier)
+				_, _ = fmt.Scanf("%s", &tier)
 				volume.Tier = &tier
 			}
 			volume.SnapshotSpace = &volSize
@@ -239,7 +238,7 @@ func main() {
 		} else if choiceN == 5 {
 			fmt.Println("You selected choice to get snapshot details")
 			fmt.Printf("Please enter Snapshot ID: ")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			snapdetails, errr := sess.GetSnapshot(volumeID)
 			fmt.Printf("\n\n")
 			if errr == nil {
@@ -253,11 +252,11 @@ func main() {
 			fmt.Println("You selected choice to order snapshot")
 			volume := &provider.Volume{}
 			fmt.Printf("Please enter volume ID to create the snapshot space: ")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			volume.VolumeID = volumeID
 			var size int
 			fmt.Printf("Please enter snapshot space size in GB: ")
-			_, er11 = fmt.Scanf("%d", &size)
+			_, _ = fmt.Scanf("%d", &size)
 			volume.SnapshotSpace = &size
 			er11 := sess.OrderSnapshot(*volume)
 			if er11 == nil {
@@ -272,9 +271,9 @@ func main() {
 			var snapshotVol provider.Snapshot
 			var tags map[string]string
 			fmt.Printf("Please enter original volume ID to create the volume from snapshot: ")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			fmt.Printf("Please enter snapshot ID for creating volume:")
-			_, er11 = fmt.Scanf("%s", &snapshotID)
+			_, _ = fmt.Scanf("%s", &snapshotID)
 			snapshotVol.SnapshotID = snapshotID
 			snapshotVol.Volume.VolumeID = volumeID
 			vol, errr := sess.CreateVolumeFromSnapshot(snapshotVol, tags)
@@ -290,7 +289,7 @@ func main() {
 			fmt.Println("You selected choice to delete volume")
 			volume := &provider.Volume{}
 			fmt.Printf("Please enter volume ID for delete:")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			volume.VolumeID = volumeID
 			er11 = sess.DeleteVolume(volume)
 			if er11 == nil {
@@ -304,7 +303,7 @@ func main() {
 			fmt.Println("You selected choice to delete snapshot")
 			snapshot := &provider.Snapshot{}
 			fmt.Printf("Please enter snapshot ID for delete:")
-			_, er11 = fmt.Scanf("%s", &snapshotID)
+			_, _ = fmt.Scanf("%s", &snapshotID)
 			snapshot.SnapshotID = snapshotID
 			er11 = sess.DeleteSnapshot(snapshot)
 			if er11 == nil {
@@ -327,7 +326,7 @@ func main() {
 		} else if choiceN == 11 {
 			fmt.Println("Get volume ID by using order ID")
 			fmt.Printf("Please enter volume order ID to get volume ID:")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			_, error1 := sess.ListAllSnapshots(volumeID)
 			if error1 != nil {
 				error1 = updateRequestID(error1, requestID)
@@ -336,13 +335,13 @@ func main() {
 		} else if choiceN == 12 {
 			fmt.Println("Authorize volume")
 			fmt.Printf("Please enter volume ID:")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			var subnetIDs string
-			fmt.Printf("Please enter subnet IDs comma seperated, default[]")
-			_, er11 = fmt.Scanf("%s", &subnetIDs)
+			fmt.Printf("Please enter subnet IDs comma separated, default[]")
+			_, _ = fmt.Scanf("%s", &subnetIDs)
 			var hostIPs string
-			fmt.Printf("Please enter host IPs comma seperated, default[]")
-			_, er11 = fmt.Scanf("%s", &hostIPs)
+			fmt.Printf("Please enter host IPs comma separated, default[]")
+			_, _ = fmt.Scanf("%s", &hostIPs)
 			splitFn := func(c rune) bool {
 				return c == ','
 			}
@@ -378,30 +377,30 @@ func main() {
 
 			profile := "general-purpose"
 			fmt.Printf("\nPlease enter profile name supported profiles are [general-purpose, custom, 10iops-tier, 5iops-tier]: ")
-			_, er11 = fmt.Scanf("%s", &profile)
+			_, _ = fmt.Scanf("%s", &profile)
 			volume.VPCVolume.Profile = &provider.Profile{Name: profile}
 
 			fmt.Printf("\nPlease enter volume name: ")
-			_, er11 = fmt.Scanf("%s", &volumeName)
+			_, _ = fmt.Scanf("%s", &volumeName)
 			volume.Name = &volumeName
 
 			fmt.Printf("\nPlease enter volume size (Specify 10 GB - 2 TB of capacity in 1 GB increments): ")
-			_, er11 = fmt.Scanf("%d", &volSize)
+			_, _ = fmt.Scanf("%d", &volSize)
 			volume.Capacity = &volSize
 
 			fmt.Printf("\nPlease enter iops (Only custom profiles require iops): ")
-			_, er11 = fmt.Scanf("%s", &Iops)
+			_, _ = fmt.Scanf("%s", &Iops)
 			volume.Iops = &Iops
 
 			fmt.Printf("\nPlease enter resource group info type : 1- for ID and 2- for Name: ")
-			_, er11 = fmt.Scanf("%d", &resiurceGType)
+			_, _ = fmt.Scanf("%d", &resiurceGType)
 			if resiurceGType == 1 {
 				fmt.Printf("\nPlease enter resource group ID:")
-				_, er11 = fmt.Scanf("%s", &resourceGroup)
+				_, _ = fmt.Scanf("%s", &resourceGroup)
 				volume.VPCVolume.ResourceGroup.ID = resourceGroup
 			} else if resiurceGType == 2 {
 				fmt.Printf("\nPlease enter resource group Name:")
-				_, er11 = fmt.Scanf("%s", &resourceGroup)
+				_, _ = fmt.Scanf("%s", &resourceGroup)
 				volume.VPCVolume.ResourceGroup.Name = resourceGroup
 			} else {
 				fmt.Printf("\nWrong resource group type\n")
@@ -409,7 +408,7 @@ func main() {
 			}
 
 			fmt.Printf("\nPlease enter zone: ")
-			_, er11 = fmt.Scanf("%s", &zone)
+			_, _ = fmt.Scanf("%s", &zone)
 			volume.Az = zone
 
 			volume.SnapshotSpace = &volSize
@@ -422,12 +421,11 @@ func main() {
 				ctxLogger.Info("FAILED to create volume...", zap.Reflect("StorageType", volume.ProviderType), zap.Reflect("Error", errr))
 			}
 			fmt.Printf("\n\n")
-
 		} else if choiceN == 14 {
 			fmt.Println("You selected choice to order VPC snapshot")
 			volume := &provider.Volume{}
 			fmt.Printf("Please enter volume ID to create the snapshot space: ")
-			_, er11 = fmt.Scanf("%s", &volumeID)
+			_, _ = fmt.Scanf("%s", &volumeID)
 			volume.VolumeID = volumeID
 			er11 := sess.OrderSnapshot(*volume)
 			if er11 == nil {
@@ -445,7 +443,7 @@ func main() {
 			fmt.Println("You selected get VPC volume by name")
 			volumeName := ""
 			fmt.Printf("Please enter volume Name to get the details: ")
-			_, er11 = fmt.Scanf("%s", &volumeName)
+			_, _ = fmt.Scanf("%s", &volumeName)
 			volumeobj1, er11 := sess.GetVolumeByName(volumeName)
 			if er11 == nil {
 				ctxLogger.Info("Successfully got VPC volume details ================>", zap.Reflect("VolumeDetail", volumeobj1))
@@ -461,18 +459,18 @@ func main() {
 			zoneName := ""
 			resourceGroupID := ""
 			fmt.Printf("Please enter ZONE Name to filter volumes(Optional): ")
-			_, er11 = fmt.Scanf("%s", &zoneName)
+			_, _ = fmt.Scanf("%s", &zoneName)
 			if zoneName != "" {
 				tags["zone.name"] = zoneName
 			}
 			fmt.Printf("Please enter volume Name to filter volumes(Optional): ")
-			_, er11 = fmt.Scanf("%s", &volName)
+			_, _ = fmt.Scanf("%s", &volName)
 			if volName != "" {
 				tags["name"] = volName
 			}
 
 			fmt.Printf("\nPlease enter resource group ID to filter volumes(Optional): ")
-			_, er11 = fmt.Scanf("%s", &resourceGroupID)
+			_, _ = fmt.Scanf("%s", &resourceGroupID)
 			if resourceGroupID != "" {
 				tags["resource_group.id"] = resourceGroupID
 			}
@@ -480,8 +478,8 @@ func main() {
 			start := ""
 			var limit int
 			fmt.Printf("Please enter max number of volume entries per page to be returned(Optional): ")
-			_, er11 = fmt.Scanf("%d", &limit)
-			for true {
+			_, _ = fmt.Scanf("%d", &limit)
+			for {
 				volumeobj1, er11 := sess.ListVolumes(limit, start, tags)
 				if er11 == nil {
 					ctxLogger.Info("Successfully got volumes list================>", zap.Reflect("VolumesList", *volumeobj1))

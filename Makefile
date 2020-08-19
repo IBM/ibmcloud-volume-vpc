@@ -30,6 +30,10 @@ lint:
 makefmt:
 	gofmt -l -w ${GOFILES}
 
+.PHONY: build
+build:
+	go build -gcflags '-N -l' -o libSample samples/main.go samples/attach_detach.go samples/volume_operations.go
+
 .PHONY: test
 test:
 	$(GOPATH)/bin/gotestcover -v -coverprofile=cover.out ${GOPACKAGES} -timeout 90m

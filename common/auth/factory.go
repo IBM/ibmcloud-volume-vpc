@@ -25,7 +25,6 @@ import (
 
 // NewVPCContextCredentialsFactory ...
 func NewVPCContextCredentialsFactory(bluemixConfig *config.BluemixConfig, vpcConfig *config.VPCProviderConfig) (*auth.ContextCredentialsFactory, error) {
-
 	ccf, err := auth.NewContextCredentialsFactory(bluemixConfig, nil, vpcConfig)
 	if bluemixConfig.PrivateAPIRoute != "" {
 		ccf.TokenExchangeService, err = vpciam.NewTokenExchangeIKSService(bluemixConfig)
@@ -34,5 +33,4 @@ func NewVPCContextCredentialsFactory(bluemixConfig *config.BluemixConfig, vpcCon
 		return nil, err
 	}
 	return ccf, nil
-
 }

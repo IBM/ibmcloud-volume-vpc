@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package main ...
 package main
 
 import (
@@ -47,8 +48,8 @@ func (vam *VolumeAttachmentManager) AttachVolume() {
 	vam.setupVolumeAttachmentRequest()
 	response, err := vam.Session.AttachVolume(volumeAttachmentReq)
 	if err != nil {
-		updateRequestID(err, vam.RequestID)
-		vam.Logger.Error("Failed to attach the volume", zap.Error(err))
+		err1 := updateRequestID(err, vam.RequestID)
+		vam.Logger.Error("Failed to attach the volume: ", zap.Error(err), zap.Error(err1))
 		return
 	}
 	volumeAttachmentReq.VPCVolumeAttachment = &provider.VolumeAttachment{
@@ -56,8 +57,8 @@ func (vam *VolumeAttachmentManager) AttachVolume() {
 	}
 	response, err = vam.Session.WaitForAttachVolume(volumeAttachmentReq)
 	if err != nil {
-		updateRequestID(err, vam.RequestID)
-		vam.Logger.Error("Failed to complete volume attach", zap.Error(err))
+		err1 := updateRequestID(err, vam.RequestID)
+		vam.Logger.Error("Failed to complete volume attach", zap.Error(err), zap.Error(err1))
 	}
 	fmt.Println("Volume attachment", response, err)
 }
@@ -67,14 +68,14 @@ func (vam *VolumeAttachmentManager) DetachVolume() {
 	vam.setupVolumeAttachmentRequest()
 	response, err := vam.Session.DetachVolume(volumeAttachmentReq)
 	if err != nil {
-		updateRequestID(err, vam.RequestID)
-		vam.Logger.Error("Failed to detach the volume", zap.Error(err))
+		err1 := updateRequestID(err, vam.RequestID)
+		vam.Logger.Error("Failed to detach the volume", zap.Error(err), zap.Error(err1))
 		return
 	}
 	err = vam.Session.WaitForDetachVolume(volumeAttachmentReq)
 	if err != nil {
-		updateRequestID(err, vam.RequestID)
-		vam.Logger.Error("Failed to complete volume detach", zap.Error(err))
+		err1 := updateRequestID(err, vam.RequestID)
+		vam.Logger.Error("Failed to complete volume detach", zap.Error(err), zap.Error(err1))
 	}
 	fmt.Println("Volume attachment", response, err)
 }
@@ -96,5 +97,4 @@ func (vam *VolumeAttachmentManager) setupVolumeAttachmentRequest() {
 			ClusterID: clusterID,
 		},
 	}
-
 }

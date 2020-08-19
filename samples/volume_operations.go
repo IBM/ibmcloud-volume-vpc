@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package main ...
 package main
 
 import (
@@ -53,8 +54,8 @@ func (vam *VolumeManager) UpdateVolume() {
 	vam.setupVolumeRequest()
 	err := vam.Session.UpdateVolume(volumeReq)
 	if err != nil {
-		updateRequestID(err, vam.RequestID)
-		vam.Logger.Error("Failed to update the volume", zap.Error(err))
+		err1 := updateRequestID(err, vam.RequestID)
+		vam.Logger.Error("Failed to update the volume", zap.Error(err), zap.Error(err1))
 		return
 	}
 	fmt.Println("Volume update", err)
@@ -80,5 +81,4 @@ func (vam *VolumeManager) setupVolumeRequest() {
 	volumeReq.Tags = []string{"clusterid:" + *clusterID, "reclaimpolicy:Delete"}
 	volumeReq.VPCVolume.Profile = &provider.Profile{Name: "general-purpose"}
 	volumeReq.CRN = *volumeCRN
-
 }
