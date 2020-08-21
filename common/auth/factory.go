@@ -31,7 +31,7 @@ func NewVPCContextCredentialsFactory(config *vpcconfig.VPCBlockConfig) (*auth.Co
 		IamClientID:     config.IamClientID,
 		IamClientSecret: config.IamClientSecret,
 	}
-	ccf, err := auth.NewContextCredentialsFactory(authConfig, nil, config.VPCConfig)
+	ccf, err := auth.NewContextCredentialsFactory(authConfig)
 	if config.VPCConfig.IKSTokenExchangePrivateURL != "" {
 		authIKSConfig := &vpciam.IksAuthConfiguration{
 			IamAPIKey:       config.VPCConfig.APIKey,
