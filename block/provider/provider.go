@@ -32,6 +32,7 @@ import (
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
+	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	vpcauth "github.com/IBM/ibmcloud-volume-vpc/common/auth"
 	"github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
@@ -57,8 +58,7 @@ const (
 // VPCBlockProvider implements provider.Provider
 type VPCBlockProvider struct {
 	timeout        time.Duration
-	serverConfig   *config.ServerConfig
-	config         *config.VPCProviderConfig
+	Config         *vpcconfig.VPCBlockConfig
 	tokenGenerator *tokenGenerator
 	ContextCF      local.ContextCredentialsFactory
 
@@ -70,93 +70,65 @@ type VPCBlockProvider struct {
 var _ local.Provider = &VPCBlockProvider{}
 
 // NewProvider initialises an instance of an IaaS provider.
-func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error) {
+func NewProvider(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) (local.Provider, error) {
 	logger.Info("Entering NewProvider")
 
-	if conf.Bluemix == nil || conf.VPC == nil {
+	if conf.VPCConfig == nil {
 		return nil, errors.New("incomplete config for VPCBlockProvider")
 	}
 
 	//Do config validation and enable only one generationType (i.e VPC-Classic | VPC-NG)
-	gcConfigFound := (conf.VPC.EndpointURL != "" || conf.VPC.PrivateEndpointURL != "") && (conf.VPC.TokenExchangeURL != "" || conf.VPC.IKSTokenExchangePrivateURL != "") && (conf.VPC.APIKey != "") && (conf.VPC.ResourceGroupID != "")
-	g2ConfigFound := (conf.VPC.G2EndpointPrivateURL != "" || conf.VPC.G2EndpointURL != "") && (conf.VPC.IKSTokenExchangePrivateURL != "" || conf.VPC.G2TokenExchangeURL != "") && (conf.VPC.G2APIKey != "") && (conf.VPC.G2ResourceGroupID != "")
+	gcConfigFound := (conf.VPCConfig.EndpointURL != "" || conf.VPCConfig.PrivateEndpointURL != "") && (conf.VPCConfig.TokenExchangeURL != "" || conf.VPCConfig.IKSTokenExchangePrivateURL != "") && (conf.VPCConfig.APIKey != "") && (conf.VPCConfig.ResourceGroupID != "")
+	g2ConfigFound := (conf.VPCConfig.G2EndpointPrivateURL != "" || conf.VPCConfig.G2EndpointURL != "") && (conf.VPCConfig.IKSTokenExchangePrivateURL != "" || conf.VPCConfig.G2TokenExchangeURL != "") && (conf.VPCConfig.G2APIKey != "") && (conf.VPCConfig.G2ResourceGroupID != "")
 	//if both config found, look for VPCTypeEnabled, otherwise default to GC
 	//Incase of NG configurations, override the base properties.
-	if (gcConfigFound && g2ConfigFound && conf.VPC.VPCTypeEnabled == VPCNextGen) || (!gcConfigFound && g2ConfigFound) {
+	if (gcConfigFound && g2ConfigFound && conf.VPCConfig.VPCTypeEnabled == VPCNextGen) || (!gcConfigFound && g2ConfigFound) {
 		// overwrite the common variable in case of g2 i.e gen2, first preferences would be private endpoint
-		if conf.VPC.G2EndpointPrivateURL != "" {
-			conf.VPC.EndpointURL = conf.VPC.G2EndpointPrivateURL
+		if conf.VPCConfig.G2EndpointPrivateURL != "" {
+			conf.VPCConfig.EndpointURL = conf.VPCConfig.G2EndpointPrivateURL
 		} else {
-			conf.VPC.EndpointURL = conf.VPC.G2EndpointURL
+			conf.VPCConfig.EndpointURL = conf.VPCConfig.G2EndpointURL
 		}
 
 		// update iam based public toke exchange endpoint
-		conf.VPC.TokenExchangeURL = conf.VPC.G2TokenExchangeURL
+		conf.VPCConfig.TokenExchangeURL = conf.VPCConfig.G2TokenExchangeURL
 
-		conf.VPC.APIKey = conf.VPC.G2APIKey
-		conf.VPC.ResourceGroupID = conf.VPC.G2ResourceGroupID
+		conf.VPCConfig.APIKey = conf.VPCConfig.G2APIKey
+		conf.VPCConfig.ResourceGroupID = conf.VPCConfig.G2ResourceGroupID
 
 		//Set API Generation As 2 (if unspecified in config/ENV-VAR)
-		if conf.VPC.G2VPCAPIGeneration <= 0 {
-			conf.VPC.G2VPCAPIGeneration = NEXTGenProvider
+		if conf.VPCConfig.G2VPCAPIGeneration <= 0 {
+			conf.VPCConfig.G2VPCAPIGeneration = NEXTGenProvider
 		}
-		conf.VPC.VPCAPIGeneration = conf.VPC.G2VPCAPIGeneration
+		conf.VPCConfig.VPCAPIGeneration = conf.VPCConfig.G2VPCAPIGeneration
 
 		//Set the APIVersion Date, it can be different in GC and NG
-		if conf.VPC.G2APIVersion != "" {
-			conf.VPC.APIVersion = conf.VPC.G2APIVersion
+		if conf.VPCConfig.G2APIVersion != "" {
+			conf.VPCConfig.APIVersion = conf.VPCConfig.G2APIVersion
 		}
 
 		//set provider-type (this usually comes from the secret)
-		if conf.VPC.VPCBlockProviderType != VPCNextGen {
-			conf.VPC.VPCBlockProviderType = VPCNextGen
+		if conf.VPCConfig.VPCBlockProviderType != VPCNextGen {
+			conf.VPCConfig.VPCBlockProviderType = VPCNextGen
 		}
 
 		//Mark this as enabled/active
-		if conf.VPC.VPCTypeEnabled != VPCNextGen {
-			conf.VPC.VPCTypeEnabled = VPCNextGen
+		if conf.VPCConfig.VPCTypeEnabled != VPCNextGen {
+			conf.VPCConfig.VPCTypeEnabled = VPCNextGen
 		}
 	} else { //This is GC, no-override required
-		conf.VPC.VPCBlockProviderType = VPCClassic //incase of gc, i dont see its being set in slclient.toml, but NG cluster has this
+		conf.VPCConfig.VPCBlockProviderType = VPCClassic //incase of gc, i dont see its being set in slclient.toml, but NG cluster has this
 		// For backward compatibility as some of the cluster storage secret may not have private gc endpoint url
-		if conf.VPC.PrivateEndpointURL != "" {
-			conf.VPC.EndpointURL = conf.VPC.PrivateEndpointURL
+		if conf.VPCConfig.PrivateEndpointURL != "" {
+			conf.VPCConfig.EndpointURL = conf.VPCConfig.PrivateEndpointURL
 		}
 	}
 
-	isIKSTokenURL := true
-	// Setting token exchange URL, considering backward compatibility specially for gc clusters
-	// also considered user's configuration whatever provided but preferences would be private endpoint first
-	if conf.VPC.IKSTokenExchangePrivateURL != "" { // IKS private endpoint
-		conf.VPC.TokenExchangeURL = conf.VPC.IKSTokenExchangePrivateURL
-	} else if conf.VPC.TokenExchangeURL != "" { // public IAM URL, which is set at the time of configuration reading
-		isIKSTokenURL = false
-	} else if conf.Bluemix.PrivateAPIRoute != "" { // needed for private cluster in case of IKSTokenExchangePrivateURL is not set
-		conf.VPC.TokenExchangeURL = conf.Bluemix.PrivateAPIRoute
-	} else {
-		conf.VPC.TokenExchangeURL = conf.Bluemix.IamURL // public endpoint IAM api endpoint
-		isIKSTokenURL = false
-	}
-
-	// VPC provider use different APIkey and Auth Endpoint
-	authConfig := &config.BluemixConfig{
-		IamURL:          conf.VPC.TokenExchangeURL,
-		IamAPIKey:       conf.VPC.APIKey,
-		IamClientID:     conf.Bluemix.IamClientID,
-		IamClientSecret: conf.Bluemix.IamClientSecret,
-	}
-
-	// Set the property to call the IKS endpoint
-	if isIKSTokenURL {
-		authConfig.PrivateAPIRoute = conf.VPC.TokenExchangeURL
-		authConfig.CSRFToken = conf.Bluemix.CSRFToken // required for IKS endpoint to get IAM token
-	}
-
-	contextCF, err := vpcauth.NewVPCContextCredentialsFactory(authConfig, conf.VPC)
+	contextCF, err := vpcauth.NewVPCContextCredentialsFactory(conf)
 	if err != nil {
 		return nil, err
 	}
-	timeoutString := conf.VPC.VPCTimeout
+	timeoutString := conf.VPCConfig.VPCTimeout
 	if timeoutString == "" || timeoutString == "0s" {
 		logger.Info("Using VPC default timeout")
 		timeoutString = "120s"
@@ -173,24 +145,23 @@ func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error
 	}
 
 	// SetRetryParameters sets the retry logic parameters
-	SetRetryParameters(conf.VPC.MaxRetryAttempt, conf.VPC.MaxRetryGap)
+	SetRetryParameters(conf.VPCConfig.MaxRetryAttempt, conf.VPCConfig.MaxRetryGap)
 	provider := &VPCBlockProvider{
 		timeout:        timeout,
-		serverConfig:   conf.Server,
-		config:         conf.VPC,
-		tokenGenerator: &tokenGenerator{config: conf.VPC},
+		Config:         conf,
+		tokenGenerator: &tokenGenerator{config: conf.VPCConfig},
 		ContextCF:      contextCF,
 		httpClient:     httpClient,
 		APIConfig: riaas.Config{
-			BaseURL:       conf.VPC.EndpointURL,
+			BaseURL:       conf.VPCConfig.EndpointURL,
 			HTTPClient:    httpClient,
-			APIVersion:    conf.VPC.APIVersion,
-			APIGeneration: conf.VPC.VPCAPIGeneration,
-			ResourceGroup: conf.VPC.ResourceGroupID,
+			APIVersion:    conf.VPCConfig.APIVersion,
+			APIGeneration: conf.VPCConfig.VPCAPIGeneration,
+			ResourceGroup: conf.VPCConfig.ResourceGroupID,
 		},
 	}
 	// Update VPC config for IKS deployment
-	provider.config.IsIKS = conf.IKS != nil && conf.IKS.Enabled
+	provider.Config.VPCConfig.IsIKS = conf.IKSConfig != nil && conf.IKSConfig.Enabled
 	userError.MessagesEn = messages.InitMessages()
 	return provider, nil
 }
@@ -214,7 +185,7 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 		return nil, util.NewError("Error Insufficient Authentication", "No authentication credential provided")
 	}
 
-	if vpcp.serverConfig.DebugTrace {
+	if vpcp.Config.ServerConfig.DebugTrace {
 		vpcp.APIConfig.DebugWriter = os.Stdout
 	}
 
@@ -246,18 +217,18 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 	}
 
 	// Update retry logic default values
-	if vpcp.config.MaxRetryAttempt > 0 {
-		ctxLogger.Debug("", zap.Reflect("MaxRetryAttempt", vpcp.config.MaxRetryAttempt))
-		maxRetryAttempt = vpcp.config.MaxRetryAttempt
+	if vpcp.Config.VPCConfig.MaxRetryAttempt > 0 {
+		ctxLogger.Debug("", zap.Reflect("MaxRetryAttempt", vpcp.Config.VPCConfig.MaxRetryAttempt))
+		maxRetryAttempt = vpcp.Config.VPCConfig.MaxRetryAttempt
 	}
-	if vpcp.config.MaxRetryGap > 0 {
-		ctxLogger.Debug("", zap.Reflect("MaxRetryGap", vpcp.config.MaxRetryGap))
-		maxRetryGap = vpcp.config.MaxRetryGap
+	if vpcp.Config.VPCConfig.MaxRetryGap > 0 {
+		ctxLogger.Debug("", zap.Reflect("MaxRetryGap", vpcp.Config.VPCConfig.MaxRetryGap))
+		maxRetryGap = vpcp.Config.VPCConfig.MaxRetryGap
 	}
 
 	vpcSession := &VPCSession{
 		VPCAccountID:          contextCredentials.IAMAccountID,
-		Config:                vpcp.config,
+		Config:                vpcp.Config,
 		ContextCredentials:    contextCredentials,
 		VolumeType:            "vpc-block",
 		Provider:              VPC,

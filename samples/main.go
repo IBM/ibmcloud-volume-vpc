@@ -32,6 +32,7 @@ import (
 	userError "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	provider_util "github.com/IBM/ibmcloud-volume-vpc/block/utils"
+	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	uid "github.com/satori/go.uuid"
 )
 
@@ -91,8 +92,16 @@ func main() {
 		traceLevel.SetLevel(zap.DebugLevel)
 	}
 
+	vpcBlockConfig := &vpcconfig.VPCBlockConfig{
+		VPCConfig:       conf.VPC,
+		IKSConfig:       conf.IKS,
+		APIConfig:       conf.API,
+		ServerConfig:    conf.Server,
+		IamClientID:     conf.Bluemix.IamClientID,
+		IamClientSecret: conf.Bluemix.IamClientSecret,
+	}
 	// Prepare provider registry
-	providerRegistry, err := provider_util.InitProviders(conf, logger)
+	providerRegistry, err := provider_util.InitProviders(vpcBlockConfig, logger)
 	if err != nil {
 		logger.Fatal("Error configuring providers", local.ZapError(err))
 	}
@@ -129,7 +138,7 @@ func main() {
 		requestID := uid.NewV4().String()
 		ctxLogger = ctxLogger.With(zap.String("RequestID", requestID))
 		ctx := context.WithValue(context.TODO(), provider.RequestID, requestID)
-		sess, _, err := provider_util.OpenProviderSessionWithContext(ctx, conf, providerRegistry, providerName, ctxLogger)
+		sess, _, err := provider_util.OpenProviderSessionWithContext(ctx, vpcBlockConfig, providerRegistry, providerName, ctxLogger)
 		if err != nil {
 			ctxLogger.Error("Failed to get session", zap.Reflect("Error", err))
 			continue

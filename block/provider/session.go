@@ -18,8 +18,8 @@
 package provider
 
 import (
-	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
+	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/instances"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
 	"go.uber.org/zap"
@@ -28,7 +28,7 @@ import (
 // VPCSession implements lib.Session
 type VPCSession struct {
 	VPCAccountID          string
-	Config                *config.VPCProviderConfig
+	Config                *vpcconfig.VPCBlockConfig
 	ContextCredentials    provider.ContextCredentials
 	VolumeType            provider.VolumeType
 	Provider              provider.VolumeProvider
