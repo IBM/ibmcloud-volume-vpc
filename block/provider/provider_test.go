@@ -30,6 +30,7 @@ import (
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
+	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/fakes"
 	volumeServiceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
@@ -94,9 +95,9 @@ func TestNewProvider(t *testing.T) {
 	defer teardown()
 
 	// gc public endpoint test
-	conf := &config.Config{
-		Bluemix: &config.BluemixConfig{},
-		VPC: &config.VPCProviderConfig{
+	conf := &vpcconfig.VPCBlockConfig{
+
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:          true,
 			EndpointURL:      TestEndpointURL,
 			TokenExchangeURL: IamURL,
@@ -109,13 +110,15 @@ func TestNewProvider(t *testing.T) {
 	assert.Nil(t, err)
 
 	// GC private endpoint related test
-	conf = &config.Config{
-		Bluemix: &config.BluemixConfig{
-			IamClientID:     IamClientID,
-			IamClientSecret: IamClientSecret,
-			CSRFToken:       CsrfToken,
+	conf = &vpcconfig.VPCBlockConfig{
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
+
+		APIConfig: &config.APIConfig{
+			PassthroughSecret: CsrfToken,
 		},
-		VPC: &config.VPCProviderConfig{
+
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:                    true,
 			PrivateEndpointURL:         PrivateRIaaSEndpoint,
 			IKSTokenExchangePrivateURL: PrivateContainerAPIURL,
@@ -128,17 +131,18 @@ func TestNewProvider(t *testing.T) {
 	assert.Nil(t, err)
 
 	// gc mix test
-	conf = &config.Config{
-		Bluemix: &config.BluemixConfig{
-			PrivateAPIRoute: IamURL,
-			IamClientID:     IamClientID,
-			IamClientSecret: IamClientSecret,
-			CSRFToken:       CsrfToken,
+	conf = &vpcconfig.VPCBlockConfig{
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
+
+		APIConfig: &config.APIConfig{
+			PassthroughSecret: CsrfToken,
 		},
-		VPC: &config.VPCProviderConfig{
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:            true,
 			PrivateEndpointURL: PrivateRIaaSEndpoint,
 			APIKey:             IamClientSecret,
+			G2TokenExchangeURL: IamURL,
 		},
 	}
 
@@ -147,9 +151,8 @@ func TestNewProvider(t *testing.T) {
 	assert.Nil(t, err)
 
 	// gen2 public endpoint related test
-	conf = &config.Config{
-		Bluemix: &config.BluemixConfig{},
-		VPC: &config.VPCProviderConfig{
+	conf = &vpcconfig.VPCBlockConfig{
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:            true,
 			G2EndpointURL:      TestEndpointURL,
 			G2TokenExchangeURL: IamURL,
@@ -162,17 +165,20 @@ func TestNewProvider(t *testing.T) {
 	assert.Nil(t, err)
 
 	// gen2 private endpoint related test
-	conf = &config.Config{
-		Bluemix: &config.BluemixConfig{
-			IamClientID:     IamClientID,
-			IamClientSecret: IamClientSecret,
-			CSRFToken:       CsrfToken,
+	conf = &vpcconfig.VPCBlockConfig{
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
+
+		APIConfig: &config.APIConfig{
+			PassthroughSecret: CsrfToken,
 		},
-		VPC: &config.VPCProviderConfig{
+
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:                    true,
 			G2EndpointPrivateURL:       PrivateRIaaSEndpoint,
 			IKSTokenExchangePrivateURL: PrivateContainerAPIURL,
 			G2APIKey:                   IamClientSecret,
+			G2TokenExchangeURL:         IamURL,
 		},
 	}
 
@@ -181,17 +187,20 @@ func TestNewProvider(t *testing.T) {
 	assert.Nil(t, err)
 
 	// gen2 mix test
-	conf = &config.Config{
-		Bluemix: &config.BluemixConfig{
-			PrivateAPIRoute: IamURL,
-			IamClientID:     IamClientID,
-			IamClientSecret: IamClientSecret,
-			CSRFToken:       CsrfToken,
+	conf = &vpcconfig.VPCBlockConfig{
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
+
+		APIConfig: &config.APIConfig{
+			PassthroughSecret: CsrfToken,
 		},
-		VPC: &config.VPCProviderConfig{
-			Enabled:              true,
-			G2EndpointPrivateURL: PrivateRIaaSEndpoint,
-			G2APIKey:             IamClientSecret,
+
+		VPCConfig: &config.VPCProviderConfig{
+			Enabled:                    true,
+			G2EndpointPrivateURL:       PrivateRIaaSEndpoint,
+			IKSTokenExchangePrivateURL: PrivateContainerAPIURL,
+			G2APIKey:                   IamClientSecret,
+			G2TokenExchangeURL:         IamURL,
 		},
 	}
 
@@ -212,24 +221,27 @@ func GetTestProvider(t *testing.T, logger *zap.Logger) (*VPCBlockProvider, error
 	SetRetryParameters(2, 5)
 
 	logger.Info("Getting New test Provider")
-	conf := &config.Config{
-		Server: &config.ServerConfig{
+	conf := &vpcconfig.VPCBlockConfig{
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
+
+		APIConfig: &config.APIConfig{
+			PassthroughSecret: CsrfToken,
+		},
+		ServerConfig: &config.ServerConfig{
 			DebugTrace: true,
 		},
-		Bluemix: &config.BluemixConfig{
-			IamURL:          IamURL,
-			IamClientID:     IamClientID,
-			IamClientSecret: IamClientSecret,
-			IamAPIKey:       IamClientSecret,
-			RefreshToken:    RefreshToken,
-		},
-		VPC: &config.VPCProviderConfig{
-			Enabled:         true,
-			EndpointURL:     TestEndpointURL,
-			VPCTimeout:      "30s",
-			MaxRetryAttempt: 5,
-			MaxRetryGap:     10,
-			APIVersion:      TestAPIVersion,
+		VPCConfig: &config.VPCProviderConfig{
+			Enabled:                    true,
+			EndpointURL:                TestEndpointURL,
+			VPCTimeout:                 "30s",
+			MaxRetryAttempt:            5,
+			MaxRetryGap:                10,
+			APIVersion:                 TestAPIVersion,
+			G2EndpointPrivateURL:       PrivateRIaaSEndpoint,
+			IKSTokenExchangePrivateURL: PrivateContainerAPIURL,
+			G2APIKey:                   IamClientSecret,
+			G2TokenExchangeURL:         IamURL,
 		},
 	}
 
@@ -237,7 +249,7 @@ func GetTestProvider(t *testing.T, logger *zap.Logger) (*VPCBlockProvider, error
 	assert.NotNil(t, p)
 	assert.Nil(t, err)
 
-	timeout, _ := time.ParseDuration(conf.VPC.VPCTimeout)
+	timeout, _ := time.ParseDuration(conf.VPCConfig.VPCTimeout)
 
 	// Inject a fake RIAAS API client
 	cp = &fakes.RegionalAPIClientProvider{}
@@ -258,9 +270,8 @@ func GetTestProvider(t *testing.T, logger *zap.Logger) (*VPCBlockProvider, error
 
 	provider := &VPCBlockProvider{
 		timeout:        timeout,
-		serverConfig:   conf.Server,
-		config:         conf.VPC,
-		tokenGenerator: &tokenGenerator{config: conf.VPC},
+		Config:         conf,
+		tokenGenerator: &tokenGenerator{config: conf.VPCConfig},
 		httpClient:     httpClient,
 	}
 	assert.NotNil(t, provider)
@@ -336,7 +347,7 @@ func GetTestOpenSession(t *testing.T, logger *zap.Logger) (sessn *VPCSession, uc
 
 	sessn = &VPCSession{
 		VPCAccountID: TestIKSAccountID,
-		Config:       vpcp.config,
+		Config:       vpcp.Config,
 		ContextCredentials: provider.ContextCredentials{
 			AuthType:     provider.IAMAccessToken,
 			Credential:   TestProviderAccessToken,

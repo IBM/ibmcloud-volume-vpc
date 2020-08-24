@@ -14,30 +14,20 @@
  * limitations under the License.
  */
 
-// Package auth ...
-package auth
+// Package utils ...
+package utils
 
 import (
-	"testing"
-
 	"github.com/IBM/ibmcloud-volume-interface/config"
-	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestNewContextCredentialsFactory(t *testing.T) {
-	conf := &vpcconfig.VPCBlockConfig{
-		VPCConfig: &config.VPCProviderConfig{
-			Enabled:     true,
-			EndpointURL: "test-iam-url",
-			VPCTimeout:  "30s",
-		},
-		IamClientID:     "test-iam_client_id",
-		IamClientSecret: "test-iam_client_secret",
-	}
+// VPCBlockConfig ...
+type VPCBlockConfig struct {
+	VPCConfig    *config.VPCProviderConfig
+	IKSConfig    *config.IKSConfig
+	APIConfig    *config.APIConfig
+	ServerConfig *config.ServerConfig
 
-	contextCredentials, err := NewVPCContextCredentialsFactory(conf)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, contextCredentials)
+	IamClientID     string `toml:"iam_client_id"`
+	IamClientSecret string `toml:"iam_client_secret" json:"-"`
 }

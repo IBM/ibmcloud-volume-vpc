@@ -18,16 +18,27 @@
 package auth
 
 import (
-	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
+	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
+	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	vpciam "github.com/IBM/ibmcloud-volume-vpc/common/iam"
 )
 
 // NewVPCContextCredentialsFactory ...
-func NewVPCContextCredentialsFactory(bluemixConfig *config.BluemixConfig, vpcConfig *config.VPCProviderConfig) (*auth.ContextCredentialsFactory, error) {
-	ccf, err := auth.NewContextCredentialsFactory(bluemixConfig, nil, vpcConfig)
-	if bluemixConfig.PrivateAPIRoute != "" {
-		ccf.TokenExchangeService, err = vpciam.NewTokenExchangeIKSService(bluemixConfig)
+func NewVPCContextCredentialsFactory(config *vpcconfig.VPCBlockConfig) (*auth.ContextCredentialsFactory, error) {
+	authConfig := &iam.AuthConfiguration{
+		IamURL:          config.VPCConfig.G2TokenExchangeURL,
+		IamClientID:     config.IamClientID,
+		IamClientSecret: config.IamClientSecret,
+	}
+	ccf, err := auth.NewContextCredentialsFactory(authConfig)
+	if config.VPCConfig.IKSTokenExchangePrivateURL != "" {
+		authIKSConfig := &vpciam.IksAuthConfiguration{
+			IamAPIKey:       config.VPCConfig.APIKey,
+			PrivateAPIRoute: config.VPCConfig.IKSTokenExchangePrivateURL, // Only for private cluster
+			CSRFToken:       config.APIConfig.PassthroughSecret,          // required for private cluster
+		}
+		ccf.TokenExchangeService, err = vpciam.NewTokenExchangeIKSService(authIKSConfig)
 	}
 	if err != nil {
 		return nil, err

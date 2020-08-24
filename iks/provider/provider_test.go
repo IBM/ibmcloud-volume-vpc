@@ -31,6 +31,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	vpcprovider "github.com/IBM/ibmcloud-volume-vpc/block/provider"
+	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/fakes"
 	volumeServiceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
@@ -89,19 +90,17 @@ func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
 
 func TestNewProvider(t *testing.T) {
 	var err error
-	conf := &config.Config{
-		Server: &config.ServerConfig{
+	conf := &vpcconfig.VPCBlockConfig{
+		ServerConfig: &config.ServerConfig{
 			DebugTrace: true,
 		},
-		VPC: &config.VPCProviderConfig{
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:     true,
 			EndpointURL: TestEndpointURL,
 			VPCTimeout:  "30s",
 		},
-		Bluemix: &config.BluemixConfig{
-			IamAPIKey:      IamAPIKey,
-			APIEndpointURL: TestEndpointURL,
-		},
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
 	}
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
@@ -110,22 +109,17 @@ func TestNewProvider(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, prov)
 
-	conf = &config.Config{
-		Server: &config.ServerConfig{
+	conf = &vpcconfig.VPCBlockConfig{
+		ServerConfig: &config.ServerConfig{
 			DebugTrace: true,
 		},
-		Bluemix: &config.BluemixConfig{
-			IamURL:          IamURL,
-			IamClientID:     IamClientID,
-			IamClientSecret: IamClientSecret,
-			IamAPIKey:       IamClientSecret,
-			RefreshToken:    RefreshToken,
-		},
-		VPC: &config.VPCProviderConfig{
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:     true,
 			EndpointURL: TestEndpointURL,
 			VPCTimeout:  "",
 		},
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
 	}
 
 	prov, err = NewProvider(conf, logger)
@@ -133,23 +127,17 @@ func TestNewProvider(t *testing.T) {
 	assert.Nil(t, err)
 
 	// private endpoint related test
-	conf = &config.Config{
-		Server: &config.ServerConfig{
+	conf = &vpcconfig.VPCBlockConfig{
+		ServerConfig: &config.ServerConfig{
 			DebugTrace: true,
 		},
-		Bluemix: &config.BluemixConfig{
-			IamURL:          IamURL,
-			IamClientID:     IamClientID,
-			IamClientSecret: IamClientSecret,
-			IamAPIKey:       IamClientSecret,
-			RefreshToken:    RefreshToken,
-			PrivateAPIRoute: PrivateContainerAPIURL,
-		},
-		VPC: &config.VPCProviderConfig{
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:     true,
 			EndpointURL: TestEndpointURL,
 			VPCTimeout:  "",
 		},
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
 	}
 
 	prov, err = NewProvider(conf, logger)
@@ -169,18 +157,11 @@ func GetTestProvider(t *testing.T, logger *zap.Logger) (local.Provider, error) {
 	//SetRetryParameters(2, 5)
 
 	logger.Info("Getting New test Provider")
-	conf := &config.Config{
-		Server: &config.ServerConfig{
+	conf := &vpcconfig.VPCBlockConfig{
+		ServerConfig: &config.ServerConfig{
 			DebugTrace: true,
 		},
-		Bluemix: &config.BluemixConfig{
-			IamURL:          IamURL,
-			IamClientID:     IamClientID,
-			IamClientSecret: IamClientSecret,
-			IamAPIKey:       IamClientSecret,
-			RefreshToken:    RefreshToken,
-		},
-		VPC: &config.VPCProviderConfig{
+		VPCConfig: &config.VPCProviderConfig{
 			Enabled:         true,
 			EndpointURL:     TestEndpointURL,
 			VPCTimeout:      "30s",
@@ -188,13 +169,15 @@ func GetTestProvider(t *testing.T, logger *zap.Logger) (local.Provider, error) {
 			MaxRetryGap:     10,
 			APIVersion:      TestAPIVersion,
 		},
+		IamClientID:     IamClientID,
+		IamClientSecret: IamClientSecret,
 	}
 
 	p, err := NewProvider(conf, logger)
 	assert.NotNil(t, p)
 	assert.Nil(t, err)
 
-	timeout, _ := time.ParseDuration(conf.VPC.VPCTimeout)
+	timeout, _ := time.ParseDuration(conf.VPCConfig.VPCTimeout)
 
 	// Inject a fake RIAAS API client
 	cp = &fakes.RegionalAPIClientProvider{}
@@ -239,16 +222,16 @@ func TestOpenSession(t *testing.T) {
 
 	vpcp, err := GetTestProvider(t, logger)
 	assert.Nil(t, err)
+	// sessn, err := vpcp.OpenSession(context.Background(), provider.ContextCredentials{
+	// 	AuthType:     provider.IAMAccessToken,
+	// 	Credential:   TestProviderAccessToken,
+	// 	IAMAccountID: TestIKSAccountID,
+	// }, logger)
+
+	// require.NoError(t, err)
+	// assert.NotNil(t, sessn)
+
 	sessn, err := vpcp.OpenSession(context.Background(), provider.ContextCredentials{
-		AuthType:     provider.IAMAccessToken,
-		Credential:   TestProviderAccessToken,
-		IAMAccountID: TestIKSAccountID,
-	}, logger)
-
-	require.NoError(t, err)
-	assert.NotNil(t, sessn)
-
-	sessn, err = vpcp.OpenSession(context.Background(), provider.ContextCredentials{
 		AuthType:     provider.IAMAccessToken,
 		IAMAccountID: TestIKSAccountID,
 	}, logger)

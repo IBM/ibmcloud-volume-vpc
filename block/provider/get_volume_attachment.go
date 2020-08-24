@@ -64,7 +64,7 @@ func (vpcs *VPCSession) getVolumeAttachmentByID(volumeAttachmentRequest models.V
 		volumeAttachmentResult, err = vpcs.APIClientVolAttachMgr.GetVolumeAttachment(&volumeAttachmentRequest, vpcs.Logger)
 		// Keep retry, until we get the proper volumeAttachmentRequest object
 		if err != nil {
-			return err, skipRetryForAttach(err, vpcs.Config.IsIKS)
+			return err, skipRetryForAttach(err, vpcs.Config.VPCConfig.IsIKS)
 		}
 		return err, true // stop retry as no error
 	})
@@ -75,7 +75,7 @@ func (vpcs *VPCSession) getVolumeAttachmentByID(volumeAttachmentRequest models.V
 		return nil, userErr
 	}
 
-	volumeAttachmentResponse := volumeAttachmentResult.ToVolumeAttachmentResponse(vpcs.Config.VPCBlockProviderType)
+	volumeAttachmentResponse := volumeAttachmentResult.ToVolumeAttachmentResponse(vpcs.Config.VPCConfig.VPCBlockProviderType)
 	vpcs.Logger.Info("Successfully retrieved volume attachment", zap.Reflect("volumeAttachmentResponse", volumeAttachmentResponse))
 	return volumeAttachmentResponse, err
 }
@@ -90,7 +90,7 @@ func (vpcs *VPCSession) getVolumeAttachmentByVolumeID(volumeAttachmentRequest mo
 		volumeAttachmentList, err = vpcs.APIClientVolAttachMgr.ListVolumeAttachments(&volumeAttachmentRequest, vpcs.Logger)
 		// Keep retry, until we get the proper volumeAttachmentRequest object
 		if err != nil {
-			return err, skipRetryForAttach(err, vpcs.Config.IsIKS)
+			return err, skipRetryForAttach(err, vpcs.Config.VPCConfig.IsIKS)
 		}
 		return err, true // stop retry as no error
 	})
@@ -105,7 +105,7 @@ func (vpcs *VPCSession) getVolumeAttachmentByVolumeID(volumeAttachmentRequest mo
 		// Check if volume ID is matching with requested volume ID
 		if volumeAttachmentItem.Volume.ID == volumeAttachmentRequest.Volume.ID {
 			vpcs.Logger.Info("Successfully found volume attachment", zap.Reflect("volumeAttachment", volumeAttachmentItem))
-			volumeResponse := volumeAttachmentItem.ToVolumeAttachmentResponse(vpcs.Config.VPCBlockProviderType)
+			volumeResponse := volumeAttachmentItem.ToVolumeAttachmentResponse(vpcs.Config.VPCConfig.VPCBlockProviderType)
 			vpcs.Logger.Info("Successfully fetched volume attachment from VPC provider", zap.Reflect("volumeResponse", volumeResponse))
 			return volumeResponse, nil
 		}

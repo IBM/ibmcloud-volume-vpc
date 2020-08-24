@@ -28,7 +28,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/IBM/ibmcloud-volume-interface/config"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/lib/utils/reasoncode"
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
@@ -68,11 +67,11 @@ func Test_IKSExchangeRefreshTokenForAccessToken_Success(t *testing.T) {
 		},
 	)
 
-	bluemixConf := config.BluemixConfig{
+	iksAuthConfig := &IksAuthConfiguration{
 		PrivateAPIRoute: server.URL,
 	}
 
-	tes, err := NewTokenExchangeIKSService(&bluemixConf)
+	tes, err := NewTokenExchangeIKSService(iksAuthConfig)
 	assert.NoError(t, err)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("testrefreshtoken", logger)
@@ -106,11 +105,11 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedDuringRequest(t *testing.T
 		},
 	)
 
-	bluemixConf := config.BluemixConfig{
+	iksAuthConfig := &IksAuthConfiguration{
 		PrivateAPIRoute: server.URL,
 	}
 
-	tes, err := NewTokenExchangeIKSService(&bluemixConf)
+	tes, err := NewTokenExchangeIKSService(iksAuthConfig)
 	assert.NoError(t, err)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("badrefreshtoken", logger)
@@ -135,11 +134,11 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedDuringRequest_no_message(t
 		},
 	)
 
-	bluemixConf := config.BluemixConfig{
+	iksAuthConfig := &IksAuthConfiguration{
 		PrivateAPIRoute: server.URL,
 	}
 
-	tes, err := NewTokenExchangeIKSService(&bluemixConf)
+	tes, err := NewTokenExchangeIKSService(iksAuthConfig)
 	assert.NoError(t, err)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("badrefreshtoken", logger)
@@ -165,11 +164,11 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedWrongApiUrl(t *testing.T) 
 		},
 	)
 
-	bluemixConf := config.BluemixConfig{
+	iksAuthConfig := &IksAuthConfiguration{
 		PrivateAPIRoute: "wrongProtocolURL",
 	}
 
-	tes, err := NewTokenExchangeIKSService(&bluemixConf)
+	tes, err := NewTokenExchangeIKSService(iksAuthConfig)
 	assert.NoError(t, err)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("testrefreshtoken", logger)
@@ -178,7 +177,7 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedWrongApiUrl(t *testing.T) 
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "IAM token exchange request failed", err.Error())
 		assert.Equal(t, reasoncode.ReasonCode("ErrorUnclassified"), util.ErrorReasonCode(err))
-		assert.Equal(t, []string{"Post wrongProtocolURL/v1/iam/apikey: unsupported protocol scheme \"\""},
+		assert.Equal(t, []string{"Post \"wrongProtocolURL/v1/iam/apikey\": unsupported protocol scheme \"\""},
 			util.ErrorDeepUnwrapString(err))
 	}
 }
@@ -197,11 +196,11 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedRequesting_unclassified_er
 		},
 	)
 
-	bluemixConf := config.BluemixConfig{
-		PrivateAPIRoute: server.URL,
+	iksAuthConfig := &iam.AuthConfiguration{
+		//PrivateAPIRoute: server.URL,
 	}
 
-	tes, err := iam.NewTokenExchangeService(&bluemixConf)
+	tes, err := iam.NewTokenExchangeService(iksAuthConfig)
 	assert.NoError(t, err)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("badrefreshtoken", logger)
@@ -274,12 +273,11 @@ func Test_IKSExchangeIAMAPIKeyForAccessToken(t *testing.T) {
 			// ResourceController endpoint
 			mux.HandleFunc("/v1/iam/apikey", testCase.apiHandler)
 
-			bluemixConf := config.BluemixConfig{
-				//IamURL: server.URL,
+			iksAuthConfig := &IksAuthConfiguration{
 				PrivateAPIRoute: server.URL,
 			}
 
-			tes, err := NewTokenExchangeIKSService(&bluemixConf)
+			tes, err := NewTokenExchangeIKSService(iksAuthConfig)
 			assert.NoError(t, err)
 
 			r, actualError := tes.ExchangeIAMAPIKeyForAccessToken("apikey1", logger)

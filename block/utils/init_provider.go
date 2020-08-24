@@ -23,41 +23,41 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
 
-	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	vpc_provider "github.com/IBM/ibmcloud-volume-vpc/block/provider"
+	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	"github.com/IBM/ibmcloud-volume-vpc/common/registry"
 	iks_vpc_provider "github.com/IBM/ibmcloud-volume-vpc/iks/provider"
 )
 
 // InitProviders initialization for all providers as per configurations
-func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers, error) {
+func InitProviders(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) (registry.Providers, error) {
 	var haveProviders bool
 	providerRegistry := &registry.ProviderRegistry{}
 
 	// VPC provider registration
-	if conf.VPC != nil && conf.VPC.Enabled {
+	if conf.VPCConfig != nil && conf.VPCConfig.Enabled {
 		logger.Info("Configuring VPC Block Provider")
 		prov, err := vpc_provider.NewProvider(conf, logger)
 		if err != nil {
 			logger.Info("VPC block provider error!")
 			return nil, err
 		}
-		providerRegistry.Register(conf.VPC.VPCBlockProviderName, prov)
+		providerRegistry.Register(conf.VPCConfig.VPCBlockProviderName, prov)
 		haveProviders = true
 	}
 
 	// IKS provider registration
-	if conf.IKS != nil && conf.IKS.Enabled {
+	if conf.IKSConfig != nil && conf.IKSConfig.Enabled {
 		logger.Info("Configuring IKS-VPC Block Provider")
 		prov, err := iks_vpc_provider.NewProvider(conf, logger)
 		if err != nil {
 			logger.Info("VPC block provider error!")
 			return nil, err
 		}
-		providerRegistry.Register(conf.IKS.IKSBlockProviderName, prov)
+		providerRegistry.Register(conf.IKSConfig.IKSBlockProviderName, prov)
 		haveProviders = true
 	}
 
@@ -70,12 +70,12 @@ func InitProviders(conf *config.Config, logger *zap.Logger) (registry.Providers,
 }
 
 // OpenProviderSession ...
-func OpenProviderSession(conf *config.Config, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
+func OpenProviderSession(conf *vpcconfig.VPCBlockConfig, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
 	return OpenProviderSessionWithContext(context.TODO(), conf, providers, providerID, ctxLogger)
 }
 
 // OpenProviderSessionWithContext ...
-func OpenProviderSessionWithContext(ctx context.Context, conf *config.Config, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
+func OpenProviderSessionWithContext(ctx context.Context, conf *vpcconfig.VPCBlockConfig, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
 	prov, err := providers.Get(providerID)
 	if err != nil {
 		ctxLogger.Error("Not able to get the said provider, might be its not registered", local.ZapError(err))
@@ -102,16 +102,16 @@ func OpenProviderSessionWithContext(ctx context.Context, conf *config.Config, pr
 }
 
 // GenerateContextCredentials ...
-func GenerateContextCredentials(conf *config.Config, providerID string, contextCredentialsFactory local.ContextCredentialsFactory, ctxLogger *zap.Logger) (provider.ContextCredentials, error) {
+func GenerateContextCredentials(conf *vpcconfig.VPCBlockConfig, providerID string, contextCredentialsFactory local.ContextCredentialsFactory, ctxLogger *zap.Logger) (provider.ContextCredentials, error) {
 	ctxLogger.Info("Generating generateContextCredentials for ", zap.String("Provider ID", providerID))
 
 	// Select appropriate authentication strategy
 	switch {
-	case (conf.VPC != nil && providerID == conf.VPC.VPCBlockProviderName):
+	case (conf.VPCConfig != nil && providerID == conf.VPCConfig.VPCBlockProviderName):
 		ctxLogger.Info("Calling provider/init_provider.go ForIAMAccessToken")
-		return contextCredentialsFactory.ForIAMAccessToken(conf.VPC.APIKey, ctxLogger)
+		return contextCredentialsFactory.ForIAMAccessToken(conf.VPCConfig.APIKey, ctxLogger)
 
-	case (conf.IKS != nil && providerID == conf.IKS.IKSBlockProviderName):
+	case (conf.IKSConfig != nil && providerID == conf.IKSConfig.IKSBlockProviderName):
 		return provider.ContextCredentials{}, nil // Get credentials  in OpenSession method
 
 	default:

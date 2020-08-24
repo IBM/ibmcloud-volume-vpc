@@ -1,14 +1,6 @@
 [server]
   debug_trace = false
 
-[bluemix]
-  iam_url = "https://iam.stage1.bluemix.net"
-  iam_client_id = "bx"
-  iam_client_secret = "bx"
-  iam_api_key = ""
-  containers_api_route_private = "https://containers.test.cloud.ibm.com"
-  containers_api_csrf_token = ""
-
 [vpc]
   vpc_enabled = true
   g2_token_exchange_endpoint_url = "https://iam.stage1.bluemix.net"
@@ -30,3 +22,6 @@
 [IKS]
   iks_enabled = true
   iks_block_provider_name = "iks-vpc-classic"
+
+[API]
+  PassthroughSecret = ""

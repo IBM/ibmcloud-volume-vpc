@@ -32,22 +32,29 @@ import (
 
 // tokenExchangeIKSService ...
 type tokenExchangeIKSService struct {
-	bluemixConf *config.BluemixConfig
-	httpClient  *http.Client
+	iksAuthConfig *IksAuthConfiguration
+	httpClient    *http.Client
+}
+
+// IksAuthConfiguration ...
+type IksAuthConfiguration struct {
+	PrivateAPIRoute string
+	IamAPIKey       string
+	CSRFToken       string
 }
 
 // TokenExchangeService ...
 var _ iam.TokenExchangeService = &tokenExchangeIKSService{}
 
 // NewTokenExchangeIKSService ...
-func NewTokenExchangeIKSService(bluemixConf *config.BluemixConfig) (iam.TokenExchangeService, error) {
+func NewTokenExchangeIKSService(iksAuthConfig *IksAuthConfiguration) (iam.TokenExchangeService, error) {
 	httpClient, err := config.GeneralCAHttpClient()
 	if err != nil {
 		return nil, err
 	}
 	return &tokenExchangeIKSService{
-		bluemixConf: bluemixConf,
-		httpClient:  httpClient,
+		iksAuthConfig: iksAuthConfig,
+		httpClient:    httpClient,
 	}, nil
 }
 
@@ -85,7 +92,7 @@ func (tes *tokenExchangeIKSService) newTokenExchangeRequest(logger *zap.Logger) 
 	retyrInterval, _ := time.ParseDuration("3s")
 	return &tokenExchangeIKSRequest{
 		tes:          tes,
-		request:      rest.PostRequest(fmt.Sprintf("%s/v1/iam/apikey", tes.bluemixConf.PrivateAPIRoute)),
+		request:      rest.PostRequest(fmt.Sprintf("%s/v1/iam/apikey", tes.iksAuthConfig.PrivateAPIRoute)),
 		client:       client,
 		logger:       logger,
 		errorRetrier: util.NewErrorRetrier(40, retyrInterval, logger),
@@ -124,12 +131,12 @@ func (r *tokenExchangeIKSRequest) exchangeForAccessToken() (*iam.AccessToken, er
 func (r *tokenExchangeIKSRequest) sendTokenExchangeRequest() (*tokenExchangeIKSResponse, error) {
 	r.logger.Info("In tokenExchangeIKSRequest's sendTokenExchangeRequest()")
 	// Set headers
-	r.request = r.request.Add("X-CSRF-TOKEN", r.tes.bluemixConf.CSRFToken)
+	r.request = r.request.Add("X-CSRF-TOKEN", r.tes.iksAuthConfig.CSRFToken)
 	// Setting body
 	var apikey = struct {
 		APIKey string `json:"apikey"`
 	}{
-		APIKey: r.tes.bluemixConf.IamAPIKey,
+		APIKey: r.tes.iksAuthConfig.IamAPIKey,
 	}
 	r.request = r.request.Body(&apikey)
 

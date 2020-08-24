@@ -20,10 +20,10 @@ package provider
 import (
 	"context"
 
-	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	vpcprovider "github.com/IBM/ibmcloud-volume-vpc/block/provider"
+	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	vpcauth "github.com/IBM/ibmcloud-volume-vpc/common/auth"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
@@ -36,13 +36,12 @@ type IksVpcBlockProvider struct {
 	vpcprovider.VPCBlockProvider
 	vpcBlockProvider *vpcprovider.VPCBlockProvider // Holds VPC provider. Requires to avoid recursive calls
 	iksBlockProvider *vpcprovider.VPCBlockProvider // Holds IKS provider
-	globalConfig     *config.Config
 }
 
 var _ local.Provider = &IksVpcBlockProvider{}
 
 //NewProvider handles both IKS and  RIAAS sessions
-func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error) {
+func NewProvider(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) (local.Provider, error) {
 	//Setup vpc provider
 	provider, _ := vpcprovider.NewProvider(conf, logger)
 	vpcBlockProvider, _ := provider.(*vpcprovider.VPCBlockProvider)
@@ -50,22 +49,16 @@ func NewProvider(conf *config.Config, logger *zap.Logger) (local.Provider, error
 	provider, _ = vpcprovider.NewProvider(conf, logger)
 	iksBlockProvider, _ := provider.(*vpcprovider.VPCBlockProvider)
 
-	// Update the iks api route to private route if cluster is private
-	if conf.Bluemix.PrivateAPIRoute != "" {
-		conf.Bluemix.APIEndpointURL = conf.Bluemix.PrivateAPIRoute
-	}
-
 	//Overrider Base URL
-	iksBlockProvider.APIConfig.BaseURL = conf.Bluemix.APIEndpointURL
+	iksBlockProvider.APIConfig.BaseURL = conf.VPCConfig.IKSTokenExchangePrivateURL
 	// Setup IKS-VPC dual provider
 	iksVpcBlockProvider := &IksVpcBlockProvider{
 		VPCBlockProvider: *vpcBlockProvider,
 		vpcBlockProvider: vpcBlockProvider,
 		iksBlockProvider: iksBlockProvider,
-		globalConfig:     conf,
 	}
 
-	//vpcBlockProvider.ApiConfig.BaseURL = conf.Bluemix.APIEndpointURL
+	//vpcBlockProvider.ApiConfig.BaseURL = conf.VPC.IKSTokenExchangePrivateURL
 	return iksVpcBlockProvider, nil
 }
 
@@ -79,7 +72,7 @@ func (iksp *IksVpcBlockProvider) OpenSession(ctx context.Context, contextCredent
 	ctxLogger.Info("Opening VPC block session")
 	ccf, _ := iksp.vpcBlockProvider.ContextCredentialsFactory(nil)
 	ctxLogger.Info("Its IKS dual session. Getttng IAM token for  VPC block session")
-	vpcContextCredentials, err := ccf.ForIAMAccessToken(iksp.globalConfig.VPC.APIKey, ctxLogger)
+	vpcContextCredentials, err := ccf.ForIAMAccessToken(iksp.iksBlockProvider.Config.VPCConfig.G2APIKey, ctxLogger)
 	if err != nil {
 		ctxLogger.Error("Error occurred while generating IAM token for VPC", zap.Error(err))
 		userErr := userError.GetUserError(string(userError.AuthenticationFailed), err)
@@ -103,7 +96,7 @@ func (iksp *IksVpcBlockProvider) OpenSession(ctx context.Context, contextCredent
 	iksp.iksBlockProvider.ClientProvider = riaas.IKSRegionalAPIClientProvider{}
 
 	ctxLogger.Info("Its ISK dual session. Getttng IAM token for  IKS block session")
-	iksContextCredentials, err := ccf.ForIAMAccessToken(iksp.globalConfig.Bluemix.IamAPIKey, ctxLogger)
+	iksContextCredentials, err := ccf.ForIAMAccessToken(iksp.iksBlockProvider.APIConfig.APIKey, ctxLogger)
 	if err != nil {
 		ctxLogger.Warn("Error occurred while generating IAM token for IKS. But continue with VPC session alone. \n Volume Mount operation will fail but volume provisioning will work", zap.Error(err))
 		session = &vpcprovider.VPCSession{} // Empty session to avoid Nil references.
@@ -129,15 +122,5 @@ func (iksp *IksVpcBlockProvider) OpenSession(ctx context.Context, contextCredent
 
 // ContextCredentialsFactory ...
 func (iksp *IksVpcBlockProvider) ContextCredentialsFactory(zone *string) (local.ContextCredentialsFactory, error) {
-	//  Datacenter hint not required by IKS provider implementation
-	// VPC provider use different APIkey and Auth Endpoints
-	authConfig := &config.BluemixConfig{
-		IamURL:          iksp.globalConfig.Bluemix.IamURL,
-		IamAPIKey:       iksp.globalConfig.Bluemix.IamAPIKey,
-		IamClientID:     iksp.globalConfig.Bluemix.IamClientID,
-		IamClientSecret: iksp.globalConfig.Bluemix.IamClientSecret,
-		PrivateAPIRoute: iksp.globalConfig.Bluemix.PrivateAPIRoute, // Only for private cluster
-		CSRFToken:       iksp.globalConfig.Bluemix.CSRFToken,       // required for private cluster
-	}
-	return vpcauth.NewVPCContextCredentialsFactory(authConfig, iksp.globalConfig.VPC)
+	return vpcauth.NewVPCContextCredentialsFactory(iksp.vpcBlockProvider.Config)
 }
