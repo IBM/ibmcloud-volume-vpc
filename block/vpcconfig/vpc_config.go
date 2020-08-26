@@ -27,7 +27,4 @@ type VPCBlockConfig struct {
 	IKSConfig    *config.IKSConfig
 	APIConfig    *config.APIConfig
 	ServerConfig *config.ServerConfig
-
-	IamClientID     string `toml:"iam_client_id"`
-	IamClientSecret string `toml:"iam_client_secret" json:"-"`
 }

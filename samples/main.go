@@ -93,12 +93,10 @@ func main() {
 	}
 
 	vpcBlockConfig := &vpcconfig.VPCBlockConfig{
-		VPCConfig:       conf.VPC,
-		IKSConfig:       conf.IKS,
-		APIConfig:       conf.API,
-		ServerConfig:    conf.Server,
-		IamClientID:     conf.Bluemix.IamClientID,
-		IamClientSecret: conf.Bluemix.IamClientSecret,
+		VPCConfig:    conf.VPC,
+		IKSConfig:    conf.IKS,
+		APIConfig:    conf.API,
+		ServerConfig: conf.Server,
 	}
 	// Prepare provider registry
 	providerRegistry, err := provider_util.InitProviders(vpcBlockConfig, logger)

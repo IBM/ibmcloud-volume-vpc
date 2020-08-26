@@ -28,12 +28,12 @@ import (
 func TestNewContextCredentialsFactory(t *testing.T) {
 	conf := &vpcconfig.VPCBlockConfig{
 		VPCConfig: &config.VPCProviderConfig{
-			Enabled:     true,
-			EndpointURL: "test-iam-url",
-			VPCTimeout:  "30s",
+			Enabled:         true,
+			EndpointURL:     "test-iam-url",
+			VPCTimeout:      "30s",
+			IamClientID:     "test-iam_client_id",
+			IamClientSecret: "test-iam_client_secret",
 		},
-		IamClientID:     "test-iam_client_id",
-		IamClientSecret: "test-iam_client_secret",
 	}
 
 	contextCredentials, err := NewVPCContextCredentialsFactory(conf)

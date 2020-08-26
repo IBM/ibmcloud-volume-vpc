@@ -111,9 +111,6 @@ func TestNewProvider(t *testing.T) {
 
 	// GC private endpoint related test
 	conf = &vpcconfig.VPCBlockConfig{
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
-
 		APIConfig: &config.APIConfig{
 			PassthroughSecret: CsrfToken,
 		},
@@ -123,6 +120,8 @@ func TestNewProvider(t *testing.T) {
 			PrivateEndpointURL:         PrivateRIaaSEndpoint,
 			IKSTokenExchangePrivateURL: PrivateContainerAPIURL,
 			APIKey:                     IamClientSecret,
+			IamClientID:                IamClientID,
+			IamClientSecret:            IamClientSecret,
 		},
 	}
 
@@ -132,9 +131,6 @@ func TestNewProvider(t *testing.T) {
 
 	// gc mix test
 	conf = &vpcconfig.VPCBlockConfig{
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
-
 		APIConfig: &config.APIConfig{
 			PassthroughSecret: CsrfToken,
 		},
@@ -143,6 +139,8 @@ func TestNewProvider(t *testing.T) {
 			PrivateEndpointURL: PrivateRIaaSEndpoint,
 			APIKey:             IamClientSecret,
 			G2TokenExchangeURL: IamURL,
+			IamClientID:        IamClientID,
+			IamClientSecret:    IamClientSecret,
 		},
 	}
 
@@ -166,9 +164,6 @@ func TestNewProvider(t *testing.T) {
 
 	// gen2 private endpoint related test
 	conf = &vpcconfig.VPCBlockConfig{
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
-
 		APIConfig: &config.APIConfig{
 			PassthroughSecret: CsrfToken,
 		},
@@ -179,6 +174,8 @@ func TestNewProvider(t *testing.T) {
 			IKSTokenExchangePrivateURL: PrivateContainerAPIURL,
 			G2APIKey:                   IamClientSecret,
 			G2TokenExchangeURL:         IamURL,
+			IamClientID:                IamClientID,
+			IamClientSecret:            IamClientSecret,
 		},
 	}
 
@@ -188,9 +185,6 @@ func TestNewProvider(t *testing.T) {
 
 	// gen2 mix test
 	conf = &vpcconfig.VPCBlockConfig{
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
-
 		APIConfig: &config.APIConfig{
 			PassthroughSecret: CsrfToken,
 		},
@@ -201,6 +195,8 @@ func TestNewProvider(t *testing.T) {
 			IKSTokenExchangePrivateURL: PrivateContainerAPIURL,
 			G2APIKey:                   IamClientSecret,
 			G2TokenExchangeURL:         IamURL,
+			IamClientID:                IamClientID,
+			IamClientSecret:            IamClientSecret,
 		},
 	}
 
@@ -222,9 +218,6 @@ func GetTestProvider(t *testing.T, logger *zap.Logger) (*VPCBlockProvider, error
 
 	logger.Info("Getting New test Provider")
 	conf := &vpcconfig.VPCBlockConfig{
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
-
 		APIConfig: &config.APIConfig{
 			PassthroughSecret: CsrfToken,
 		},
@@ -242,6 +235,8 @@ func GetTestProvider(t *testing.T, logger *zap.Logger) (*VPCBlockProvider, error
 			IKSTokenExchangePrivateURL: PrivateContainerAPIURL,
 			G2APIKey:                   IamClientSecret,
 			G2TokenExchangeURL:         IamURL,
+			IamClientID:                IamClientID,
+			IamClientSecret:            IamClientSecret,
 		},
 	}
 

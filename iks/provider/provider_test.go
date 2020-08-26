@@ -95,12 +95,12 @@ func TestNewProvider(t *testing.T) {
 			DebugTrace: true,
 		},
 		VPCConfig: &config.VPCProviderConfig{
-			Enabled:     true,
-			EndpointURL: TestEndpointURL,
-			VPCTimeout:  "30s",
+			Enabled:         true,
+			EndpointURL:     TestEndpointURL,
+			VPCTimeout:      "30s",
+			IamClientID:     IamClientID,
+			IamClientSecret: IamClientSecret,
 		},
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
 	}
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
@@ -114,12 +114,12 @@ func TestNewProvider(t *testing.T) {
 			DebugTrace: true,
 		},
 		VPCConfig: &config.VPCProviderConfig{
-			Enabled:     true,
-			EndpointURL: TestEndpointURL,
-			VPCTimeout:  "",
+			Enabled:         true,
+			EndpointURL:     TestEndpointURL,
+			VPCTimeout:      "",
+			IamClientID:     IamClientID,
+			IamClientSecret: IamClientSecret,
 		},
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
 	}
 
 	prov, err = NewProvider(conf, logger)
@@ -132,12 +132,12 @@ func TestNewProvider(t *testing.T) {
 			DebugTrace: true,
 		},
 		VPCConfig: &config.VPCProviderConfig{
-			Enabled:     true,
-			EndpointURL: TestEndpointURL,
-			VPCTimeout:  "",
+			Enabled:         true,
+			EndpointURL:     TestEndpointURL,
+			VPCTimeout:      "",
+			IamClientID:     IamClientID,
+			IamClientSecret: IamClientSecret,
 		},
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
 	}
 
 	prov, err = NewProvider(conf, logger)
@@ -168,9 +168,9 @@ func GetTestProvider(t *testing.T, logger *zap.Logger) (local.Provider, error) {
 			MaxRetryAttempt: 5,
 			MaxRetryGap:     10,
 			APIVersion:      TestAPIVersion,
+			IamClientID:     IamClientID,
+			IamClientSecret: IamClientSecret,
 		},
-		IamClientID:     IamClientID,
-		IamClientSecret: IamClientSecret,
 	}
 
 	p, err := NewProvider(conf, logger)
