@@ -55,7 +55,7 @@ func (tg *tokenGenerator) readConfig(logger zap.Logger) (err error) {
 		return
 	}
 
-	path := filepath.Join(config.GetEtcPath(), tg.tokenKID)
+	path := filepath.Join(GetEtcPath(), tg.tokenKID)
 
 	pem, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
@@ -128,4 +128,12 @@ func (tg *tokenGenerator) getServiceToken(contextCredentials provider.ContextCre
 	signedToken = &signedString
 
 	return
+}
+
+// GetEtcPath returns the path to the etc directory
+func GetEtcPath() string {
+	goPath := config.GetGoPath()
+	srcPath := filepath.Join("src", "github.com", "IBM",
+		"ibmcloud-volume-vpc")
+	return filepath.Join(goPath, srcPath, "etc")
 }
