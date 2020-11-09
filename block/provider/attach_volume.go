@@ -71,7 +71,7 @@ func (vpcs *VPCSession) AttachVolume(volumeAttachmentRequest provider.VolumeAtta
 		volumeAttachResult, err = vpcs.APIClientVolAttachMgr.AttachVolume(&volumeAttachment, vpcs.Logger)
 		// Keep retry, until we get the proper volumeAttachResult object
 		if err != nil {
-			return err, skipRetryForAttach(err, vpcs.Config.VPCConfig.IsIKS)
+			return err, skipRetryForObviousErrors(err, vpcs.Config.VPCConfig.IsIKS)
 		}
 		varp = volumeAttachResult.ToVolumeAttachmentResponse(vpcs.Config.VPCConfig.VPCBlockProviderType)
 		return err, true // stop retry as no error
