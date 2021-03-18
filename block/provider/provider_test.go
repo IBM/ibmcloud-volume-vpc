@@ -370,11 +370,11 @@ func TestGetTestOpenSession(t *testing.T) {
 	assert.Nil(t, err)
 
 	providerDisplayName := vpcs.GetProviderDisplayName()
-	assert.Equal(t, providerDisplayName, provider.VolumeProvider("VPC"))
+	assert.Equal(t, providerDisplayName, provider.VolumeProvider("VPC-BLOCK"))
 	vpcs.Close()
 
 	providerName := vpcs.ProviderName()
-	assert.Equal(t, providerName, provider.VolumeProvider("VPC"))
+	assert.Equal(t, providerName, provider.VolumeProvider("VPC-BLOCK"))
 
 	volumeType := vpcs.Type()
 	assert.Equal(t, volumeType, provider.VolumeType("vpc-block"))
