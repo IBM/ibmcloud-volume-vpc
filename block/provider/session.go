@@ -27,6 +27,7 @@ import (
 
 // VPCSession implements lib.Session
 type VPCSession struct {
+	provider.DefaultVolumeProvider
 	VPCAccountID          string
 	Config                *vpcconfig.VPCBlockConfig
 	ContextCredentials    provider.ContextCredentials
@@ -41,7 +42,7 @@ type VPCSession struct {
 
 const (
 	// VPC storage provider
-	VPC = provider.VolumeProvider("VPC")
+	VPC = provider.VolumeProvider("VPC-BLOCK")
 	// VolumeType ...
 	VolumeType = provider.VolumeType("vpc-block")
 	// SnapshotMask ...

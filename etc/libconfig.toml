@@ -9,7 +9,7 @@
   g2_resource_group_id = ""
   g2_api_key = ""
   provider_type = "g2"
-  vpc_block_provider_name = "vpc"
+  vpc_provider_type = "vpc-block"
   encryption = false
   iks_token_exchange_endpoint_private_url = "https://containers.test.cloud.ibm.com"
   containers_api_csrf_token = ""
@@ -25,3 +25,4 @@
 
 [API]
   PassthroughSecret = ""
+  
