@@ -111,7 +111,7 @@ func main() {
 	} else if conf.Softlayer.SoftlayerFileEnabled {
 		providerName = conf.Softlayer.SoftlayerFileProviderName
 	} else if conf.VPC.Enabled {
-		providerName = conf.VPC.VPCVolumeType
+		providerName = conf.VPC.VPCBlockProviderName
 	}
 
 	valid := true
