@@ -30,6 +30,9 @@ type VolumeManager interface {
 	// UpdateVolume updates the volume with authorisation by passing required information in the volume object
 	UpdateVolume(volumeTemplate *models.Volume, ctxLogger *zap.Logger) error
 
+	// ExpandVolume ...
+	ExpandVolume(volumeID string, volumeTemplate *models.Volume, ctxLogger *zap.Logger) (*models.Volume, error)
+
 	// Delete the volume
 	DeleteVolume(volumeID string, ctxLogger *zap.Logger) error
 
