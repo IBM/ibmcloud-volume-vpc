@@ -81,9 +81,8 @@ func NewVolume(volumeRequest provider.Volume) Volume {
 	// Build the template to send to backend
 
 	volume := Volume{
-		ID:   volumeRequest.VolumeID,
-		CRN:  volumeRequest.CRN,
-		Tags: volumeRequest.VPCVolume.Tags,
+		ID:  volumeRequest.VolumeID,
+		CRN: volumeRequest.CRN,
 		Zone: &Zone{
 			Name: volumeRequest.Az,
 		},
