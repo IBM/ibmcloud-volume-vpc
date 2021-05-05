@@ -15,7 +15,7 @@
   containers_api_csrf_token = ""
   max_retry_attempt  = 2 # 10 times with exponential re-try with max gap max_retry_gap
   max_retry_gap =  120 # 2 minutes
-  api_version = "2020-06-16"   #"2019-07-02"
+  api_version = "2020-07-02"   #"2019-07-02"
   vpc_api_generation = 2
   vpc_api_timeout = "120s"
 [IKS]
