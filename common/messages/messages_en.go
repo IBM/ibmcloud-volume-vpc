@@ -163,6 +163,13 @@ var messagesEn = map[string]util.Message{
 		RC:          400,
 		Action:      "Review available volume profiles and IOPS in the IBM Cloud Block Storage for VPC documentation https://cloud.ibm.com/docs/vpc-on-classic-block-storage?topic=vpc-on-classic-block-storage-block-storage-profiles.",
 	},
+	"VolumeProfileEmpty": {
+		Code:        "VolumeProfileEmpty",
+		Description: "Volume profile is empty, you need to pass valid profile name.",
+		Type:        util.InvalidRequest,
+		RC:          400,
+		Action:      "Review storage class used to create volume and add valid profile parameter.",
+	},
 	"EmptyResourceGroup": {
 		Code:        "EmptyResourceGroup",
 		Description: "Resource group information could not be found.",
