@@ -121,6 +121,9 @@ func validateVolumeRequest(volumeRequest provider.Volume) (models.ResourceGroup,
 	if volumeRequest.Iops != nil {
 		iops = ToInt64(*volumeRequest.Iops)
 	}
+	if volumeRequest.VPCVolume.Profile == nil {
+		return resourceGroup, iops, userError.GetUserError("VolumeProfileEmpty", nil)
+	}
 	if volumeRequest.VPCVolume.Profile.Name != customProfile && iops > 0 {
 		return resourceGroup, iops, userError.GetUserError("VolumeProfileIopsInvalid", nil)
 	}

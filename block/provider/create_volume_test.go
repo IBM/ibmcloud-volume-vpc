@@ -100,6 +100,20 @@ func TestCreateVolume(t *testing.T) {
 				assert.NotNil(t, err)
 			},
 		}, {
+			testCaseName: "Volume with empty profile",
+			profileName:  "",
+			providerVolume: provider.Volume{
+				VolumeID:  "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:      String("test-volume-name"),
+				Capacity:  Int(10),
+				Iops:      String("1000"),
+				VPCVolume: provider.VPCVolume{},
+			},
+			verify: func(t *testing.T, volumeResponse *provider.Volume, err error) {
+				assert.Nil(t, volumeResponse)
+				assert.NotNil(t, err)
+			},
+		}, {
 			testCaseName: "Volume with no validation issues",
 			profileName:  "general-purpose",
 			baseVolume: &models.Volume{
