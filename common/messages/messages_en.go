@@ -226,6 +226,13 @@ var messagesEn = map[string]util.Message{
 		RC:          400,
 		Action:      "Please verify that the start volume ID is correct and whether you have access to the volume ID.",
 	},
+	"InvalidServiceSession": {
+		Code:        "InvalidServiceSession",
+		Description: "The Service Session was not found due to error while generating IAM token.",
+		Type:        util.RetrivalFailed,
+		RC:          500,
+		Action:      "Please retry again after some time.",
+	},
 }
 
 // InitMessages ...

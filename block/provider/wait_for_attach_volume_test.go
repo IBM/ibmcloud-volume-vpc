@@ -30,8 +30,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestGetVolumeAttachment(t *testing.T) {
-	//var err error
+func TestWaitForAttachVolume(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
@@ -40,10 +39,9 @@ func TestGetVolumeAttachment(t *testing.T) {
 	)
 
 	testCases := []struct {
-		testCaseName                      string
-		providerVolumeAttachmentRequest   provider.VolumeAttachmentRequest
-		baseVolumeAttachmentResponse      *models.VolumeAttachment
-		baseVolumeAttachmentsListResponse *models.VolumeAttachmentList
+		testCaseName                    string
+		providerVolumeAttachmentRequest provider.VolumeAttachmentRequest
+		baseVolumeAttachmentResponse    *models.VolumeAttachment
 
 		expectedErr        string
 		expectedReasonCode string
@@ -72,90 +70,7 @@ func TestGetVolumeAttachment(t *testing.T) {
 			},
 		},
 		{
-			testCaseName: "Volume Attachment exist for the Volume ID",
-			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
-				VolumeID:   "volume-id1",
-				InstanceID: "instance-id1",
-			},
-
-			baseVolumeAttachmentResponse: &models.VolumeAttachment{
-				ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:   "test volume name",
-				Status: "stable",
-				Volume: &models.Volume{ID: "volume-id1"},
-			},
-
-			baseVolumeAttachmentsListResponse: &models.VolumeAttachmentList{
-				VolumeAttachments: []models.VolumeAttachment{{
-					ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
-					Name:   "test volume name",
-					Status: "stable",
-					Volume: &models.Volume{ID: "volume-id1"},
-				}},
-			},
-
-			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
-				assert.NotNil(t, volumeAttachmentResponse)
-				assert.Nil(t, err)
-			},
-		},
-		{
-			testCaseName: "Volume Attachment does not exist for the Volume ID- List Vol Attachment Fails",
-			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
-				VolumeID:   "volume-id1",
-				InstanceID: "instance-id1",
-			},
-
-			baseVolumeAttachmentResponse:      nil,
-			baseVolumeAttachmentsListResponse: nil,
-
-			expectedErr:        "{Code:ErrorUnclassified, Type:RetrivalFailed, Description:Failed to find 'volume-id1' volume ID with 'instance-id1' Instance ID ., BackendError:StorageFindFailedWithVolumeIdAndVPCId, RC:404}",
-			expectedReasonCode: "ErrorUnclassified",
-
-			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
-				assert.Nil(t, volumeAttachmentResponse)
-				assert.NotNil(t, err)
-			},
-		}, {
-			testCaseName: "Volume Attachment does not exist for the Volume ID",
-			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
-				VolumeID:   "volume-id1",
-				InstanceID: "instance-id1",
-			},
-
-			baseVolumeAttachmentResponse: nil,
-			baseVolumeAttachmentsListResponse: &models.VolumeAttachmentList{
-				VolumeAttachments: []models.VolumeAttachment{{
-					ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
-					Name:   "test volume name",
-					Status: "stable",
-					Volume: &models.Volume{ID: "volume-id2"},
-				}},
-			},
-
-			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
-				assert.Nil(t, volumeAttachmentResponse)
-				assert.NotNil(t, err)
-			},
-		},
-		{
-			testCaseName: "Volume Attachment does not exist for the attachment ID",
-			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
-				VolumeID:            "volume-id1",
-				InstanceID:          "instance-id1",
-				VPCVolumeAttachment: &provider.VolumeAttachment{ID: "abc"},
-			},
-
-			expectedErr:        "{Code:ErrorUnclassified, Type:RetrivalFailed, Description:Failed to find 'volume-id1' volume ID with target 'target-id1' targer ID ., BackendError:StorageFindFailedWithVolumeIdAndTargetId, RC:404}",
-			expectedReasonCode: "ErrorUnclassified",
-
-			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
-				assert.Nil(t, volumeAttachmentResponse)
-				assert.NotNil(t, err)
-			},
-		},
-		{
-			testCaseName: "Volume Attachment does exist for the attachment ID",
+			testCaseName: "Volume Attachment exist for the Attachment ID and attach timed out",
 			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
 				VolumeID:            "volume-id1",
 				InstanceID:          "instance-id1",
@@ -165,13 +80,51 @@ func TestGetVolumeAttachment(t *testing.T) {
 			baseVolumeAttachmentResponse: &models.VolumeAttachment{
 				ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:   "test volume name",
-				Status: "stable",
+				Status: "attaching",
+				Volume: &models.Volume{ID: "volume-id1"},
+			},
+
+			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
+				assert.Nil(t, volumeAttachmentResponse)
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			testCaseName: "Volume Attachment exist for the Attachment ID and attach success",
+			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
+				VolumeID:            "volume-id1",
+				InstanceID:          "instance-id1",
+				VPCVolumeAttachment: &provider.VolumeAttachment{ID: "16f293bf-test-4bff-816f-e199c0c65db5"},
+			},
+
+			baseVolumeAttachmentResponse: &models.VolumeAttachment{
+				ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:   "test volume name",
+				Status: "attached",
 				Volume: &models.Volume{ID: "volume-id1"},
 			},
 
 			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
 				assert.NotNil(t, volumeAttachmentResponse)
 				assert.Nil(t, err)
+			},
+		},
+		{
+			testCaseName: "Volume Attachment does not exist for the Attachment ID",
+			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
+				VolumeID:            "volume-id1",
+				InstanceID:          "instance-id1",
+				VPCVolumeAttachment: &provider.VolumeAttachment{ID: "16f293bf-test-4bff-816f-e199c0c65db5"},
+			},
+
+			baseVolumeAttachmentResponse: nil,
+
+			expectedErr:        "{Code:ErrorUnclassified, Type:VolumeAttachFailed, Description:Failed to Attach volume for  'volume-id1' volume ID with 'instance-id1' Instance ID.",
+			expectedReasonCode: "ErrorUnclassified",
+
+			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
+				assert.Nil(t, volumeAttachmentResponse)
+				assert.NotNil(t, err)
 			},
 		},
 	}
@@ -197,10 +150,9 @@ func TestGetVolumeAttachment(t *testing.T) {
 				errorResp = nil
 			}
 
-			volumeAttachService.ListVolumeAttachmentsReturns(testcase.baseVolumeAttachmentsListResponse, errorResp)
 			volumeAttachService.GetVolumeAttachmentReturns(testcase.baseVolumeAttachmentResponse, errorResp)
 
-			volumeAttachment, err := vpcs.GetVolumeAttachment(testcase.providerVolumeAttachmentRequest)
+			volumeAttachment, err := vpcs.WaitForAttachVolume(testcase.providerVolumeAttachmentRequest)
 			logger.Info("Volume attachment details", zap.Reflect("VolumeAttachmentResponse", volumeAttachment))
 
 			if testcase.expectedErr != "" {
@@ -216,7 +168,7 @@ func TestGetVolumeAttachment(t *testing.T) {
 	}
 }
 
-func TestGetVolumeAttachmentForInvalidSession(t *testing.T) {
+func TestWaitForAttachVolumeForInvalidSession(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 	vpcs, uc, sc, err := GetTestOpenInvalidSession(t, logger)
@@ -229,7 +181,7 @@ func TestGetVolumeAttachmentForInvalidSession(t *testing.T) {
 		VolumeID: "vol-1",
 	}
 
-	_, err = vpcs.GetVolumeAttachment(volumeAttachRequest)
+	_, err = vpcs.WaitForAttachVolume(volumeAttachRequest)
 	assert.NotNil(t, err)
 	assert.Equal(t, expectedError, err.Error())
 }

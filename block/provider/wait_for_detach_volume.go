@@ -33,6 +33,12 @@ func (vpcs *VPCSession) WaitForDetachVolume(volumeAttachmentTemplate provider.Vo
 	defer vpcs.Logger.Debug("Exit from WaitForDetachVolume method...")
 	defer metrics.UpdateDurationFromStart(vpcs.Logger, "WaitForDetachVolume", time.Now())
 	var err error
+
+	//check if ServiceSession is valid
+	if err = isValidServiceSession(vpcs); err != nil {
+		return err
+	}
+
 	vpcs.Logger.Info("Validating basic inputs for WaitForDetachVolume method...", zap.Reflect("volumeAttachmentTemplate", volumeAttachmentTemplate))
 	err = vpcs.validateAttachVolumeRequest(volumeAttachmentTemplate)
 	if err != nil {

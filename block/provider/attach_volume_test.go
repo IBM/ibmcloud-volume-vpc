@@ -31,7 +31,6 @@ import (
 )
 
 func TestAttachVolume(t *testing.T) {
-	//var err error
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
@@ -40,15 +39,11 @@ func TestAttachVolume(t *testing.T) {
 	)
 
 	testCases := []struct {
-		testCaseName                     string
-		providerVolumeAttachmentRequest  provider.VolumeAttachmentRequest
-		baseVolumeAttachmentRequest      *models.VolumeAttachment
-		providerVolumeAttachmentResponse provider.VolumeAttachmentResponse
-		baseVolumeAttachmentResponse     *models.VolumeAttachment
+		testCaseName                      string
+		providerVolumeAttachmentRequest   provider.VolumeAttachmentRequest
+		baseVolumeAttachmentsListResponse *models.VolumeAttachmentList
+		baseVolumeAttachmentResponse      *models.VolumeAttachment
 
-		setup func(providerVolume *provider.Volume)
-
-		skipErrTest        bool
 		expectedErr        string
 		expectedReasonCode string
 
@@ -59,10 +54,93 @@ func TestAttachVolume(t *testing.T) {
 			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
 				VolumeID: "volume-id1",
 			},
+
+			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
+				assert.Nil(t, volumeAttachmentResponse)
+				assert.NotNil(t, err)
+			},
 		}, {
 			testCaseName: "Volume ID is nil",
 			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
 				InstanceID: "instance-id1",
+			},
+
+			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
+				assert.Nil(t, volumeAttachmentResponse)
+				assert.NotNil(t, err)
+			},
+		},
+		{
+			testCaseName: "Volume Attachment exist for the Volume ID",
+			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
+				VolumeID:   "volume-id1",
+				InstanceID: "instance-id1",
+			},
+
+			baseVolumeAttachmentResponse: &models.VolumeAttachment{
+				ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:   "test volume name",
+				Status: "stable",
+				Volume: &models.Volume{ID: "volume-id1"},
+			},
+
+			baseVolumeAttachmentsListResponse: &models.VolumeAttachmentList{
+				VolumeAttachments: []models.VolumeAttachment{{
+					ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
+					Name:   "test volume name",
+					Status: "stable",
+					Volume: &models.Volume{ID: "volume-id1"},
+				}},
+			},
+
+			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
+				assert.NotNil(t, volumeAttachmentResponse)
+				assert.Nil(t, err)
+			},
+		},
+		{
+			testCaseName: "Failure case -- Volume Attachment fails",
+			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
+				VolumeID:   "volume-id1",
+				InstanceID: "instance-id1",
+			},
+
+			baseVolumeAttachmentResponse:      nil,
+			baseVolumeAttachmentsListResponse: nil,
+
+			expectedErr:        "{Code:ErrorUnclassified, Type:VolumeAttachFailed, Description:Failed to Attach volume for  'volume-id1' volume ID with 'instance-id1' Instance ID.",
+			expectedReasonCode: "ErrorUnclassified",
+
+			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
+				assert.Nil(t, volumeAttachmentResponse)
+				assert.NotNil(t, err)
+			},
+		}, {
+			testCaseName: "Volume Attachment does not exist for the Volume ID",
+			providerVolumeAttachmentRequest: provider.VolumeAttachmentRequest{
+				VolumeID:   "volume-id1",
+				InstanceID: "instance-id1",
+			},
+
+			baseVolumeAttachmentResponse: &models.VolumeAttachment{
+				ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:   "test volume name",
+				Status: "stable",
+				Volume: &models.Volume{ID: "volume-id1"},
+			},
+
+			baseVolumeAttachmentsListResponse: &models.VolumeAttachmentList{
+				VolumeAttachments: []models.VolumeAttachment{{
+					ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
+					Name:   "test volume name",
+					Status: "stable",
+					Volume: &models.Volume{ID: "volume-id123"},
+				}},
+			},
+
+			verify: func(t *testing.T, volumeAttachmentResponse *provider.VolumeAttachmentResponse, err error) {
+				assert.NotNil(t, volumeAttachmentResponse)
+				assert.Nil(t, err)
 			},
 		},
 	}
@@ -76,14 +154,21 @@ func TestAttachVolume(t *testing.T) {
 			assert.Nil(t, err)
 
 			volumeAttachService = &volumeAttachServiceFakes.VolumeAttachService{}
+			vpcs.APIClientVolAttachMgr = volumeAttachService
 			assert.NotNil(t, volumeAttachService)
 			uc.VolumeAttachServiceReturns(volumeAttachService)
+			var errorResp error
 
 			if testcase.expectedErr != "" {
-				volumeAttachService.AttachVolumeReturns(testcase.baseVolumeAttachmentRequest, errors.New(testcase.expectedReasonCode))
+				errorResp = errors.New(testcase.expectedReasonCode)
 			} else {
-				volumeAttachService.AttachVolumeReturns(testcase.baseVolumeAttachmentRequest, nil)
+				errorResp = nil
 			}
+
+			volumeAttachService.AttachVolumeReturns(testcase.baseVolumeAttachmentResponse, errorResp)
+			volumeAttachService.ListVolumeAttachmentsReturns(testcase.baseVolumeAttachmentsListResponse, errorResp)
+			volumeAttachService.GetVolumeAttachmentReturns(testcase.baseVolumeAttachmentResponse, errorResp)
+
 			volumeAttachment, err := vpcs.AttachVolume(testcase.providerVolumeAttachmentRequest)
 			logger.Info("Volume attachment details", zap.Reflect("VolumeAttachmentResponse", volumeAttachment))
 
@@ -98,4 +183,22 @@ func TestAttachVolume(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAttachVolumeForInvalidSession(t *testing.T) {
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+	vpcs, uc, sc, err := GetTestOpenInvalidSession(t, logger)
+	assert.NotNil(t, vpcs)
+	assert.NotNil(t, uc)
+	assert.NotNil(t, sc)
+	assert.Nil(t, err)
+	expectedError := "{Code:InvalidServiceSession, Type:RetrivalFailed, Description:The Service Session was not found due to error while generating IAM token., BackendError:IAM token exchange request failed, RC:500}"
+	volumeAttachRequest := provider.VolumeAttachmentRequest{
+		VolumeID: "vol-1",
+	}
+
+	_, err = vpcs.AttachVolume(volumeAttachRequest)
+	assert.NotNil(t, err)
+	assert.Equal(t, expectedError, err.Error())
 }

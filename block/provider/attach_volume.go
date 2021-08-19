@@ -43,6 +43,12 @@ func (vpcs *VPCSession) AttachVolume(volumeAttachmentRequest provider.VolumeAtta
 	defer vpcs.Logger.Debug("Exit from AttachVolume method...")
 	defer metrics.UpdateDurationFromStart(vpcs.Logger, "AttachVolume", time.Now())
 	var err error
+
+	//check if ServiceSession is valid
+	if err = isValidServiceSession(vpcs); err != nil {
+		return nil, err
+	}
+
 	vpcs.Logger.Info("Validating basic inputs for Attach method...", zap.Reflect("volumeAttachRequest", volumeAttachmentRequest))
 	err = vpcs.validateAttachVolumeRequest(volumeAttachmentRequest)
 	if err != nil {
