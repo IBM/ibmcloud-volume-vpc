@@ -190,3 +190,12 @@ func (r *tokenExchangeIKSRequest) sendTokenExchangeRequest() (*tokenExchangeIKSR
 		util.NewError("ErrorUnclassified",
 			"Unexpected IAM token exchange response")
 }
+
+// UpdateAPIKey ...
+func (tes *tokenExchangeIKSService) UpdateAPIKey(apiKey string, logger *zap.Logger) error {
+	if tes.iksAuthConfig == nil {
+		return errors.New("failed to update api key")
+	}
+	tes.iksAuthConfig.IamAPIKey = apiKey
+	return nil
+}

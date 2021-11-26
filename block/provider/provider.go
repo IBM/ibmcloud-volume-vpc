@@ -241,6 +241,18 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 	return vpcSession, nil
 }
 
+// UpdateAPIKey ...
+func (vpcp *VPCBlockProvider) UpdateAPIKey(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) error {
+	err := vpcp.ContextCF.UpdateAPIKey(conf.VPCConfig.G2APIKey)
+	if err != nil {
+		logger.Error("Error updating api key in provider", zap.Error(err))
+		return err
+	}
+	vpcp.tokenGenerator = &tokenGenerator{config: conf.VPCConfig}
+	vpcp.Config = conf
+	return nil
+}
+
 // getAccessToken ...
 func getAccessToken(creds provider.ContextCredentials, logger *zap.Logger) (token *iam.AccessToken, err error) {
 	switch creds.AuthType {
