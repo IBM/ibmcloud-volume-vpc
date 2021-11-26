@@ -7,6 +7,7 @@ require (
 	github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20211126093108-2c9994804e32
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/structs v1.1.0
+	github.com/pierrre/gotestcover v0.0.0-20160517101806-924dca7d15f0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.15.0
