@@ -136,3 +136,16 @@ func (iksp *IksVpcBlockProvider) OpenSession(ctx context.Context, contextCredent
 func (iksp *IksVpcBlockProvider) ContextCredentialsFactory(zone *string) (local.ContextCredentialsFactory, error) {
 	return vpcauth.NewVPCContextCredentialsFactory(iksp.vpcBlockProvider.Config)
 }
+
+// UpdateAPIKey ...
+func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) error {
+	err := iksp.vpcBlockProvider.UpdateAPIKey(conf, logger)
+	if err != nil {
+		logger.Error("Error updating api key in provider", zap.Error(err))
+		return err
+	}
+
+	iksp.VPCBlockProvider = *iksp.vpcBlockProvider
+	iksp.iksBlockProvider = iksp.vpcBlockProvider
+	return nil
+}
