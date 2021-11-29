@@ -107,7 +107,7 @@ func OpenProviderSessionWithContext(ctx context.Context, providerConfig *config.
 		if err == nil {
 			return session, false, nil
 		}
-		if errMsg, ok := err.(util.Message); ok && util.APIKeyNotFound() {
+		if errMsg, ok := err.(util.Message); ok && errMsg.APIKeyNotFound() {
 			apiKeyImp, err := utils.NewAPIKeyImpl(ctxLogger)
 			if err != nil {
 				ctxLogger.Fatal("Unable to create API key getter", zap.Reflect("Error", err))
