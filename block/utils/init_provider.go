@@ -19,6 +19,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/IBM/ibm-csi-common/pkg/utils"
 	"github.com/IBM/ibmcloud-volume-interface/config"
@@ -103,6 +104,7 @@ func OpenProviderSessionWithContext(ctx context.Context, providerConfig *config.
 			ctxLogger.Error("Unable to generate credentials", local.ZapError(err))
 			return nil, true, err
 		}
+		ctxLogger.Info(fmt.Sprintf("Attempt %d - open provider session", retryCount+1))
 		session, err := prov.OpenSession(ctx, contextCredentials, ctxLogger)
 		if err == nil {
 			return session, false, nil
@@ -128,10 +130,11 @@ func OpenProviderSessionWithContext(ctx context.Context, providerConfig *config.
 			}
 			continue
 		}
+		return nil, true, err
 	}
 
-	ctxLogger.Error("Failed to open provider session", local.ZapError(err))
-	return nil, true, err
+	ctxLogger.Error("Failed to open provider session", local.ZapError(errors.New("API key not found")))
+	return nil, true, errors.New("API key not found, retry after few minutes")
 
 }
 
