@@ -116,7 +116,7 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedDuringRequest(t *testing.T
 	assert.Nil(t, r)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "IAM token exchange request failed: did not work", err.Error())
-		assert.Equal(t, "bad news", util.ErrorReasonCode(err))
+		assert.Equal(t, reasoncode.ReasonCode("bad news"), util.ErrorReasonCode(err))
 	}
 }
 
