@@ -136,7 +136,7 @@ func main() {
 		requestID := uid.NewV4().String()
 		ctxLogger = ctxLogger.With(zap.String("RequestID", requestID))
 		ctx := context.WithValue(context.TODO(), provider.RequestID, requestID)
-		sess, _, err := provider_util.OpenProviderSessionWithContext(ctx, vpcBlockConfig, providerRegistry, providerName, ctxLogger)
+		sess, _, err := provider_util.OpenProviderSessionWithContext(ctx, conf, providerRegistry, providerName, ctxLogger)
 		if err != nil {
 			ctxLogger.Error("Failed to get session", zap.Reflect("Error", err))
 			continue

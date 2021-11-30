@@ -135,7 +135,6 @@ func OpenProviderSessionWithContext(ctx context.Context, providerConfig *config.
 
 	ctxLogger.Error("Failed to open provider session", local.ZapError(errors.New("API key not found")))
 	return nil, true, errors.New("API key not found, retry after few minutes")
-
 }
 
 // GenerateContextCredentials ...
