@@ -6,6 +6,9 @@ github.com/IBM/ibmcloud-volume-interface v1.0.0-beta8 h1:0oCBQidejAlLI5f5PlBHIyt
 github.com/IBM/ibmcloud-volume-interface v1.0.0-beta8/go.mod h1:2LxqkERml3eBxfRkQniuiRmKkAnl5tfC0ttlP2gupJM=
 github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20211126093108-2c9994804e32 h1:eKWj++w2ZUYT3voRdOac9OvGqK9NR8yUS5RUlRMKc8c=
 github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20211126093108-2c9994804e32/go.mod h1:2LxqkERml3eBxfRkQniuiRmKkAnl5tfC0ttlP2gupJM=
+github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20211130042446-32c5e8b6904f h1:1enm9AfrWxTnvHDURio0KX3NkBpYPmARoY0FHTP9fgg=
+github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20211130042446-32c5e8b6904f/go.mod h1:x0xKlIggufsWvOPj04GBxRXESap058/HHN0nctnVGWE=
+github.com/IBM/ibmcloud-volume-vpc v1.0.0-beta9.0.20211126134947-e223b824b1cd/go.mod h1:7cnjoXBK6M0pAWV7QV6fqrIvwfS8aaGLbLB8z7ncUBA=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
@@ -99,6 +102,7 @@ github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UV
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.uber.org/atomic v1.6.0 h1:Ezj3JGmsOnG1MoRWQkPBsKLe9DwWD9QeXzTRzzldNVk=
 go.uber.org/atomic v1.6.0/go.mod h1:sABNBOSYdrvTF6hTgEIbc7YasKWGhgEQZyfxyTvoXHQ=
