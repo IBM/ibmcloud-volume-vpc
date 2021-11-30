@@ -139,6 +139,7 @@ func (iksp *IksVpcBlockProvider) ContextCredentialsFactory(zone *string) (local.
 
 // UpdateAPIKey ...
 func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) error {
+	logger.Info("Updating api key in iks vpc provider")
 	err := iksp.vpcBlockProvider.UpdateAPIKey(conf, logger)
 	if err != nil {
 		logger.Error("Error updating api key in provider", zap.Error(err))

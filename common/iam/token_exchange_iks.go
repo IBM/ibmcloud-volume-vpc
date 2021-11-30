@@ -194,6 +194,7 @@ func (r *tokenExchangeIKSRequest) sendTokenExchangeRequest() (*tokenExchangeIKSR
 
 // UpdateAPIKey ...
 func (tes *tokenExchangeIKSService) UpdateAPIKey(apiKey string, logger *zap.Logger) error {
+	logger.Info("Updating api key")
 	if tes.iksAuthConfig == nil {
 		return errors.New("failed to update api key")
 	}

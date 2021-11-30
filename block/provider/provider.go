@@ -243,6 +243,7 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 
 // UpdateAPIKey ...
 func (vpcp *VPCBlockProvider) UpdateAPIKey(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) error {
+	logger.Info("Updating api key in vpc provider")
 	err := vpcp.ContextCF.UpdateAPIKey(conf.VPCConfig.G2APIKey, logger)
 	if err != nil {
 		logger.Error("Error updating api key in provider", zap.Error(err))
