@@ -20,6 +20,7 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/IBM/ibm-csi-common/pkg/utils"
 	"github.com/IBM/ibmcloud-volume-interface/config"
@@ -127,7 +128,7 @@ func OpenProviderSessionWithContext(ctx context.Context, providerConfig *config.
 				err = prov.UpdateAPIKey(vpcBlockConfig, ctxLogger)
 				if err != nil {
 					ctxLogger.Error("Failed to update API key in the provider", local.ZapError(err))
-					return nil, true, errors.New("Error updating api key in the provider")
+					return nil, true, errors.New("error updating api key in the provider")
 				}
 				continue
 			}

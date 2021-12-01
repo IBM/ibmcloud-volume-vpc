@@ -19,6 +19,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
