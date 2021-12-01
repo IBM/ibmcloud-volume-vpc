@@ -242,15 +242,20 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 }
 
 // UpdateAPIKey ...
-func (vpcp *VPCBlockProvider) UpdateAPIKey(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) error {
+func (vpcp *VPCBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logger) error {
 	logger.Info("Updating api key in vpc provider")
-	err := vpcp.ContextCF.UpdateAPIKey(conf.VPCConfig.G2APIKey, logger)
+	vpcConfig, ok := conf.(*vpcconfig.VPCBlockConfig)
+	if !ok {
+		logger.Error("Error fetching vpc block config from interface")
+		return errors.New("error unmarshaling vpc block config")
+	}
+	err := vpcp.ContextCF.UpdateAPIKey(vpcConfig.VPCConfig.G2APIKey, logger)
 	if err != nil {
 		logger.Error("Error updating api key in provider", zap.Error(err))
 		return err
 	}
-	vpcp.tokenGenerator = &tokenGenerator{config: conf.VPCConfig}
-	vpcp.Config = conf
+	vpcp.tokenGenerator = &tokenGenerator{config: vpcConfig.VPCConfig}
+	vpcp.Config = vpcConfig
 	return nil
 }
 

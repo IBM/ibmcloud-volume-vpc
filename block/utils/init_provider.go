@@ -109,26 +109,29 @@ func OpenProviderSessionWithContext(ctx context.Context, providerConfig *config.
 		if err == nil {
 			return session, false, nil
 		}
-		if providerError, ok := err.(provider.Error); ok && string(providerError.Code()) == provider.APIKeyNotFound {
-			apiKeyImp, err := utils.NewAPIKeyImpl(ctxLogger)
-			if err != nil {
-				ctxLogger.Fatal("Unable to create API key getter", zap.Reflect("Error", err))
-				return nil, true, err
+		if providerConfig.IKS != nil && (providerConfig.IKS.Enabled || os.Getenv("IKS_ENABLED") == "True") {
+			if providerError, ok := err.(provider.Error); ok && string(providerError.Code()) == provider.APIKeyNotFound {
+				apiKeyImp, err := utils.NewAPIKeyImpl(ctxLogger)
+				if err != nil {
+					ctxLogger.Fatal("Unable to create API key getter", zap.Reflect("Error", err))
+					return nil, true, err
+				}
+				ctxLogger.Info("Created NewAPIKeyImpl...")
+				err = apiKeyImp.UpdateIAMKeys(providerConfig)
+				if err != nil {
+					ctxLogger.Fatal("Unable to get API key", local.ZapError(err))
+					return nil, true, err
+				}
+				vpcBlockConfig.VPCConfig.APIKey = providerConfig.VPC.G2APIKey
+				vpcBlockConfig.VPCConfig.G2APIKey = providerConfig.VPC.G2APIKey
+				err = prov.UpdateAPIKey(vpcBlockConfig, ctxLogger)
+				if err != nil {
+					ctxLogger.Error("Failed to update API key in the provider", local.ZapError(err))
+					return nil, true, errors.New("Error updating api key in the provider")
+				}
+				continue
 			}
-			ctxLogger.Info("Created NewAPIKeyImpl...")
-			err = apiKeyImp.UpdateIAMKeys(providerConfig)
-			if err != nil {
-				ctxLogger.Fatal("Unable to get API key", local.ZapError(err))
-				return nil, true, err
-			}
-			vpcBlockConfig.VPCConfig.APIKey = providerConfig.VPC.G2APIKey
-			vpcBlockConfig.VPCConfig.G2APIKey = providerConfig.VPC.G2APIKey
-			err = prov.UpdateAPIKey(vpcBlockConfig, ctxLogger)
-			if err != nil {
-				ctxLogger.Error("Failed to update API key in the provider", local.ZapError(err))
-				return nil, true, err
-			}
-			continue
+			return nil, true, err
 		}
 		return nil, true, err
 	}

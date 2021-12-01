@@ -138,9 +138,14 @@ func (iksp *IksVpcBlockProvider) ContextCredentialsFactory(zone *string) (local.
 }
 
 // UpdateAPIKey ...
-func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) error {
+func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logger) error {
 	logger.Info("Updating api key in iks vpc provider")
-	err := iksp.vpcBlockProvider.UpdateAPIKey(conf, logger)
+	vpcConfig, ok := conf.(*vpcconfig.VPCBlockConfig)
+	if !ok {
+		logger.Error("Error fetching vpc block config from interface")
+		return errors.New("error unmarshaling vpc block config")
+	}
+	err := iksp.vpcBlockProvider.UpdateAPIKey(vpcConfig, logger)
 	if err != nil {
 		logger.Error("Error updating api key in provider", zap.Error(err))
 		return err
