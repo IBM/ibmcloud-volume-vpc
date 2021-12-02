@@ -27,7 +27,6 @@ import (
 	"github.com/IBM-Cloud/ibm-cloud-cli-sdk/common/rest"
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
-	"github.com/IBM/ibmcloud-volume-interface/lib/utils/reasoncode"
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
 	"go.uber.org/zap"
 )
@@ -178,7 +177,7 @@ func (r *tokenExchangeIKSRequest) sendTokenExchangeRequest() (*tokenExchangeIKSR
 			zap.Int("StatusCode", resp.StatusCode), zap.Reflect("API IncidentID", errorV.IncidentID),
 			zap.Reflect("Error", errorV))
 
-		err := util.NewError(reasoncode.ReasonCode(errorV.ErrorCode),
+		err := util.NewError("ErrorFailedTokenExchange",
 			"IAM token exchange request failed: "+errorV.ErrorDescription,
 			errors.New(errorV.ErrorCode+" "+errorV.ErrorType+", Description: "+errorV.ErrorDescription+", API IncidentID:"+errorV.IncidentID))
 		return nil, err

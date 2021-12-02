@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20211201130038-908a1c27f922
+	github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20211202112519-57832f6b459b
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/structs v1.1.0
 	github.com/pierrre/gotestcover v0.0.0-20160517101806-924dca7d15f0 // indirect

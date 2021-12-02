@@ -116,7 +116,7 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedDuringRequest(t *testing.T
 	assert.Nil(t, r)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "IAM token exchange request failed: did not work", err.Error())
-		assert.Equal(t, reasoncode.ReasonCode("bad news"), util.ErrorReasonCode(err))
+		assert.Equal(t, reasoncode.ReasonCode("ErrorFailedTokenExchange"), util.ErrorReasonCode(err))
 	}
 }
 
@@ -242,13 +242,13 @@ func Test_IKSExchangeIAMAPIKeyForAccessToken(t *testing.T) {
 			apiHandler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(401)
 				fmt.Fprint(w, `{"description": "not authorised",
-					"code": "authorisation failure",
+					"code": "authorisation",
 					"type" : "more details",
 					"incidentID" : "1000"
 					}`)
 			},
 			expectedError:      iam.String("IAM token exchange request failed: not authorised"),
-			expectedReasonCode: "authorisation failure",
+			expectedReasonCode: "ErrorFailedTokenExchange",
 		},
 		{
 			name: "no error message",
