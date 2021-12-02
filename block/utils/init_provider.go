@@ -19,11 +19,7 @@ package utils
 
 import (
 	"errors"
-	"fmt"
-	"os"
 
-	"github.com/IBM/ibm-csi-common/pkg/utils"
-	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
@@ -73,72 +69,32 @@ func InitProviders(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) (registry
 }
 
 // OpenProviderSession ...
-func OpenProviderSession(providerConfig *config.Config, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
-	return OpenProviderSessionWithContext(context.TODO(), providerConfig, providers, providerID, ctxLogger)
+func OpenProviderSession(prov local.Provider, vpcBlockConfig *vpcconfig.VPCBlockConfig, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (session provider.Session, fatal bool, err error) {
+	return OpenProviderSessionWithContext(context.TODO(), prov, vpcBlockConfig, providerID, ctxLogger)
 }
 
 // OpenProviderSessionWithContext ...
-func OpenProviderSessionWithContext(ctx context.Context, providerConfig *config.Config, providers registry.Providers, providerID string, ctxLogger *zap.Logger) (provider.Session, bool, error) {
-	prov, err := providers.Get(providerID)
+func OpenProviderSessionWithContext(ctx context.Context, prov local.Provider, vpcBlockConfig *vpcconfig.VPCBlockConfig, providerID string, ctxLogger *zap.Logger) (provider.Session, bool, error) {
+	ctxLogger.Info("Fetching provider session")
+	ccf, err := prov.ContextCredentialsFactory(nil)
 	if err != nil {
-		ctxLogger.Error("Not able to get the said provider, might be its not registered", local.ZapError(err))
+		ctxLogger.Error("Unable to fetch credentials", local.ZapError(err))
 		return nil, true, err
 	}
-
-	vpcBlockConfig := &vpcconfig.VPCBlockConfig{
-		VPCConfig:    providerConfig.VPC,
-		IKSConfig:    providerConfig.IKS,
-		APIConfig:    providerConfig.API,
-		ServerConfig: providerConfig.Server,
-	}
-
-	maxRetryAttempt := 3
-	for retryCount := 0; retryCount < maxRetryAttempt; retryCount++ {
-		ccf, err := prov.ContextCredentialsFactory(nil)
-		if err != nil {
-			ctxLogger.Error("Unable to fetch credentials", local.ZapError(err))
-			return nil, true, err
-		}
-		ctxLogger.Info("Calling provider/utils/init_provider.go GenerateContextCredentials")
-		contextCredentials, err := GenerateContextCredentials(vpcBlockConfig, providerID, ccf, ctxLogger)
-		if err != nil {
-			ctxLogger.Error("Unable to generate credentials", local.ZapError(err))
-			return nil, true, err
-		}
-		ctxLogger.Info(fmt.Sprintf("Attempt %d - open provider session", retryCount+1))
-		session, err := prov.OpenSession(ctx, contextCredentials, ctxLogger)
-		if err == nil {
-			return session, false, nil
-		}
-		if providerConfig.IKS != nil && (providerConfig.IKS.Enabled || os.Getenv("IKS_ENABLED") == "True") {
-			if providerError, ok := err.(provider.Error); ok && string(providerError.Code()) == provider.APIKeyNotFound {
-				apiKeyImp, err := utils.NewAPIKeyImpl(ctxLogger)
-				if err != nil {
-					ctxLogger.Fatal("Unable to create API key getter", zap.Reflect("Error", err))
-					return nil, true, err
-				}
-				ctxLogger.Info("Created NewAPIKeyImpl...")
-				err = apiKeyImp.UpdateIAMKeys(providerConfig)
-				if err != nil {
-					ctxLogger.Fatal("Unable to get API key", local.ZapError(err))
-					return nil, true, err
-				}
-				vpcBlockConfig.VPCConfig.APIKey = providerConfig.VPC.G2APIKey
-				vpcBlockConfig.VPCConfig.G2APIKey = providerConfig.VPC.G2APIKey
-				err = prov.UpdateAPIKey(vpcBlockConfig, ctxLogger)
-				if err != nil {
-					ctxLogger.Error("Failed to update API key in the provider", local.ZapError(err))
-					return nil, true, errors.New("error updating api key in the provider")
-				}
-				continue
-			}
-			return nil, true, err
-		}
+	ctxLogger.Info("Calling provider/utils/init_provider.go GenerateContextCredentials")
+	contextCredentials, err := GenerateContextCredentials(vpcBlockConfig, providerID, ccf, ctxLogger)
+	if err != nil {
+		ctxLogger.Error("Unable to generate credentials", local.ZapError(err))
 		return nil, true, err
 	}
+	session, err := prov.OpenSession(ctx, contextCredentials, ctxLogger)
+	if err == nil {
+		ctxLogger.Info("Successfully fetched provider session")
+		return session, false, nil
+	}
 
-	ctxLogger.Error("Failed to open provider session", local.ZapError(errors.New("API key not found")))
-	return nil, true, errors.New("API key not found, retry after few minutes")
+	ctxLogger.Error("Failed to open provider session", local.ZapError(err))
+	return nil, true, err
 }
 
 // GenerateContextCredentials ...
