@@ -249,6 +249,10 @@ func (vpcp *VPCBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logger)
 		logger.Error("Error fetching vpc block config from interface")
 		return errors.New("error unmarshaling vpc block config")
 	}
+	if vpcp.ContextCF == nil {
+		logger.Error("Error updating api key, context credentials is not intiliazed")
+		return errors.New("credentials not initliazed in the provider")
+	}
 	err := vpcp.ContextCF.UpdateAPIKey(vpcConfig.VPCConfig.G2APIKey, logger)
 	if err != nil {
 		logger.Error("Error updating api key in provider", zap.Error(err))

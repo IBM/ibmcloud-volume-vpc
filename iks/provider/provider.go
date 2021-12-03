@@ -146,6 +146,10 @@ func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logg
 		logger.Error("Error fetching vpc block config from interface")
 		return errors.New("error unmarshaling vpc block config")
 	}
+	if iksp.vpcBlockProvider == nil {
+		logger.Error("VPC Block provider not initialized, hence unable to update api key")
+		return errors.New("vpc block provider not initalized")
+	}
 	err := iksp.vpcBlockProvider.UpdateAPIKey(vpcConfig, logger)
 	if err != nil {
 		logger.Error("Error updating api key in provider", zap.Error(err))
