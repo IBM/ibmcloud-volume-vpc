@@ -148,7 +148,7 @@ func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logg
 	}
 	if iksp.vpcBlockProvider == nil {
 		logger.Error("VPC Block provider not initialized, hence unable to update api key")
-		return errors.New("vpc block provider not initalized")
+		return errors.New("vpc block provider not initialized")
 	}
 	err := iksp.vpcBlockProvider.UpdateAPIKey(vpcConfig, logger)
 	if err != nil {
@@ -158,5 +158,7 @@ func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logg
 
 	iksp.VPCBlockProvider = *iksp.vpcBlockProvider
 	iksp.iksBlockProvider = iksp.vpcBlockProvider
+	// Override base URL
+	iksp.iksBlockProvider.APIConfig.BaseURL = vpcConfig.VPCConfig.IKSTokenExchangePrivateURL
 	return nil
 }

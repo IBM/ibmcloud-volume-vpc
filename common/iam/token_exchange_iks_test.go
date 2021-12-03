@@ -78,6 +78,8 @@ func Test_IKSUpdateAPIKey(t *testing.T) {
 	assert.Nil(t, err)
 
 	tes, err = NewTokenExchangeIKSService(nil)
+	assert.NoError(t, err)
+
 	err = tes.UpdateAPIKey("invalid", logger)
 	assert.NotNil(t, err)
 }
