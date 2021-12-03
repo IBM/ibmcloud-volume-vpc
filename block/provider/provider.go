@@ -258,8 +258,9 @@ func (vpcp *VPCBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logger)
 		logger.Error("Error updating api key in provider", zap.Error(err))
 		return err
 	}
-	vpcp.tokenGenerator = &tokenGenerator{config: vpcConfig.VPCConfig}
-	vpcp.Config = vpcConfig
+	vpcp.Config.VPCConfig.APIKey = vpcConfig.VPCConfig.G2APIKey
+	vpcp.Config.VPCConfig.G2APIKey = vpcConfig.VPCConfig.G2APIKey
+	vpcp.tokenGenerator = &tokenGenerator{config: vpcp.Config.VPCConfig}
 	return nil
 }
 
