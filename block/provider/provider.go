@@ -260,7 +260,8 @@ func (vpcp *VPCBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logger)
 	}
 	vpcp.Config.VPCConfig.APIKey = vpcConfig.VPCConfig.G2APIKey
 	vpcp.Config.VPCConfig.G2APIKey = vpcConfig.VPCConfig.G2APIKey
-	vpcp.tokenGenerator = &tokenGenerator{config: vpcp.Config.VPCConfig}
+	vpcp.tokenGenerator.config.G2APIKey = vpcConfig.VPCConfig.G2APIKey
+	vpcp.tokenGenerator.config.APIKey = vpcConfig.VPCConfig.G2APIKey
 	return nil
 }
 

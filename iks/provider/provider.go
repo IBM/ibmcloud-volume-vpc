@@ -155,10 +155,12 @@ func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logg
 		logger.Error("Error updating api key in provider", zap.Error(err))
 		return err
 	}
+	err = iksp.iksBlockProvider.UpdateAPIKey(vpcConfig, logger)
+	if err != nil {
+		logger.Error("Error updating api key in vpc block provider", zap.Error(err))
+		return err
+	}
 
 	iksp.VPCBlockProvider = *iksp.vpcBlockProvider
-	iksp.iksBlockProvider = iksp.vpcBlockProvider
-	// Override base URL
-	iksp.iksBlockProvider.APIConfig.BaseURL = vpcConfig.VPCConfig.IKSTokenExchangePrivateURL
 	return nil
 }
