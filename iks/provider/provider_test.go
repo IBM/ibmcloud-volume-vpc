@@ -248,6 +248,27 @@ func TestOpenSession(t *testing.T) {
 	assert.Nil(t, sessn)
 }
 
+func TestUpdateAPIKey(t *testing.T) {
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+
+	vpcp, err := GetTestProvider(t, logger)
+	assert.Nil(t, err)
+
+	err = vpcp.UpdateAPIKey(nil, logger)
+	assert.NotNil(t, err)
+
+	config := &vpcconfig.VPCBlockConfig{
+		VPCConfig: &config.VPCProviderConfig{
+			G2APIKey: "invalid",
+			APIKey:   "invalid",
+		},
+	}
+
+	err = vpcp.UpdateAPIKey(config, logger)
+	assert.Nil(t, err)
+}
+
 func GetTestOpenSession(t *testing.T, logger *zap.Logger) (sessn *IksVpcSession, uc, sc *fakes.RegionalAPI, err error) {
 	vpcp, err := GetTestProvider(t, logger)
 	iksVpcProvider, _ := vpcp.(*IksVpcBlockProvider)
