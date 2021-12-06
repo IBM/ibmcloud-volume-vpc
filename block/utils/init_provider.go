@@ -87,14 +87,15 @@ func OpenProviderSessionWithContext(ctx context.Context, prov local.Provider, vp
 		ctxLogger.Error("Unable to generate credentials", local.ZapError(err))
 		return nil, true, err
 	}
+
 	session, err := prov.OpenSession(ctx, contextCredentials, ctxLogger)
-	if err == nil {
-		ctxLogger.Info("Successfully fetched provider session")
-		return session, false, nil
+	if err != nil {
+		ctxLogger.Error("Failed to open provider session", local.ZapError(err))
+		return nil, true, err
 	}
 
-	ctxLogger.Error("Failed to open provider session", local.ZapError(err))
-	return nil, true, err
+	ctxLogger.Info("Successfully fetched provider session")
+	return session, false, nil
 }
 
 // GenerateContextCredentials ...

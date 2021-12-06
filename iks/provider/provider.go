@@ -152,12 +152,12 @@ func (iksp *IksVpcBlockProvider) UpdateAPIKey(conf interface{}, logger *zap.Logg
 	}
 	err := iksp.vpcBlockProvider.UpdateAPIKey(vpcConfig, logger)
 	if err != nil {
-		logger.Error("Error updating api key in provider", zap.Error(err))
+		logger.Error("Error updating api key in vpc block provider", zap.Error(err))
 		return err
 	}
 	err = iksp.iksBlockProvider.UpdateAPIKey(vpcConfig, logger)
 	if err != nil {
-		logger.Error("Error updating api key in vpc block provider", zap.Error(err))
+		logger.Error("Error updating api key in iks block provider", zap.Error(err))
 		return err
 	}
 
