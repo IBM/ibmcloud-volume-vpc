@@ -52,6 +52,7 @@ var skipErrorCodes = map[string]bool{
 	"volume_name_not_found":            true,
 	"internal_error":                   false,
 	"invalid_route":                    false,
+	"snapshots_not_found":              true,
 
 	// IKS ms error code for skip re-try
 	"ST0008": true, //resources not found
