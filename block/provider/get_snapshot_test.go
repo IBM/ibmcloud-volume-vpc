@@ -20,6 +20,7 @@ package provider
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
@@ -30,22 +31,21 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestGetSnapshotWithVolumeID(t *testing.T) {
+func TestGetSnapshot(t *testing.T) {
 	//var err error
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
 	var (
-		snapshotService *serviceFakes.SnapshotService
-		volumeService   *serviceFakes.VolumeService
+		snapshotService *serviceFakes.SnapshotManager
 	)
+	timeNow := time.Now()
 
 	testCases := []struct {
 		testCaseName string
-		volumeID     string
+
 		snapshotID   string
 		baseSnapshot *models.Snapshot
-		baseVolume   *models.Volume
 		setup        func()
 
 		skipErrTest        bool
@@ -55,30 +55,30 @@ func TestGetSnapshotWithVolumeID(t *testing.T) {
 		verify func(t *testing.T, snapshotResponse *provider.Snapshot, err error)
 	}{
 		{
-			testCaseName: "Not supported yet",
-			volumeID:     "v6f293bf-test-4bff-816f-e199c0c65db5",
+			testCaseName: "OK",
 			snapshotID:   "16f293bf-test-4bff-816f-e199c0c65db5",
-			baseVolume: &models.Volume{
-				ID:       "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:     "test-volume-name",
-				Status:   models.StatusType("OK"),
-				Capacity: int64(10),
-				Iops:     int64(1000),
-				Zone:     &models.Zone{Name: "test-zone"},
-			},
 			baseSnapshot: &models.Snapshot{
-				ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:   "test-snapshot-name",
-				Status: models.StatusType("OK"),
+				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:           "test-snapshot-name",
+				LifecycleState: snapshotReadyState,
+				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
+				CreatedAt:      &timeNow,
 			},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.NotNil(t, snapshotResponse)
 				assert.Nil(t, err)
 			},
 		}, {
-			testCaseName:       "Wrong volume ID",
-			volumeID:           "Wrong volume ID",
-			expectedErr:        "{Code:ErrorUnclassified, Type:InvalidRequest, Description:'Wrong volume ID' volume ID is not valid. Please check https://cloud.ibm.com/docs/infrastructure/vpc?topic=vpc-rias-error-messages#volume_id_invalid, BackendError:, RC:400}",
+			testCaseName: "Wrong snapshot ID",
+			snapshotID:   "Wrong snapshot ID",
+			baseSnapshot: &models.Snapshot{
+				ID:             "wrong-wrong-id",
+				Name:           "test-snapshot-name",
+				LifecycleState: snapshotReadyState,
+				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
+				CreatedAt:      &timeNow,
+			},
+			expectedErr:        "{Code:ErrorUnclassified, Type:InvalidRequest, Description:'Wrong snapshot ID' snapshot ID is not valid., RC:400}",
 			expectedReasonCode: "ErrorUnclassified",
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.Nil(t, snapshotResponse)
@@ -95,22 +95,16 @@ func TestGetSnapshotWithVolumeID(t *testing.T) {
 			assert.NotNil(t, sc)
 			assert.Nil(t, err)
 
-			snapshotService = &serviceFakes.SnapshotService{}
+			snapshotService = &serviceFakes.SnapshotManager{}
 			assert.NotNil(t, snapshotService)
 			uc.SnapshotServiceReturns(snapshotService)
 
-			volumeService = &serviceFakes.VolumeService{}
-			assert.NotNil(t, volumeService)
-			uc.VolumeServiceReturns(volumeService)
-
 			if testcase.expectedErr != "" {
 				snapshotService.GetSnapshotReturns(testcase.baseSnapshot, errors.New(testcase.expectedReasonCode))
-				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
 			} else {
 				snapshotService.GetSnapshotReturns(testcase.baseSnapshot, nil)
-				volumeService.GetVolumeReturns(testcase.baseVolume, nil)
 			}
-			snapshot, err := vpcs.GetSnapshotWithVolumeID(testcase.snapshotID, testcase.volumeID)
+			snapshot, err := vpcs.GetSnapshot(testcase.snapshotID)
 			logger.Info("Snapshot details", zap.Reflect("snapshot", snapshot))
 
 			if testcase.expectedErr != "" {
@@ -126,21 +120,22 @@ func TestGetSnapshotWithVolumeID(t *testing.T) {
 	}
 }
 
-func TestGetSnapshot(t *testing.T) {
+func TestGetSnapshotByName(t *testing.T) {
 	//var err error
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
 	var (
-		snapshotService *serviceFakes.SnapshotService
+		snapshotService *serviceFakes.SnapshotManager
 	)
+	timeNow := time.Now()
 
 	testCases := []struct {
 		testCaseName string
-
-		snapshotID   string
+		snapshotName string
 		baseSnapshot *models.Snapshot
-		setup        func()
+
+		setup func()
 
 		skipErrTest        bool
 		expectedErr        string
@@ -149,11 +144,43 @@ func TestGetSnapshot(t *testing.T) {
 		verify func(t *testing.T, snapshotResponse *provider.Snapshot, err error)
 	}{
 		{
-			testCaseName: "Not supported yet",
-			snapshotID:   "16f293bf-test-4bff-816f-e199c0c65db5",
+			testCaseName: "OK",
+			snapshotName: "Test snapshot",
+			baseSnapshot: &models.Snapshot{
+				ID:             "wrong-wrong-id",
+				Name:           "test-snapshot-name",
+				LifecycleState: snapshotReadyState,
+				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
+				CreatedAt:      &timeNow,
+			},
+			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
+				assert.NotNil(t, snapshotResponse)
+				assert.Nil(t, err)
+			},
+		}, {
+			testCaseName: "Wrong snapshot ID",
+			snapshotName: "Wrong snapshot name",
+			baseSnapshot: &models.Snapshot{
+				ID:             "wrong-wrong-id",
+				Name:           "test-snapshot-name",
+				LifecycleState: snapshotReadyState,
+				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
+				CreatedAt:      &timeNow,
+			},
+			expectedErr:        "{Code:ErrorUnclassified, Type:InvalidRequest, Description:'Wrong snapshot ID' snapshot ID is not valid., RC:400}",
+			expectedReasonCode: "ErrorUnclassified",
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.Nil(t, snapshotResponse)
-				assert.Nil(t, err)
+				assert.NotNil(t, err)
+			},
+		}, {
+			testCaseName:       "Empty volume name",
+			snapshotName:       "",
+			expectedErr:        "{Code:ErrorUnclassified, Type:RetrivalFailed, Description:Failed to find '16f293bf-test-4bff-816f-e199c0c65db5' snapshot ID., BackendError:StorageFindFailedWithSnapshotId, RC:404}",
+			expectedReasonCode: "ErrorUnclassified",
+			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
+				assert.Nil(t, snapshotResponse)
+				assert.NotNil(t, err)
 			},
 		},
 	}
@@ -166,17 +193,17 @@ func TestGetSnapshot(t *testing.T) {
 			assert.NotNil(t, sc)
 			assert.Nil(t, err)
 
-			snapshotService = &serviceFakes.SnapshotService{}
+			snapshotService = &serviceFakes.SnapshotManager{}
 			assert.NotNil(t, snapshotService)
 			uc.SnapshotServiceReturns(snapshotService)
 
 			if testcase.expectedErr != "" {
-				snapshotService.GetSnapshotReturns(testcase.baseSnapshot, errors.New(testcase.expectedReasonCode))
+				snapshotService.GetSnapshotByNameReturns(testcase.baseSnapshot, errors.New(testcase.expectedReasonCode))
 			} else {
-				snapshotService.GetSnapshotReturns(testcase.baseSnapshot, nil)
+				snapshotService.GetSnapshotByNameReturns(testcase.baseSnapshot, nil)
 			}
-			snapshot, err := vpcs.GetSnapshot(testcase.snapshotID)
-			logger.Info("Snapshot details", zap.Reflect("snapshot", snapshot))
+			snapshot, err := vpcs.GetSnapshotByName(testcase.snapshotName)
+			logger.Info("Snapshot details", zap.Reflect("volume", snapshot))
 
 			if testcase.expectedErr != "" {
 				assert.NotNil(t, err)

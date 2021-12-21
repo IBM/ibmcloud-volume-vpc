@@ -2,9 +2,9 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	riaas "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
 )
 
 type RegionalAPIClientProvider struct {
@@ -31,15 +31,16 @@ func (fake *RegionalAPIClientProvider) New(arg1 riaas.Config) (riaas.RegionalAPI
 	fake.newArgsForCall = append(fake.newArgsForCall, struct {
 		arg1 riaas.Config
 	}{arg1})
+	stub := fake.NewStub
+	fakeReturns := fake.newReturns
 	fake.recordInvocation("New", []interface{}{arg1})
 	fake.newMutex.Unlock()
-	if fake.NewStub != nil {
-		return fake.NewStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.newReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

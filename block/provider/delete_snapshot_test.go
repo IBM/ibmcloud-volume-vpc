@@ -24,7 +24,6 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/lib/utils/reasoncode"
-	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	serviceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -36,19 +35,13 @@ func TestDeleteSnapshot(t *testing.T) {
 	defer teardown()
 
 	var (
-		snapshotService *serviceFakes.SnapshotService
-		volumeService   *serviceFakes.VolumeService
+		snapshotService *serviceFakes.SnapshotManager
 	)
 
 	testCases := []struct {
 		testCaseName     string
-		baseVolume       *models.Volume
-		baseSnapshot     *models.Snapshot
-		providerVolume   *provider.Volume
 		providerSnapshot *provider.Snapshot
-
-		tags  map[string]string
-		setup func()
+		setup            func()
 
 		skipErrTest        bool
 		expectedErr        string
@@ -59,35 +52,29 @@ func TestDeleteSnapshot(t *testing.T) {
 		{
 			testCaseName: "Not supported yet",
 			providerSnapshot: &provider.Snapshot{
-				SnapshotID: "s6f293bf-test-4bff-816f-e199c0c65db5",
-				Volume: provider.Volume{
-					VolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-					Name:     String("Test volume"),
-					Capacity: Int(10),
-					Iops:     String("1000"),
-					VPCVolume: provider.VPCVolume{
-						Profile: &provider.Profile{Name: "general-purpose"},
-					},
-				},
+				VolumeID:   "16f293bf-test-4bff-816f-e199c0c65db5",
+				SnapshotID: "16f293bf-test-4bff-816f-e199c0c65db6",
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Nil(t, err)
 			},
 		}, {
-			testCaseName: "Not a valid snapshot",
+			testCaseName: "False positive: No Snapshot being sent",
 			providerSnapshot: &provider.Snapshot{
-				SnapshotID: "s6f293bf-test-4bff-816f-e199c0c65db5",
-				Volume: provider.Volume{
-					VolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-					Name:     String("Test volume"),
-					Capacity: Int(10),
-					Iops:     String("1000"),
-					VPCVolume: provider.VPCVolume{
-						Profile: &provider.Profile{Name: "general-purpose"},
-					},
-				},
+				SnapshotID: "",
 			},
 			expectedErr:        "{Code:ErrorUnclassified, Type:InvalidRequest, Description:'Not a valid snapshot ID",
+			expectedReasonCode: "ErrorUnclassified",
+			verify: func(t *testing.T, err error) {
+				assert.NotNil(t, err)
+			},
+		}, {
+			testCaseName: "Incorrect snapshot ID",
+			providerSnapshot: &provider.Snapshot{
+				VolumeID:   "16f293bf-test-4bff-816f-e199c0c65db5",
+				SnapshotID: "16f293bf-test-4bff-816f-e199c0c65db6",
+			},
+			expectedErr:        "{Code:ErrorUnclassified, Type:RetrivalFailed, Description:'Not a valid volume ID",
 			expectedReasonCode: "ErrorUnclassified",
 			verify: func(t *testing.T, err error) {
 				assert.NotNil(t, err)
@@ -103,20 +90,14 @@ func TestDeleteSnapshot(t *testing.T) {
 			assert.NotNil(t, sc)
 			assert.Nil(t, err)
 
-			snapshotService = &serviceFakes.SnapshotService{}
+			snapshotService = &serviceFakes.SnapshotManager{}
 			assert.NotNil(t, snapshotService)
 			uc.SnapshotServiceReturns(snapshotService)
 
-			volumeService = &serviceFakes.VolumeService{}
-			assert.NotNil(t, volumeService)
-			uc.VolumeServiceReturns(volumeService)
-
 			if testcase.expectedErr != "" {
 				snapshotService.DeleteSnapshotReturns(errors.New(testcase.expectedReasonCode))
-				snapshotService.GetSnapshotReturns(testcase.baseSnapshot, errors.New(testcase.expectedReasonCode))
 			} else {
 				snapshotService.DeleteSnapshotReturns(nil)
-				snapshotService.GetSnapshotReturns(testcase.baseSnapshot, nil)
 			}
 			err = vpcs.DeleteSnapshot(testcase.providerSnapshot)
 
@@ -131,4 +112,42 @@ func TestDeleteSnapshot(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDeleteSnapshotTwo(t *testing.T) {
+	//var err error
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+
+	var (
+		snapshotService *serviceFakes.SnapshotManager
+	)
+	providerSnapshot := &provider.Snapshot{
+		VolumeID:   "16f293bf-test-4bff-816f-e199c0c65db5",
+		SnapshotID: "16f293bf-test-4bff-816f-e199c0c65db6",
+	}
+
+	vpcs, uc, sc, err := GetTestOpenSession(t, logger)
+	assert.NotNil(t, vpcs)
+	assert.NotNil(t, uc)
+	assert.NotNil(t, sc)
+	assert.Nil(t, err)
+	snapshotService = &serviceFakes.SnapshotManager{}
+	assert.NotNil(t, snapshotService)
+	uc.SnapshotServiceReturns(snapshotService)
+
+	snapshotService.DeleteSnapshotReturns(errors.New("not_found"))
+
+	err = vpcs.DeleteSnapshot(providerSnapshot)
+	assert.NotNil(t, err)
+
+	snapshotService.DeleteSnapshotReturns(errors.New("failedToDeleteSnapshot"))
+
+	err = vpcs.DeleteSnapshot(providerSnapshot)
+	assert.NotNil(t, err)
+
+	snapshotService.DeleteSnapshotReturns(errors.New("failedToDeleteSnapshot"))
+
+	err = vpcs.DeleteSnapshot(providerSnapshot)
+	assert.NotNil(t, err)
 }

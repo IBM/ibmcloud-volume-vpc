@@ -43,7 +43,7 @@ type Volume struct {
 	Tags                []string             `json:"tags,omitempty"` //We need to validate and remove this if not required.
 	UserTags            []string             `json:"user_tags,omitempty"`
 	Profile             *Profile             `json:"profile,omitempty"`
-	Snapshot            *Snapshot            `json:"snapshot,omitempty"`
+	SourceSnapshot      *Snapshot            `json:"source_snapshot,omitempty"`
 	CreatedAt           *time.Time           `json:"created_at,omitempty"`
 	Status              StatusType           `json:"status,omitempty"`
 	VolumeAttachments   *[]VolumeAttachment  `json:"volume_attachments,omitempty"`

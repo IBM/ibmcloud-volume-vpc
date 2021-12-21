@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type SnapshotService struct {
+type SnapshotManager struct {
 	CheckSnapshotTagStub        func(string, string, string, *zap.Logger) error
 	checkSnapshotTagMutex       sync.RWMutex
 	checkSnapshotTagArgsForCall []struct {
@@ -24,12 +24,11 @@ type SnapshotService struct {
 	checkSnapshotTagReturnsOnCall map[int]struct {
 		result1 error
 	}
-	CreateSnapshotStub        func(string, *models.Snapshot, *zap.Logger) (*models.Snapshot, error)
+	CreateSnapshotStub        func(*models.Snapshot, *zap.Logger) (*models.Snapshot, error)
 	createSnapshotMutex       sync.RWMutex
 	createSnapshotArgsForCall []struct {
-		arg1 string
-		arg2 *models.Snapshot
-		arg3 *zap.Logger
+		arg1 *models.Snapshot
+		arg2 *zap.Logger
 	}
 	createSnapshotReturns struct {
 		result1 *models.Snapshot
@@ -39,12 +38,11 @@ type SnapshotService struct {
 		result1 *models.Snapshot
 		result2 error
 	}
-	DeleteSnapshotStub        func(string, string, *zap.Logger) error
+	DeleteSnapshotStub        func(string, *zap.Logger) error
 	deleteSnapshotMutex       sync.RWMutex
 	deleteSnapshotArgsForCall []struct {
 		arg1 string
-		arg2 string
-		arg3 *zap.Logger
+		arg2 *zap.Logger
 	}
 	deleteSnapshotReturns struct {
 		result1 error
@@ -66,18 +64,31 @@ type SnapshotService struct {
 	deleteSnapshotTagReturnsOnCall map[int]struct {
 		result1 error
 	}
-	GetSnapshotStub        func(string, string, *zap.Logger) (*models.Snapshot, error)
+	GetSnapshotStub        func(string, *zap.Logger) (*models.Snapshot, error)
 	getSnapshotMutex       sync.RWMutex
 	getSnapshotArgsForCall []struct {
 		arg1 string
-		arg2 string
-		arg3 *zap.Logger
+		arg2 *zap.Logger
 	}
 	getSnapshotReturns struct {
 		result1 *models.Snapshot
 		result2 error
 	}
 	getSnapshotReturnsOnCall map[int]struct {
+		result1 *models.Snapshot
+		result2 error
+	}
+	GetSnapshotByNameStub        func(string, *zap.Logger) (*models.Snapshot, error)
+	getSnapshotByNameMutex       sync.RWMutex
+	getSnapshotByNameArgsForCall []struct {
+		arg1 string
+		arg2 *zap.Logger
+	}
+	getSnapshotByNameReturns struct {
+		result1 *models.Snapshot
+		result2 error
+	}
+	getSnapshotByNameReturnsOnCall map[int]struct {
 		result1 *models.Snapshot
 		result2 error
 	}
@@ -96,11 +107,13 @@ type SnapshotService struct {
 		result1 *[]string
 		result2 error
 	}
-	ListSnapshotsStub        func(string, *zap.Logger) (*models.SnapshotList, error)
+	ListSnapshotsStub        func(int, string, *models.LisSnapshotFilters, *zap.Logger) (*models.SnapshotList, error)
 	listSnapshotsMutex       sync.RWMutex
 	listSnapshotsArgsForCall []struct {
-		arg1 string
-		arg2 *zap.Logger
+		arg1 int
+		arg2 string
+		arg3 *models.LisSnapshotFilters
+		arg4 *zap.Logger
 	}
 	listSnapshotsReturns struct {
 		result1 *models.SnapshotList
@@ -128,7 +141,7 @@ type SnapshotService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *SnapshotService) CheckSnapshotTag(arg1 string, arg2 string, arg3 string, arg4 *zap.Logger) error {
+func (fake *SnapshotManager) CheckSnapshotTag(arg1 string, arg2 string, arg3 string, arg4 *zap.Logger) error {
 	fake.checkSnapshotTagMutex.Lock()
 	ret, specificReturn := fake.checkSnapshotTagReturnsOnCall[len(fake.checkSnapshotTagArgsForCall)]
 	fake.checkSnapshotTagArgsForCall = append(fake.checkSnapshotTagArgsForCall, struct {
@@ -137,38 +150,39 @@ func (fake *SnapshotService) CheckSnapshotTag(arg1 string, arg2 string, arg3 str
 		arg3 string
 		arg4 *zap.Logger
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.CheckSnapshotTagStub
+	fakeReturns := fake.checkSnapshotTagReturns
 	fake.recordInvocation("CheckSnapshotTag", []interface{}{arg1, arg2, arg3, arg4})
 	fake.checkSnapshotTagMutex.Unlock()
-	if fake.CheckSnapshotTagStub != nil {
-		return fake.CheckSnapshotTagStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.checkSnapshotTagReturns
 	return fakeReturns.result1
 }
 
-func (fake *SnapshotService) CheckSnapshotTagCallCount() int {
+func (fake *SnapshotManager) CheckSnapshotTagCallCount() int {
 	fake.checkSnapshotTagMutex.RLock()
 	defer fake.checkSnapshotTagMutex.RUnlock()
 	return len(fake.checkSnapshotTagArgsForCall)
 }
 
-func (fake *SnapshotService) CheckSnapshotTagCalls(stub func(string, string, string, *zap.Logger) error) {
+func (fake *SnapshotManager) CheckSnapshotTagCalls(stub func(string, string, string, *zap.Logger) error) {
 	fake.checkSnapshotTagMutex.Lock()
 	defer fake.checkSnapshotTagMutex.Unlock()
 	fake.CheckSnapshotTagStub = stub
 }
 
-func (fake *SnapshotService) CheckSnapshotTagArgsForCall(i int) (string, string, string, *zap.Logger) {
+func (fake *SnapshotManager) CheckSnapshotTagArgsForCall(i int) (string, string, string, *zap.Logger) {
 	fake.checkSnapshotTagMutex.RLock()
 	defer fake.checkSnapshotTagMutex.RUnlock()
 	argsForCall := fake.checkSnapshotTagArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *SnapshotService) CheckSnapshotTagReturns(result1 error) {
+func (fake *SnapshotManager) CheckSnapshotTagReturns(result1 error) {
 	fake.checkSnapshotTagMutex.Lock()
 	defer fake.checkSnapshotTagMutex.Unlock()
 	fake.CheckSnapshotTagStub = nil
@@ -177,7 +191,7 @@ func (fake *SnapshotService) CheckSnapshotTagReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *SnapshotService) CheckSnapshotTagReturnsOnCall(i int, result1 error) {
+func (fake *SnapshotManager) CheckSnapshotTagReturnsOnCall(i int, result1 error) {
 	fake.checkSnapshotTagMutex.Lock()
 	defer fake.checkSnapshotTagMutex.Unlock()
 	fake.CheckSnapshotTagStub = nil
@@ -191,46 +205,46 @@ func (fake *SnapshotService) CheckSnapshotTagReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *SnapshotService) CreateSnapshot(arg1 string, arg2 *models.Snapshot, arg3 *zap.Logger) (*models.Snapshot, error) {
+func (fake *SnapshotManager) CreateSnapshot(arg1 *models.Snapshot, arg2 *zap.Logger) (*models.Snapshot, error) {
 	fake.createSnapshotMutex.Lock()
 	ret, specificReturn := fake.createSnapshotReturnsOnCall[len(fake.createSnapshotArgsForCall)]
 	fake.createSnapshotArgsForCall = append(fake.createSnapshotArgsForCall, struct {
-		arg1 string
-		arg2 *models.Snapshot
-		arg3 *zap.Logger
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("CreateSnapshot", []interface{}{arg1, arg2, arg3})
+		arg1 *models.Snapshot
+		arg2 *zap.Logger
+	}{arg1, arg2})
+	stub := fake.CreateSnapshotStub
+	fakeReturns := fake.createSnapshotReturns
+	fake.recordInvocation("CreateSnapshot", []interface{}{arg1, arg2})
 	fake.createSnapshotMutex.Unlock()
-	if fake.CreateSnapshotStub != nil {
-		return fake.CreateSnapshotStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createSnapshotReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *SnapshotService) CreateSnapshotCallCount() int {
+func (fake *SnapshotManager) CreateSnapshotCallCount() int {
 	fake.createSnapshotMutex.RLock()
 	defer fake.createSnapshotMutex.RUnlock()
 	return len(fake.createSnapshotArgsForCall)
 }
 
-func (fake *SnapshotService) CreateSnapshotCalls(stub func(string, *models.Snapshot, *zap.Logger) (*models.Snapshot, error)) {
+func (fake *SnapshotManager) CreateSnapshotCalls(stub func(*models.Snapshot, *zap.Logger) (*models.Snapshot, error)) {
 	fake.createSnapshotMutex.Lock()
 	defer fake.createSnapshotMutex.Unlock()
 	fake.CreateSnapshotStub = stub
 }
 
-func (fake *SnapshotService) CreateSnapshotArgsForCall(i int) (string, *models.Snapshot, *zap.Logger) {
+func (fake *SnapshotManager) CreateSnapshotArgsForCall(i int) (*models.Snapshot, *zap.Logger) {
 	fake.createSnapshotMutex.RLock()
 	defer fake.createSnapshotMutex.RUnlock()
 	argsForCall := fake.createSnapshotArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *SnapshotService) CreateSnapshotReturns(result1 *models.Snapshot, result2 error) {
+func (fake *SnapshotManager) CreateSnapshotReturns(result1 *models.Snapshot, result2 error) {
 	fake.createSnapshotMutex.Lock()
 	defer fake.createSnapshotMutex.Unlock()
 	fake.CreateSnapshotStub = nil
@@ -240,7 +254,7 @@ func (fake *SnapshotService) CreateSnapshotReturns(result1 *models.Snapshot, res
 	}{result1, result2}
 }
 
-func (fake *SnapshotService) CreateSnapshotReturnsOnCall(i int, result1 *models.Snapshot, result2 error) {
+func (fake *SnapshotManager) CreateSnapshotReturnsOnCall(i int, result1 *models.Snapshot, result2 error) {
 	fake.createSnapshotMutex.Lock()
 	defer fake.createSnapshotMutex.Unlock()
 	fake.CreateSnapshotStub = nil
@@ -256,46 +270,46 @@ func (fake *SnapshotService) CreateSnapshotReturnsOnCall(i int, result1 *models.
 	}{result1, result2}
 }
 
-func (fake *SnapshotService) DeleteSnapshot(arg1 string, arg2 string, arg3 *zap.Logger) error {
+func (fake *SnapshotManager) DeleteSnapshot(arg1 string, arg2 *zap.Logger) error {
 	fake.deleteSnapshotMutex.Lock()
 	ret, specificReturn := fake.deleteSnapshotReturnsOnCall[len(fake.deleteSnapshotArgsForCall)]
 	fake.deleteSnapshotArgsForCall = append(fake.deleteSnapshotArgsForCall, struct {
 		arg1 string
-		arg2 string
-		arg3 *zap.Logger
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("DeleteSnapshot", []interface{}{arg1, arg2, arg3})
+		arg2 *zap.Logger
+	}{arg1, arg2})
+	stub := fake.DeleteSnapshotStub
+	fakeReturns := fake.deleteSnapshotReturns
+	fake.recordInvocation("DeleteSnapshot", []interface{}{arg1, arg2})
 	fake.deleteSnapshotMutex.Unlock()
-	if fake.DeleteSnapshotStub != nil {
-		return fake.DeleteSnapshotStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteSnapshotReturns
 	return fakeReturns.result1
 }
 
-func (fake *SnapshotService) DeleteSnapshotCallCount() int {
+func (fake *SnapshotManager) DeleteSnapshotCallCount() int {
 	fake.deleteSnapshotMutex.RLock()
 	defer fake.deleteSnapshotMutex.RUnlock()
 	return len(fake.deleteSnapshotArgsForCall)
 }
 
-func (fake *SnapshotService) DeleteSnapshotCalls(stub func(string, string, *zap.Logger) error) {
+func (fake *SnapshotManager) DeleteSnapshotCalls(stub func(string, *zap.Logger) error) {
 	fake.deleteSnapshotMutex.Lock()
 	defer fake.deleteSnapshotMutex.Unlock()
 	fake.DeleteSnapshotStub = stub
 }
 
-func (fake *SnapshotService) DeleteSnapshotArgsForCall(i int) (string, string, *zap.Logger) {
+func (fake *SnapshotManager) DeleteSnapshotArgsForCall(i int) (string, *zap.Logger) {
 	fake.deleteSnapshotMutex.RLock()
 	defer fake.deleteSnapshotMutex.RUnlock()
 	argsForCall := fake.deleteSnapshotArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *SnapshotService) DeleteSnapshotReturns(result1 error) {
+func (fake *SnapshotManager) DeleteSnapshotReturns(result1 error) {
 	fake.deleteSnapshotMutex.Lock()
 	defer fake.deleteSnapshotMutex.Unlock()
 	fake.DeleteSnapshotStub = nil
@@ -304,7 +318,7 @@ func (fake *SnapshotService) DeleteSnapshotReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *SnapshotService) DeleteSnapshotReturnsOnCall(i int, result1 error) {
+func (fake *SnapshotManager) DeleteSnapshotReturnsOnCall(i int, result1 error) {
 	fake.deleteSnapshotMutex.Lock()
 	defer fake.deleteSnapshotMutex.Unlock()
 	fake.DeleteSnapshotStub = nil
@@ -318,7 +332,7 @@ func (fake *SnapshotService) DeleteSnapshotReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *SnapshotService) DeleteSnapshotTag(arg1 string, arg2 string, arg3 string, arg4 *zap.Logger) error {
+func (fake *SnapshotManager) DeleteSnapshotTag(arg1 string, arg2 string, arg3 string, arg4 *zap.Logger) error {
 	fake.deleteSnapshotTagMutex.Lock()
 	ret, specificReturn := fake.deleteSnapshotTagReturnsOnCall[len(fake.deleteSnapshotTagArgsForCall)]
 	fake.deleteSnapshotTagArgsForCall = append(fake.deleteSnapshotTagArgsForCall, struct {
@@ -327,38 +341,39 @@ func (fake *SnapshotService) DeleteSnapshotTag(arg1 string, arg2 string, arg3 st
 		arg3 string
 		arg4 *zap.Logger
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.DeleteSnapshotTagStub
+	fakeReturns := fake.deleteSnapshotTagReturns
 	fake.recordInvocation("DeleteSnapshotTag", []interface{}{arg1, arg2, arg3, arg4})
 	fake.deleteSnapshotTagMutex.Unlock()
-	if fake.DeleteSnapshotTagStub != nil {
-		return fake.DeleteSnapshotTagStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteSnapshotTagReturns
 	return fakeReturns.result1
 }
 
-func (fake *SnapshotService) DeleteSnapshotTagCallCount() int {
+func (fake *SnapshotManager) DeleteSnapshotTagCallCount() int {
 	fake.deleteSnapshotTagMutex.RLock()
 	defer fake.deleteSnapshotTagMutex.RUnlock()
 	return len(fake.deleteSnapshotTagArgsForCall)
 }
 
-func (fake *SnapshotService) DeleteSnapshotTagCalls(stub func(string, string, string, *zap.Logger) error) {
+func (fake *SnapshotManager) DeleteSnapshotTagCalls(stub func(string, string, string, *zap.Logger) error) {
 	fake.deleteSnapshotTagMutex.Lock()
 	defer fake.deleteSnapshotTagMutex.Unlock()
 	fake.DeleteSnapshotTagStub = stub
 }
 
-func (fake *SnapshotService) DeleteSnapshotTagArgsForCall(i int) (string, string, string, *zap.Logger) {
+func (fake *SnapshotManager) DeleteSnapshotTagArgsForCall(i int) (string, string, string, *zap.Logger) {
 	fake.deleteSnapshotTagMutex.RLock()
 	defer fake.deleteSnapshotTagMutex.RUnlock()
 	argsForCall := fake.deleteSnapshotTagArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *SnapshotService) DeleteSnapshotTagReturns(result1 error) {
+func (fake *SnapshotManager) DeleteSnapshotTagReturns(result1 error) {
 	fake.deleteSnapshotTagMutex.Lock()
 	defer fake.deleteSnapshotTagMutex.Unlock()
 	fake.DeleteSnapshotTagStub = nil
@@ -367,7 +382,7 @@ func (fake *SnapshotService) DeleteSnapshotTagReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *SnapshotService) DeleteSnapshotTagReturnsOnCall(i int, result1 error) {
+func (fake *SnapshotManager) DeleteSnapshotTagReturnsOnCall(i int, result1 error) {
 	fake.deleteSnapshotTagMutex.Lock()
 	defer fake.deleteSnapshotTagMutex.Unlock()
 	fake.DeleteSnapshotTagStub = nil
@@ -381,46 +396,46 @@ func (fake *SnapshotService) DeleteSnapshotTagReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
-func (fake *SnapshotService) GetSnapshot(arg1 string, arg2 string, arg3 *zap.Logger) (*models.Snapshot, error) {
+func (fake *SnapshotManager) GetSnapshot(arg1 string, arg2 *zap.Logger) (*models.Snapshot, error) {
 	fake.getSnapshotMutex.Lock()
 	ret, specificReturn := fake.getSnapshotReturnsOnCall[len(fake.getSnapshotArgsForCall)]
 	fake.getSnapshotArgsForCall = append(fake.getSnapshotArgsForCall, struct {
 		arg1 string
-		arg2 string
-		arg3 *zap.Logger
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetSnapshot", []interface{}{arg1, arg2, arg3})
+		arg2 *zap.Logger
+	}{arg1, arg2})
+	stub := fake.GetSnapshotStub
+	fakeReturns := fake.getSnapshotReturns
+	fake.recordInvocation("GetSnapshot", []interface{}{arg1, arg2})
 	fake.getSnapshotMutex.Unlock()
-	if fake.GetSnapshotStub != nil {
-		return fake.GetSnapshotStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getSnapshotReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *SnapshotService) GetSnapshotCallCount() int {
+func (fake *SnapshotManager) GetSnapshotCallCount() int {
 	fake.getSnapshotMutex.RLock()
 	defer fake.getSnapshotMutex.RUnlock()
 	return len(fake.getSnapshotArgsForCall)
 }
 
-func (fake *SnapshotService) GetSnapshotCalls(stub func(string, string, *zap.Logger) (*models.Snapshot, error)) {
+func (fake *SnapshotManager) GetSnapshotCalls(stub func(string, *zap.Logger) (*models.Snapshot, error)) {
 	fake.getSnapshotMutex.Lock()
 	defer fake.getSnapshotMutex.Unlock()
 	fake.GetSnapshotStub = stub
 }
 
-func (fake *SnapshotService) GetSnapshotArgsForCall(i int) (string, string, *zap.Logger) {
+func (fake *SnapshotManager) GetSnapshotArgsForCall(i int) (string, *zap.Logger) {
 	fake.getSnapshotMutex.RLock()
 	defer fake.getSnapshotMutex.RUnlock()
 	argsForCall := fake.getSnapshotArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *SnapshotService) GetSnapshotReturns(result1 *models.Snapshot, result2 error) {
+func (fake *SnapshotManager) GetSnapshotReturns(result1 *models.Snapshot, result2 error) {
 	fake.getSnapshotMutex.Lock()
 	defer fake.getSnapshotMutex.Unlock()
 	fake.GetSnapshotStub = nil
@@ -430,7 +445,7 @@ func (fake *SnapshotService) GetSnapshotReturns(result1 *models.Snapshot, result
 	}{result1, result2}
 }
 
-func (fake *SnapshotService) GetSnapshotReturnsOnCall(i int, result1 *models.Snapshot, result2 error) {
+func (fake *SnapshotManager) GetSnapshotReturnsOnCall(i int, result1 *models.Snapshot, result2 error) {
 	fake.getSnapshotMutex.Lock()
 	defer fake.getSnapshotMutex.Unlock()
 	fake.GetSnapshotStub = nil
@@ -446,7 +461,72 @@ func (fake *SnapshotService) GetSnapshotReturnsOnCall(i int, result1 *models.Sna
 	}{result1, result2}
 }
 
-func (fake *SnapshotService) ListSnapshotTags(arg1 string, arg2 string, arg3 *zap.Logger) (*[]string, error) {
+func (fake *SnapshotManager) GetSnapshotByName(arg1 string, arg2 *zap.Logger) (*models.Snapshot, error) {
+	fake.getSnapshotByNameMutex.Lock()
+	ret, specificReturn := fake.getSnapshotByNameReturnsOnCall[len(fake.getSnapshotByNameArgsForCall)]
+	fake.getSnapshotByNameArgsForCall = append(fake.getSnapshotByNameArgsForCall, struct {
+		arg1 string
+		arg2 *zap.Logger
+	}{arg1, arg2})
+	stub := fake.GetSnapshotByNameStub
+	fakeReturns := fake.getSnapshotByNameReturns
+	fake.recordInvocation("GetSnapshotByName", []interface{}{arg1, arg2})
+	fake.getSnapshotByNameMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *SnapshotManager) GetSnapshotByNameCallCount() int {
+	fake.getSnapshotByNameMutex.RLock()
+	defer fake.getSnapshotByNameMutex.RUnlock()
+	return len(fake.getSnapshotByNameArgsForCall)
+}
+
+func (fake *SnapshotManager) GetSnapshotByNameCalls(stub func(string, *zap.Logger) (*models.Snapshot, error)) {
+	fake.getSnapshotByNameMutex.Lock()
+	defer fake.getSnapshotByNameMutex.Unlock()
+	fake.GetSnapshotByNameStub = stub
+}
+
+func (fake *SnapshotManager) GetSnapshotByNameArgsForCall(i int) (string, *zap.Logger) {
+	fake.getSnapshotByNameMutex.RLock()
+	defer fake.getSnapshotByNameMutex.RUnlock()
+	argsForCall := fake.getSnapshotByNameArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *SnapshotManager) GetSnapshotByNameReturns(result1 *models.Snapshot, result2 error) {
+	fake.getSnapshotByNameMutex.Lock()
+	defer fake.getSnapshotByNameMutex.Unlock()
+	fake.GetSnapshotByNameStub = nil
+	fake.getSnapshotByNameReturns = struct {
+		result1 *models.Snapshot
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *SnapshotManager) GetSnapshotByNameReturnsOnCall(i int, result1 *models.Snapshot, result2 error) {
+	fake.getSnapshotByNameMutex.Lock()
+	defer fake.getSnapshotByNameMutex.Unlock()
+	fake.GetSnapshotByNameStub = nil
+	if fake.getSnapshotByNameReturnsOnCall == nil {
+		fake.getSnapshotByNameReturnsOnCall = make(map[int]struct {
+			result1 *models.Snapshot
+			result2 error
+		})
+	}
+	fake.getSnapshotByNameReturnsOnCall[i] = struct {
+		result1 *models.Snapshot
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *SnapshotManager) ListSnapshotTags(arg1 string, arg2 string, arg3 *zap.Logger) (*[]string, error) {
 	fake.listSnapshotTagsMutex.Lock()
 	ret, specificReturn := fake.listSnapshotTagsReturnsOnCall[len(fake.listSnapshotTagsArgsForCall)]
 	fake.listSnapshotTagsArgsForCall = append(fake.listSnapshotTagsArgsForCall, struct {
@@ -454,38 +534,39 @@ func (fake *SnapshotService) ListSnapshotTags(arg1 string, arg2 string, arg3 *za
 		arg2 string
 		arg3 *zap.Logger
 	}{arg1, arg2, arg3})
+	stub := fake.ListSnapshotTagsStub
+	fakeReturns := fake.listSnapshotTagsReturns
 	fake.recordInvocation("ListSnapshotTags", []interface{}{arg1, arg2, arg3})
 	fake.listSnapshotTagsMutex.Unlock()
-	if fake.ListSnapshotTagsStub != nil {
-		return fake.ListSnapshotTagsStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSnapshotTagsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *SnapshotService) ListSnapshotTagsCallCount() int {
+func (fake *SnapshotManager) ListSnapshotTagsCallCount() int {
 	fake.listSnapshotTagsMutex.RLock()
 	defer fake.listSnapshotTagsMutex.RUnlock()
 	return len(fake.listSnapshotTagsArgsForCall)
 }
 
-func (fake *SnapshotService) ListSnapshotTagsCalls(stub func(string, string, *zap.Logger) (*[]string, error)) {
+func (fake *SnapshotManager) ListSnapshotTagsCalls(stub func(string, string, *zap.Logger) (*[]string, error)) {
 	fake.listSnapshotTagsMutex.Lock()
 	defer fake.listSnapshotTagsMutex.Unlock()
 	fake.ListSnapshotTagsStub = stub
 }
 
-func (fake *SnapshotService) ListSnapshotTagsArgsForCall(i int) (string, string, *zap.Logger) {
+func (fake *SnapshotManager) ListSnapshotTagsArgsForCall(i int) (string, string, *zap.Logger) {
 	fake.listSnapshotTagsMutex.RLock()
 	defer fake.listSnapshotTagsMutex.RUnlock()
 	argsForCall := fake.listSnapshotTagsArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *SnapshotService) ListSnapshotTagsReturns(result1 *[]string, result2 error) {
+func (fake *SnapshotManager) ListSnapshotTagsReturns(result1 *[]string, result2 error) {
 	fake.listSnapshotTagsMutex.Lock()
 	defer fake.listSnapshotTagsMutex.Unlock()
 	fake.ListSnapshotTagsStub = nil
@@ -495,7 +576,7 @@ func (fake *SnapshotService) ListSnapshotTagsReturns(result1 *[]string, result2 
 	}{result1, result2}
 }
 
-func (fake *SnapshotService) ListSnapshotTagsReturnsOnCall(i int, result1 *[]string, result2 error) {
+func (fake *SnapshotManager) ListSnapshotTagsReturnsOnCall(i int, result1 *[]string, result2 error) {
 	fake.listSnapshotTagsMutex.Lock()
 	defer fake.listSnapshotTagsMutex.Unlock()
 	fake.ListSnapshotTagsStub = nil
@@ -511,45 +592,48 @@ func (fake *SnapshotService) ListSnapshotTagsReturnsOnCall(i int, result1 *[]str
 	}{result1, result2}
 }
 
-func (fake *SnapshotService) ListSnapshots(arg1 string, arg2 *zap.Logger) (*models.SnapshotList, error) {
+func (fake *SnapshotManager) ListSnapshots(arg1 int, arg2 string, arg3 *models.LisSnapshotFilters, arg4 *zap.Logger) (*models.SnapshotList, error) {
 	fake.listSnapshotsMutex.Lock()
 	ret, specificReturn := fake.listSnapshotsReturnsOnCall[len(fake.listSnapshotsArgsForCall)]
 	fake.listSnapshotsArgsForCall = append(fake.listSnapshotsArgsForCall, struct {
-		arg1 string
-		arg2 *zap.Logger
-	}{arg1, arg2})
-	fake.recordInvocation("ListSnapshots", []interface{}{arg1, arg2})
+		arg1 int
+		arg2 string
+		arg3 *models.LisSnapshotFilters
+		arg4 *zap.Logger
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.ListSnapshotsStub
+	fakeReturns := fake.listSnapshotsReturns
+	fake.recordInvocation("ListSnapshots", []interface{}{arg1, arg2, arg3, arg4})
 	fake.listSnapshotsMutex.Unlock()
-	if fake.ListSnapshotsStub != nil {
-		return fake.ListSnapshotsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listSnapshotsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *SnapshotService) ListSnapshotsCallCount() int {
+func (fake *SnapshotManager) ListSnapshotsCallCount() int {
 	fake.listSnapshotsMutex.RLock()
 	defer fake.listSnapshotsMutex.RUnlock()
 	return len(fake.listSnapshotsArgsForCall)
 }
 
-func (fake *SnapshotService) ListSnapshotsCalls(stub func(string, *zap.Logger) (*models.SnapshotList, error)) {
+func (fake *SnapshotManager) ListSnapshotsCalls(stub func(int, string, *models.LisSnapshotFilters, *zap.Logger) (*models.SnapshotList, error)) {
 	fake.listSnapshotsMutex.Lock()
 	defer fake.listSnapshotsMutex.Unlock()
 	fake.ListSnapshotsStub = stub
 }
 
-func (fake *SnapshotService) ListSnapshotsArgsForCall(i int) (string, *zap.Logger) {
+func (fake *SnapshotManager) ListSnapshotsArgsForCall(i int) (int, string, *models.LisSnapshotFilters, *zap.Logger) {
 	fake.listSnapshotsMutex.RLock()
 	defer fake.listSnapshotsMutex.RUnlock()
 	argsForCall := fake.listSnapshotsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *SnapshotService) ListSnapshotsReturns(result1 *models.SnapshotList, result2 error) {
+func (fake *SnapshotManager) ListSnapshotsReturns(result1 *models.SnapshotList, result2 error) {
 	fake.listSnapshotsMutex.Lock()
 	defer fake.listSnapshotsMutex.Unlock()
 	fake.ListSnapshotsStub = nil
@@ -559,7 +643,7 @@ func (fake *SnapshotService) ListSnapshotsReturns(result1 *models.SnapshotList, 
 	}{result1, result2}
 }
 
-func (fake *SnapshotService) ListSnapshotsReturnsOnCall(i int, result1 *models.SnapshotList, result2 error) {
+func (fake *SnapshotManager) ListSnapshotsReturnsOnCall(i int, result1 *models.SnapshotList, result2 error) {
 	fake.listSnapshotsMutex.Lock()
 	defer fake.listSnapshotsMutex.Unlock()
 	fake.ListSnapshotsStub = nil
@@ -575,7 +659,7 @@ func (fake *SnapshotService) ListSnapshotsReturnsOnCall(i int, result1 *models.S
 	}{result1, result2}
 }
 
-func (fake *SnapshotService) SetSnapshotTag(arg1 string, arg2 string, arg3 string, arg4 *zap.Logger) error {
+func (fake *SnapshotManager) SetSnapshotTag(arg1 string, arg2 string, arg3 string, arg4 *zap.Logger) error {
 	fake.setSnapshotTagMutex.Lock()
 	ret, specificReturn := fake.setSnapshotTagReturnsOnCall[len(fake.setSnapshotTagArgsForCall)]
 	fake.setSnapshotTagArgsForCall = append(fake.setSnapshotTagArgsForCall, struct {
@@ -584,38 +668,39 @@ func (fake *SnapshotService) SetSnapshotTag(arg1 string, arg2 string, arg3 strin
 		arg3 string
 		arg4 *zap.Logger
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.SetSnapshotTagStub
+	fakeReturns := fake.setSnapshotTagReturns
 	fake.recordInvocation("SetSnapshotTag", []interface{}{arg1, arg2, arg3, arg4})
 	fake.setSnapshotTagMutex.Unlock()
-	if fake.SetSnapshotTagStub != nil {
-		return fake.SetSnapshotTagStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.setSnapshotTagReturns
 	return fakeReturns.result1
 }
 
-func (fake *SnapshotService) SetSnapshotTagCallCount() int {
+func (fake *SnapshotManager) SetSnapshotTagCallCount() int {
 	fake.setSnapshotTagMutex.RLock()
 	defer fake.setSnapshotTagMutex.RUnlock()
 	return len(fake.setSnapshotTagArgsForCall)
 }
 
-func (fake *SnapshotService) SetSnapshotTagCalls(stub func(string, string, string, *zap.Logger) error) {
+func (fake *SnapshotManager) SetSnapshotTagCalls(stub func(string, string, string, *zap.Logger) error) {
 	fake.setSnapshotTagMutex.Lock()
 	defer fake.setSnapshotTagMutex.Unlock()
 	fake.SetSnapshotTagStub = stub
 }
 
-func (fake *SnapshotService) SetSnapshotTagArgsForCall(i int) (string, string, string, *zap.Logger) {
+func (fake *SnapshotManager) SetSnapshotTagArgsForCall(i int) (string, string, string, *zap.Logger) {
 	fake.setSnapshotTagMutex.RLock()
 	defer fake.setSnapshotTagMutex.RUnlock()
 	argsForCall := fake.setSnapshotTagArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *SnapshotService) SetSnapshotTagReturns(result1 error) {
+func (fake *SnapshotManager) SetSnapshotTagReturns(result1 error) {
 	fake.setSnapshotTagMutex.Lock()
 	defer fake.setSnapshotTagMutex.Unlock()
 	fake.SetSnapshotTagStub = nil
@@ -624,7 +709,7 @@ func (fake *SnapshotService) SetSnapshotTagReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *SnapshotService) SetSnapshotTagReturnsOnCall(i int, result1 error) {
+func (fake *SnapshotManager) SetSnapshotTagReturnsOnCall(i int, result1 error) {
 	fake.setSnapshotTagMutex.Lock()
 	defer fake.setSnapshotTagMutex.Unlock()
 	fake.SetSnapshotTagStub = nil
@@ -638,7 +723,7 @@ func (fake *SnapshotService) SetSnapshotTagReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *SnapshotService) Invocations() map[string][][]interface{} {
+func (fake *SnapshotManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.checkSnapshotTagMutex.RLock()
@@ -651,6 +736,8 @@ func (fake *SnapshotService) Invocations() map[string][][]interface{} {
 	defer fake.deleteSnapshotTagMutex.RUnlock()
 	fake.getSnapshotMutex.RLock()
 	defer fake.getSnapshotMutex.RUnlock()
+	fake.getSnapshotByNameMutex.RLock()
+	defer fake.getSnapshotByNameMutex.RUnlock()
 	fake.listSnapshotTagsMutex.RLock()
 	defer fake.listSnapshotTagsMutex.RUnlock()
 	fake.listSnapshotsMutex.RLock()
@@ -664,7 +751,7 @@ func (fake *SnapshotService) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *SnapshotService) recordInvocation(key string, args []interface{}) {
+func (fake *SnapshotManager) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -676,4 +763,4 @@ func (fake *SnapshotService) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ vpcvolume.SnapshotManager = new(SnapshotService)
+var _ vpcvolume.SnapshotManager = new(SnapshotManager)

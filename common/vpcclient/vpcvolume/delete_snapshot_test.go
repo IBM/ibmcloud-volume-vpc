@@ -50,17 +50,17 @@ func TestDeleteSnapshot(t *testing.T) {
 		{
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
-			url:    vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1",
+			url:    vpcvolume.Version + "/snapshots/snapshot1",
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			url:       vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1",
+			url:       vpcvolume.Version + "/snapshots/snapshot1",
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
 		}, {
 			name:   "Verify that the snapshot is parsed correctly",
 			status: http.StatusOK,
-			url:    vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1",
+			url:    vpcvolume.Version + "/snapshots/snapshot1",
 			verify: func(t *testing.T, err error) {
 				assert.Nil(t, err)
 			},
@@ -70,7 +70,7 @@ func TestDeleteSnapshot(t *testing.T) {
 	for _, testcase := range testCases {
 		t.Run(testcase.name, func(t *testing.T) {
 			mux, client, teardown := test.SetupServer(t)
-			test.SetupMuxResponse(t, mux, vpcvolume.Version+"/volumes/volume1/snapshots/snapshot1", http.MethodDelete, nil, testcase.status, testcase.content, nil)
+			test.SetupMuxResponse(t, mux, vpcvolume.Version+"/snapshots/snapshot1", http.MethodDelete, nil, testcase.status, testcase.content, nil)
 
 			defer teardown()
 
@@ -78,7 +78,7 @@ func TestDeleteSnapshot(t *testing.T) {
 
 			snapshotService := vpcvolume.NewSnapshotManager(client)
 
-			err := snapshotService.DeleteSnapshot("volume1", "snapshot1", logger)
+			err := snapshotService.DeleteSnapshot("snapshot1", logger)
 
 			if testcase.verify != nil {
 				testcase.verify(t, err)

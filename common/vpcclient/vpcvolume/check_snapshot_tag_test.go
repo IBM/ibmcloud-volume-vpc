@@ -50,25 +50,25 @@ func TestCheckSnapshotTag(t *testing.T) {
 		{
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
-			url:    vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1/tags/test-tag",
+			url:    vpcvolume.Version + "/snapshots/snapshot1/tags/test-tag",
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			url:       vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1/tags/test-tag",
+			url:       vpcvolume.Version + "/snapshots/snapshot1/tags/test-tag",
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
 		}, {
 			name:    "Verify that the snapshot is parsed correctly",
 			status:  http.StatusNotFound,
-			url:     vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1/tags/test-tag",
-			content: "{\"id\":\"snapshot1\",\"name\":\"snapshot1\",\"status\":\"pending\"}",
+			url:     vpcvolume.Version + "/snapshots/snapshot1/tags/test-tag",
+			content: "{\"id\":\"snapshot1\",\"name\":\"snapshot1\",\"lifecycle_state\":\"pending\"}",
 			verify: func(t *testing.T, err error) {
 				assert.NotNil(t, err)
 			},
 		}, {
 			name:   "Verify that the snapshot tag exists",
 			status: http.StatusOK,
-			url:    vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1/tags/test-tag",
+			url:    vpcvolume.Version + "/snapshots/snapshot1/tags/test-tag",
 			verify: func(t *testing.T, err error) {
 				assert.Nil(t, err)
 			},

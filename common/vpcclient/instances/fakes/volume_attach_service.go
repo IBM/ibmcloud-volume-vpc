@@ -78,15 +78,16 @@ func (fake *VolumeAttachService) AttachVolume(arg1 *models.VolumeAttachment, arg
 		arg1 *models.VolumeAttachment
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.AttachVolumeStub
+	fakeReturns := fake.attachVolumeReturns
 	fake.recordInvocation("AttachVolume", []interface{}{arg1, arg2})
 	fake.attachVolumeMutex.Unlock()
-	if fake.AttachVolumeStub != nil {
-		return fake.AttachVolumeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.attachVolumeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -142,15 +143,16 @@ func (fake *VolumeAttachService) DetachVolume(arg1 *models.VolumeAttachment, arg
 		arg1 *models.VolumeAttachment
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.DetachVolumeStub
+	fakeReturns := fake.detachVolumeReturns
 	fake.recordInvocation("DetachVolume", []interface{}{arg1, arg2})
 	fake.detachVolumeMutex.Unlock()
-	if fake.DetachVolumeStub != nil {
-		return fake.DetachVolumeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.detachVolumeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -206,15 +208,16 @@ func (fake *VolumeAttachService) GetVolumeAttachment(arg1 *models.VolumeAttachme
 		arg1 *models.VolumeAttachment
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.GetVolumeAttachmentStub
+	fakeReturns := fake.getVolumeAttachmentReturns
 	fake.recordInvocation("GetVolumeAttachment", []interface{}{arg1, arg2})
 	fake.getVolumeAttachmentMutex.Unlock()
-	if fake.GetVolumeAttachmentStub != nil {
-		return fake.GetVolumeAttachmentStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getVolumeAttachmentReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -270,15 +273,16 @@ func (fake *VolumeAttachService) ListVolumeAttachments(arg1 *models.VolumeAttach
 		arg1 *models.VolumeAttachment
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.ListVolumeAttachmentsStub
+	fakeReturns := fake.listVolumeAttachmentsReturns
 	fake.recordInvocation("ListVolumeAttachments", []interface{}{arg1, arg2})
 	fake.listVolumeAttachmentsMutex.Unlock()
-	if fake.ListVolumeAttachmentsStub != nil {
-		return fake.ListVolumeAttachmentsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listVolumeAttachmentsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
