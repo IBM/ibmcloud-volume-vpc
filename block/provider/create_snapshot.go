@@ -28,6 +28,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// CreateSnapshot creates snapshot
 func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest) (*provider.Snapshot, error) {
 	vpcs.Logger.Info("Entry CreateSnapshot", zap.Reflect("snapshotRequest", snapshotRequest))
 	defer vpcs.Logger.Info("Exit CreateSnapshot", zap.Reflect("snapshotRequest", snapshotRequest))
@@ -84,7 +85,6 @@ func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest)
 		SnapshotCreationTime: *snapshotResult.CreatedAt,
 	}
 	return respSnapshot, nil
-
 }
 
 // validateSnapshotRequest validates request for snapshot

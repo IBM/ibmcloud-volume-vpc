@@ -40,7 +40,7 @@ type SnapshotList struct {
 	TotalCount int         `json:"total_count,omitempty"`
 }
 
-// ListVolumeFilters ...
+// LisSnapshotFilters ...
 type LisSnapshotFilters struct {
 	ResourceGroupID string `json:"resource_group.id,omitempty"`
 	Name            string `json:"name,omitempty"`

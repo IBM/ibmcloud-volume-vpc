@@ -163,13 +163,13 @@ func TestDeleteSnapshotTwo(t *testing.T) {
 	err = vpcs.DeleteSnapshot(providerSnapshot)
 	assert.NotNil(t, err)
 
-	snapshotService.DeleteSnapshotReturns(errors.New("FailedToDeleteSnapshot"))
+	snapshotService.DeleteSnapshotReturns(errors.New("failedToDeleteSnapshot"))
 	snapshotService.GetSnapshotReturns(baseSnapshot, nil)
 
 	err = vpcs.DeleteSnapshot(providerSnapshot)
 	assert.NotNil(t, err)
 
-	snapshotService.DeleteSnapshotReturns(errors.New("FailedToDeleteSnapshot"))
+	snapshotService.DeleteSnapshotReturns(errors.New("failedToDeleteSnapshot"))
 	snapshotService.GetSnapshotReturns(nil, errors.New("wrong code"))
 
 	err = vpcs.DeleteSnapshot(providerSnapshot)
