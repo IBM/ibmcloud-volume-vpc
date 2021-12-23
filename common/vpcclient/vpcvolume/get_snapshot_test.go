@@ -50,18 +50,18 @@ func TestGetSnapshot(t *testing.T) {
 		{
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
-			url:    vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1",
+			url:    vpcvolume.Version + "/snapshots/snapshot1",
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			url:       vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1",
+			url:       vpcvolume.Version + "/snapshots/snapshot1",
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
 		}, {
 			name:    "Verify that the snapshot is parsed correctly",
 			status:  http.StatusOK,
-			url:     vpcvolume.Version + "/volumes/volume1/snapshots/snapshot1",
-			content: "{\"id\":\"snapshot1\",\"name\":\"snapshot1\",\"status\":\"pending\"}",
+			url:     vpcvolume.Version + "/snapshots/snapshot1",
+			content: "{\"id\":\"snapshot1\",\"name\":\"snapshot1\",\"lifecycle_state\":\"pending\"}",
 			verify: func(t *testing.T, snapshot *models.Snapshot, err error) {
 				assert.NotNil(t, snapshot)
 				assert.Nil(t, err)
@@ -73,14 +73,14 @@ func TestGetSnapshot(t *testing.T) {
 		t.Run(testcase.name, func(t *testing.T) {
 			mux, client, teardown := test.SetupServer(t)
 			emptyString := ""
-			test.SetupMuxResponse(t, mux, vpcvolume.Version+"/volumes/volume1/snapshots/snapshot1", http.MethodGet, &emptyString, testcase.status, testcase.content, nil)
+			test.SetupMuxResponse(t, mux, vpcvolume.Version+"/snapshots/snapshot1", http.MethodGet, &emptyString, testcase.status, testcase.content, nil)
 
 			defer teardown()
 
 			logger.Info("Test case being executed", zap.Reflect("testcase", testcase.name))
 
 			snapshotService := vpcvolume.NewSnapshotManager(client)
-			snapshot, err := snapshotService.GetSnapshot("volume1", "snapshot1", logger)
+			snapshot, err := snapshotService.GetSnapshot("snapshot1", logger)
 			logger.Info("Snapshot details", zap.Reflect("snapshot", snapshot))
 
 			if testcase.verify != nil {

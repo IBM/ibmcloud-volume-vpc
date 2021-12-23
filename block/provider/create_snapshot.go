@@ -79,7 +79,7 @@ func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest)
 	vpcs.Logger.Info("Snapshot got valid (available) state", zap.Reflect("SnapshotDetails", snapshotResult))
 
 	respSnapshot := &provider.Snapshot{
-		VolumeID:             *&snapshotRequest.SourceVolumeID,
+		VolumeID:             snapshotRequest.SourceVolumeID,
 		SnapshotID:           snapshotResult.ID,
 		SnapshotCreationTime: *snapshotResult.CreatedAt,
 	}

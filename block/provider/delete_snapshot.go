@@ -35,7 +35,8 @@ func (vpcs *VPCSession) DeleteSnapshot(snapshot *provider.Snapshot) error {
 
 	var err error
 	if snapshot == nil {
-		return userError.GetUserError("InvalidSnapshotID", nil, nil)
+		err = userError.GetUserError("InvalidSnapshotID", nil, nil)
+		return err
 	}
 
 	_, err = vpcs.GetSnapshot(snapshot.SnapshotID)

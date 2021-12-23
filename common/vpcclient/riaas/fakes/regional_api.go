@@ -2,11 +2,11 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	instances "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/instances"
-	riaas "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
-	vpcvolume "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/instances"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
 )
 
 type RegionalAPI struct {
@@ -70,15 +70,16 @@ func (fake *RegionalAPI) IKSVolumeAttachService() instances.VolumeAttachManager 
 	ret, specificReturn := fake.iKSVolumeAttachServiceReturnsOnCall[len(fake.iKSVolumeAttachServiceArgsForCall)]
 	fake.iKSVolumeAttachServiceArgsForCall = append(fake.iKSVolumeAttachServiceArgsForCall, struct {
 	}{})
+	stub := fake.IKSVolumeAttachServiceStub
+	fakeReturns := fake.iKSVolumeAttachServiceReturns
 	fake.recordInvocation("IKSVolumeAttachService", []interface{}{})
 	fake.iKSVolumeAttachServiceMutex.Unlock()
-	if fake.IKSVolumeAttachServiceStub != nil {
-		return fake.IKSVolumeAttachServiceStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.iKSVolumeAttachServiceReturns
 	return fakeReturns.result1
 }
 
@@ -123,15 +124,16 @@ func (fake *RegionalAPI) Login(arg1 string) error {
 	fake.loginArgsForCall = append(fake.loginArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.LoginStub
+	fakeReturns := fake.loginReturns
 	fake.recordInvocation("Login", []interface{}{arg1})
 	fake.loginMutex.Unlock()
-	if fake.LoginStub != nil {
-		return fake.LoginStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.loginReturns
 	return fakeReturns.result1
 }
 
@@ -182,15 +184,16 @@ func (fake *RegionalAPI) SnapshotService() vpcvolume.SnapshotManager {
 	ret, specificReturn := fake.snapshotServiceReturnsOnCall[len(fake.snapshotServiceArgsForCall)]
 	fake.snapshotServiceArgsForCall = append(fake.snapshotServiceArgsForCall, struct {
 	}{})
+	stub := fake.SnapshotServiceStub
+	fakeReturns := fake.snapshotServiceReturns
 	fake.recordInvocation("SnapshotService", []interface{}{})
 	fake.snapshotServiceMutex.Unlock()
-	if fake.SnapshotServiceStub != nil {
-		return fake.SnapshotServiceStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.snapshotServiceReturns
 	return fakeReturns.result1
 }
 
@@ -234,15 +237,16 @@ func (fake *RegionalAPI) VolumeAttachService() instances.VolumeAttachManager {
 	ret, specificReturn := fake.volumeAttachServiceReturnsOnCall[len(fake.volumeAttachServiceArgsForCall)]
 	fake.volumeAttachServiceArgsForCall = append(fake.volumeAttachServiceArgsForCall, struct {
 	}{})
+	stub := fake.VolumeAttachServiceStub
+	fakeReturns := fake.volumeAttachServiceReturns
 	fake.recordInvocation("VolumeAttachService", []interface{}{})
 	fake.volumeAttachServiceMutex.Unlock()
-	if fake.VolumeAttachServiceStub != nil {
-		return fake.VolumeAttachServiceStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.volumeAttachServiceReturns
 	return fakeReturns.result1
 }
 
@@ -286,15 +290,16 @@ func (fake *RegionalAPI) VolumeService() vpcvolume.VolumeManager {
 	ret, specificReturn := fake.volumeServiceReturnsOnCall[len(fake.volumeServiceArgsForCall)]
 	fake.volumeServiceArgsForCall = append(fake.volumeServiceArgsForCall, struct {
 	}{})
+	stub := fake.VolumeServiceStub
+	fakeReturns := fake.volumeServiceReturns
 	fake.recordInvocation("VolumeService", []interface{}{})
 	fake.volumeServiceMutex.Unlock()
-	if fake.VolumeServiceStub != nil {
-		return fake.VolumeServiceStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.volumeServiceReturns
 	return fakeReturns.result1
 }
 

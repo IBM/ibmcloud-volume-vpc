@@ -46,7 +46,7 @@ func (vpcs *VPCSession) OrderSnapshot(volumeRequest provider.Volume) error {
 	vpcs.Logger.Info("Successfully retrieved given volume details from VPC provider", zap.Reflect("VolumeDetails", volume))
 
 	err = retry(vpcs.Logger, func() error {
-		snapshot, err = vpcs.Apiclient.SnapshotService().CreateSnapshot(volumeRequest.VolumeID, snapshot, vpcs.Logger)
+		snapshot, err = vpcs.Apiclient.SnapshotService().CreateSnapshot(snapshot, vpcs.Logger)
 		return err
 	})
 	if err != nil {

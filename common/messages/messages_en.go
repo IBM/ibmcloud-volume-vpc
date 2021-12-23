@@ -102,7 +102,7 @@ var messagesEn = map[string]util.Message{
 	},
 	"StorageFindFailedWithSnapshotId": {
 		Code:        "StorageFindFailedWithSnapshotId",
-		Description: "No volume could be found for the specified snapshot ID '%s'. Description: %s",
+		Description: "A snapshot with the specified snapshot ID '%s' could not be found.",
 		Type:        util.RetrivalFailed,
 		RC:          400,
 		Action:      "Please check the snapshot ID once, You many need to verify by using 'ibmcloud is' cli.",
@@ -229,6 +229,13 @@ var messagesEn = map[string]util.Message{
 	"InvalidListVolumesLimit": {
 		Code:        "InvalidListVolumesLimit",
 		Description: "The value '%v' specified in the limit parameter of the list volume call is not valid.",
+		Type:        util.InvalidRequest,
+		RC:          400,
+		Action:      "Verify the limit parameter's value. The limit must be a positive number between 0 and 100.",
+	},
+	"InvalidListSnapshotLimit": {
+		Code:        "InvalidListSnapshotLimit",
+		Description: "The value '%v' specified in the limit parameter of the list snapshot call is not valid.",
 		Type:        util.InvalidRequest,
 		RC:          400,
 		Action:      "Verify the limit parameter's value. The limit must be a positive number between 0 and 100.",

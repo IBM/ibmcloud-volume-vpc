@@ -19,6 +19,7 @@ package vpcvolume_test
 
 import (
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
@@ -36,34 +37,77 @@ func TestListSnapshots(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		// backend url
-		url string
-
 		// Response
 		status  int
 		content string
 
+		limit   int
+		start   string
+		filters *models.LisSnapshotFilters
+
 		// Expected return
 		expectErr string
-		verify    func(*testing.T, *models.SnapshotList, error)
+		verify    func(*testing.T)
+		muxVerify func(*testing.T, *http.Request)
 	}{
 		{
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
-			url:    vpcvolume.Version + "/volumes/volume-id/snapshots",
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			url:       vpcvolume.Version + "/volumes/volume-id/snapshots",
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
 		}, {
-			name:    "Verify that the snapshot is parsed correctly",
-			status:  http.StatusOK,
-			url:     vpcvolume.Version + "/volumes/volume-id/snapshots",
-			content: "{\"snapshots\":[{\"id\":\"snapshot1\",\"status\":\"pending\"},{\"id\":\"snapshot2\",\"status\":\"pending\"}]}",
-			verify: func(t *testing.T, snapshots *models.SnapshotList, err error) {
-				assert.NotNil(t, snapshots)
+			name:   "Verify that limit is added to the query",
+			limit:  12,
+			status: http.StatusNoContent,
+			muxVerify: func(t *testing.T, r *http.Request) {
+				expectedValues := url.Values{"limit": []string{"12"}, "version": []string{models.APIVersion}}
+				actualValues := r.URL.Query()
+				assert.Equal(t, expectedValues, actualValues)
+			},
+		}, {
+			name:   "Verify that start is added to the query",
+			start:  "x-y-z",
+			status: http.StatusNoContent,
+			muxVerify: func(t *testing.T, r *http.Request) {
+				expectedValues := url.Values{"start": []string{"x-y-z"}, "version": []string{models.APIVersion}}
+				actualValues := r.URL.Query()
+				assert.Equal(t, expectedValues, actualValues)
+			},
+		}, {
+			name: "Verify that resource_group.id is added to the query",
+			filters: &models.LisSnapshotFilters{
+				ResourceGroupID: "rgid",
+			},
+			status: http.StatusNoContent,
+			muxVerify: func(t *testing.T, r *http.Request) {
+				expectedValues := url.Values{"resource_group.id": []string{"rgid"}, "version": []string{models.APIVersion}}
+				actualValues := r.URL.Query()
+				assert.Equal(t, expectedValues, actualValues)
+			},
+		}, {
+			name: "Verify that source_volume.id is added to the query",
+			filters: &models.LisSnapshotFilters{
+				SourceVolumeID: "1234",
+			},
+			status: http.StatusNoContent,
+			muxVerify: func(t *testing.T, r *http.Request) {
+				expectedValues := url.Values{"source_volume.id": []string{"1234"}, "version": []string{models.APIVersion}}
+				actualValues := r.URL.Query()
+				assert.Equal(t, expectedValues, actualValues)
+			},
+		}, {
+			name: "Verify that snapshot name is added to the query",
+			filters: &models.LisSnapshotFilters{
+				Name: "testname",
+			},
+			status: http.StatusNoContent,
+			muxVerify: func(t *testing.T, r *http.Request) {
+				expectedValues := url.Values{"name": []string{"testname"}, "version": []string{models.APIVersion}}
+				actualValues := r.URL.Query()
+				assert.Equal(t, expectedValues, actualValues)
 			},
 		},
 	}
@@ -71,8 +115,7 @@ func TestListSnapshots(t *testing.T) {
 	for _, testcase := range testCases {
 		t.Run(testcase.name, func(t *testing.T) {
 			mux, client, teardown := test.SetupServer(t)
-			emptyString := ""
-			test.SetupMuxResponse(t, mux, testcase.url, http.MethodGet, &emptyString, testcase.status, testcase.content, nil)
+			test.SetupMuxResponse(t, mux, vpcvolume.Version+"/snapshots", http.MethodGet, nil, testcase.status, testcase.content, nil)
 
 			defer teardown()
 
@@ -80,12 +123,19 @@ func TestListSnapshots(t *testing.T) {
 
 			snapshotService := vpcvolume.NewSnapshotManager(client)
 
-			snapshots, err := snapshotService.ListSnapshots("volume-id", logger)
-			logger.Info("Snapshots", zap.Reflect("snapshots", snapshots))
+			snapshots, err := snapshotService.ListSnapshots(testcase.limit, testcase.start, testcase.filters, logger)
+			logger.Info("snapshots", zap.Reflect("snapshots", snapshots))
 
-			// vpc snapshot functionality is not yet ready. It would return error for now
+			if testcase.expectErr != "" && assert.Error(t, err) {
+				assert.Equal(t, testcase.expectErr, err.Error())
+				assert.Nil(t, snapshots)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, snapshots)
+			}
+
 			if testcase.verify != nil {
-				testcase.verify(t, snapshots, err)
+				testcase.verify(t)
 			}
 		})
 	}

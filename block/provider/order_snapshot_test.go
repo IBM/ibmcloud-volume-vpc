@@ -37,7 +37,7 @@ func TestOrderSnapshot(t *testing.T) {
 	defer teardown()
 
 	var (
-		snapshotService *serviceFakes.SnapshotService
+		snapshotService *serviceFakes.SnapshotManager
 		volumeService   *serviceFakes.VolumeService
 	)
 
@@ -68,9 +68,8 @@ func TestOrderSnapshot(t *testing.T) {
 				Iops:     int64(1000),
 			},
 			baseSnapshot: &models.Snapshot{
-				ID:     "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:   "test-snapshot-name",
-				Status: models.StatusType("OK"),
+				ID:   "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name: "test-snapshot-name",
 			},
 			verify: func(t *testing.T, err error) {
 				assert.Nil(t, err)
@@ -103,7 +102,7 @@ func TestOrderSnapshot(t *testing.T) {
 			assert.NotNil(t, sc)
 			assert.Nil(t, err)
 
-			snapshotService = &serviceFakes.SnapshotService{}
+			snapshotService = &serviceFakes.SnapshotManager{}
 			assert.NotNil(t, snapshotService)
 			uc.SnapshotServiceReturns(snapshotService)
 
@@ -141,7 +140,7 @@ func TestOrderSnapshotTwo(t *testing.T) {
 	timeNow := time.Now()
 
 	var (
-		snapshotService *serviceFakes.SnapshotService
+		snapshotService *serviceFakes.SnapshotManager
 		volumeService   *serviceFakes.VolumeService
 		baseSnapshot    *models.Snapshot
 		providerVolume  provider.Volume
@@ -162,7 +161,6 @@ func TestOrderSnapshotTwo(t *testing.T) {
 	baseSnapshot = &models.Snapshot{
 		ID:        "16f293bf-test-4bff-816f-e199c0c65db5",
 		Name:      "test-snapshot-name",
-		Status:    models.StatusType("OK"),
 		CreatedAt: &timeNow,
 	}
 	vpcs, uc, sc, err := GetTestOpenSession(t, logger)
@@ -171,7 +169,7 @@ func TestOrderSnapshotTwo(t *testing.T) {
 	assert.NotNil(t, sc)
 	assert.Nil(t, err)
 
-	snapshotService = &serviceFakes.SnapshotService{}
+	snapshotService = &serviceFakes.SnapshotManager{}
 	assert.NotNil(t, snapshotService)
 	uc.SnapshotServiceReturns(snapshotService)
 
