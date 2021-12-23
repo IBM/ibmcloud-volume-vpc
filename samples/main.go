@@ -121,6 +121,7 @@ func main() {
 		var choiceN int
 		var volumeID string
 		var snapshotID string
+		var snapshotName string
 		var er11 error
 		if *defaultChoice == 0 {
 			_, _ = fmt.Scanf("%d", &choiceN)
@@ -169,13 +170,17 @@ func main() {
 			fmt.Println("You selected choice to create snapshot")
 			fmt.Printf("Please enter volume ID: ")
 			_, _ = fmt.Scanf("%s", &volumeID)
-			volume := &provider.Volume{}
-			volume.VolumeID = volumeID
+			fmt.Printf("Please enter snapshot Name: ")
+			_, _ = fmt.Scanf("%s", &snapshotName)
+			snapshotRequest := provider.SnapshotRequest{}
+			snapshotRequest.SourceVolumeID = volumeID
+			snapshotRequest.Name = &snapshotName
 			tags := make(map[string]string)
 			tags["tag1"] = "snapshot-tag1"
-			snapshot, errr := sess.CreateSnapshot(volume, tags)
+			snapshotRequest.SnapshotTags = tags
+			snapshot, errr := sess.CreateSnapshot(snapshotRequest)
 			if errr == nil {
-				ctxLogger.Info("Successfully created snapshot on ================>", zap.Reflect("VolumeID", volumeID))
+				ctxLogger.Info("Successfully created snapshot on ================>", zap.Reflect("SourceVolumeID", volumeID))
 				ctxLogger.Info("Snapshot details: ", zap.Reflect("Snapshot", snapshot))
 			} else {
 				errr = updateRequestID(errr, requestID)
@@ -184,18 +189,35 @@ func main() {
 			fmt.Printf("\n\n")
 		} else if choiceN == 3 {
 			fmt.Println("You selected choice to list snapshot from volume")
-			fmt.Printf("Please enter volume ID to get the snapshots: ")
-			_, _ = fmt.Scanf("%s", &volumeID)
-			fmt.Printf("\n")
-			snapshots, errr := sess.ListAllSnapshots(volumeID)
-			if errr == nil {
-				ctxLogger.Info("Successfully get snapshot details ================>", zap.Reflect("Snapshot ID", volumeID))
-				ctxLogger.Info("List of snapshots ", zap.Reflect("Snapshots are->", snapshots))
-			} else {
-				errr = updateRequestID(errr, requestID)
-				ctxLogger.Info("Failed to get snapshot details ================>", zap.Reflect("Snapshot ID", volumeID), zap.Reflect("Error", errr))
+			tags := map[string]string{}
+			SourceVolumeID := ""
+			resourceGroupID := ""
+			fmt.Printf("Please enter sourceVolumeID to filter snapshots(Optional): ")
+			_, _ = fmt.Scanf("%s", &SourceVolumeID)
+			if SourceVolumeID != "" {
+				tags["source_volume.id"] = SourceVolumeID
 			}
-			fmt.Printf("\n\n")
+			fmt.Printf("\nPlease enter resource group ID to filter snapshots(Optional): ")
+			_, _ = fmt.Scanf("%s", &resourceGroupID)
+			if resourceGroupID != "" {
+				tags["resource_group.id"] = resourceGroupID
+			}
+
+			start := ""
+			var limit int
+			fmt.Printf("Please enter max number of snapshots entries per page to be returned(Optional): ")
+			_, _ = fmt.Scanf("%d", &limit)
+			for {
+				snapshotobj1, er11 := sess.ListSnapshots(limit, start, tags)
+				if er11 == nil {
+					ctxLogger.Info("Successfully get snapshot details ================>", zap.Reflect("SourceVolumeID", SourceVolumeID))
+					ctxLogger.Info("List of snapshots ", zap.Reflect("Snapshots are->", snapshotobj1))
+				} else {
+					er11 = updateRequestID(er11, requestID)
+					ctxLogger.Info("Failed to get snapshot details ================>", zap.Reflect("Snapshot ID", volumeID), zap.Reflect("Error", er11))
+				}
+				fmt.Printf("\n\n")
+			}
 		} else if choiceN == 4 {
 			fmt.Println("You selected choice to Create volume")
 			volume := &provider.Volume{}
@@ -251,32 +273,14 @@ func main() {
 		} else if choiceN == 5 {
 			fmt.Println("You selected choice to get snapshot details")
 			fmt.Printf("Please enter Snapshot ID: ")
-			_, _ = fmt.Scanf("%s", &volumeID)
-			snapdetails, errr := sess.GetSnapshot(volumeID)
+			_, _ = fmt.Scanf("%s", &snapshotID)
+			snapdetails, errr := sess.GetSnapshot(snapshotID)
 			fmt.Printf("\n\n")
 			if errr == nil {
-				ctxLogger.Info("Successfully retrieved the snapshot details ================>", zap.Reflect("Snapshot ID", volumeID))
+				ctxLogger.Info("Successfully retrieved the snapshot details ================>", zap.Reflect("Snapshot ID", snapshotID))
 				ctxLogger.Info("Snapshot details ================>", zap.Reflect("SnapshotDetails", snapdetails))
 			} else {
-				ctxLogger.Info("Failed to get snapshot details ================>", zap.Reflect("Snapshot ID", volumeID), zap.Reflect("Error", errr))
-			}
-			fmt.Printf("\n\n")
-		} else if choiceN == 6 {
-			fmt.Println("You selected choice to order snapshot")
-			volume := &provider.Volume{}
-			fmt.Printf("Please enter volume ID to create the snapshot space: ")
-			_, _ = fmt.Scanf("%s", &volumeID)
-			volume.VolumeID = volumeID
-			var size int
-			fmt.Printf("Please enter snapshot space size in GB: ")
-			_, _ = fmt.Scanf("%d", &size)
-			volume.SnapshotSpace = &size
-			er11 := sess.OrderSnapshot(*volume)
-			if er11 == nil {
-				ctxLogger.Info("Successfully ordered snapshot space ================>", zap.Reflect("Volume ID", volumeID))
-			} else {
-				er11 = updateRequestID(er11, requestID)
-				ctxLogger.Info("failed to order snapshot space================>", zap.Reflect("Volume ID", volumeID), zap.Reflect("Error", er11))
+				ctxLogger.Info("Failed to get snapshot details ================>", zap.Reflect("Snapshot ID", snapshotID), zap.Reflect("Error", errr))
 			}
 			fmt.Printf("\n\n")
 		} else if choiceN == 7 {
@@ -288,7 +292,7 @@ func main() {
 			fmt.Printf("Please enter snapshot ID for creating volume:")
 			_, _ = fmt.Scanf("%s", &snapshotID)
 			snapshotVol.SnapshotID = snapshotID
-			snapshotVol.Volume.VolumeID = volumeID
+			snapshotVol.VolumeID = volumeID
 			vol, errr := sess.CreateVolumeFromSnapshot(snapshotVol, tags)
 			if errr == nil {
 				ctxLogger.Info("Successfully Created volume from snapshot ================>", zap.Reflect("OriginalVolumeID", volumeID), zap.Reflect("SnapshotID", snapshotID))
@@ -324,16 +328,6 @@ func main() {
 			} else {
 				er11 = updateRequestID(er11, requestID)
 				ctxLogger.Info("failed snapshot deletion================>", zap.Reflect("Snapshot ID", snapshotID), zap.Reflect("Error", er11))
-			}
-			fmt.Printf("\n\n")
-		} else if choiceN == 10 {
-			fmt.Println("You selected choice to list all snapshot")
-			list, errr := sess.ListSnapshots()
-			if errr == nil {
-				ctxLogger.Info("SUCCESSFULLY got all snapshots ================>", zap.Reflect("Snapshots", list))
-			} else {
-				errr = updateRequestID(errr, requestID)
-				ctxLogger.Info("FAILED All snapshots ================>", zap.Reflect("Error", errr))
 			}
 			fmt.Printf("\n\n")
 		} else if choiceN == 11 {
@@ -432,20 +426,6 @@ func main() {
 			} else {
 				errr = updateRequestID(errr, requestID)
 				ctxLogger.Info("FAILED to create volume...", zap.Reflect("StorageType", volume.ProviderType), zap.Reflect("Error", errr))
-			}
-			fmt.Printf("\n\n")
-		} else if choiceN == 14 {
-			fmt.Println("You selected choice to order VPC snapshot")
-			volume := &provider.Volume{}
-			fmt.Printf("Please enter volume ID to create the snapshot space: ")
-			_, _ = fmt.Scanf("%s", &volumeID)
-			volume.VolumeID = volumeID
-			er11 := sess.OrderSnapshot(*volume)
-			if er11 == nil {
-				ctxLogger.Info("Successfully ordered snapshot space ================>", zap.Reflect("Volume ID", volumeID))
-			} else {
-				er11 = updateRequestID(er11, requestID)
-				ctxLogger.Info("failed to order snapshot space================>", zap.Reflect("Volume ID", volumeID), zap.Reflect("Error", er11))
 			}
 			fmt.Printf("\n\n")
 		} else if choiceN == 15 {

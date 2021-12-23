@@ -4,8 +4,10 @@ go 1.15
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.0.0-beta10
+	github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20211221064655-58e8536879c4
 	github.com/fatih/structs v1.1.0
+	github.com/gofrs/uuid v4.2.0+incompatible
+	github.com/golang-jwt/jwt/v4 v4.3.0
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -16,5 +18,3 @@ require (
 	golang.org/x/tools v0.1.8 // indirect
 	gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b // indirect
 )
-
-replace github.com/IBM/ibmcloud-volume-interface => /Users/meghna/go_workspace/src/github.com/IBM/ibmcloud-volume-interface
