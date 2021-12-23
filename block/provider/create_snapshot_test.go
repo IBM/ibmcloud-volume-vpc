@@ -20,6 +20,7 @@ package provider
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
@@ -39,6 +40,7 @@ func TestCreateSnapshot(t *testing.T) {
 		snapshotService *serviceFakes.SnapshotManager
 		volumeService   *serviceFakes.VolumeService
 	)
+	timeNow := time.Now()
 
 	testCases := []struct {
 		baseVolume              *models.Volume
@@ -121,6 +123,47 @@ func TestCreateSnapshot(t *testing.T) {
 				LifecycleState: "stable",
 			},
 			expectedReasonCode: "SnapshotSpaceOrderFailed",
+			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
+				assert.Nil(t, snapshotResponse)
+				assert.NotNil(t, err)
+			},
+		}, {
+			testCaseName: "Snapshot name is nil",
+			providerSnapshotRequest: &provider.SnapshotRequest{
+				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+			},
+			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
+				assert.Nil(t, snapshotResponse)
+				assert.NotNil(t, err)
+			},
+		}, {
+			testCaseName: "Snapshot name is empty",
+			baseSnapshot: &models.Snapshot{
+				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:           "test snapshot name",
+				LifecycleState: "stable",
+			},
+			providerSnapshotRequest: &provider.SnapshotRequest{
+				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:           String(""),
+			},
+			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
+				assert.Nil(t, snapshotResponse)
+				assert.NotNil(t, err)
+			},
+		}, {
+			testCaseName: "Snapshot in pending state",
+			baseSnapshot: &models.Snapshot{
+				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:           "test-snapshot-name",
+				LifecycleState: "stable",
+				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
+				CreatedAt:      &timeNow,
+			},
+			providerSnapshotRequest: &provider.SnapshotRequest{
+				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:           String("test volume name"),
+			},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.Nil(t, snapshotResponse)
 				assert.NotNil(t, err)
