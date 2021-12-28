@@ -230,6 +230,7 @@ func main() {
 			Iops := "0"
 			tier := ""
 			providerType := ""
+			snapshotID := ""
 
 			var choice int
 			fmt.Printf("\nPlease enter storage type choice 1- for endurance  2- for performance: ")
@@ -250,6 +251,10 @@ func main() {
 			_, _ = fmt.Scanf("%d", &volSize)
 			volume.Capacity = &volSize
 
+			fmt.Printf("\nPlease enter snapshotID : ")
+			_, _ = fmt.Scanf("%d", &snapshotID)
+			volume.SnapshotID = snapshotID
+
 			if volume.ProviderType == "performance" {
 				fmt.Printf("\nPlease enter iops from 1-48000 with multiple of 100: ")
 				_, _ = fmt.Scanf("%s", &Iops)
@@ -260,7 +265,6 @@ func main() {
 				_, _ = fmt.Scanf("%s", &tier)
 				volume.Tier = &tier
 			}
-			volume.SnapshotSpace = &volSize
 			volume.VolumeNotes = map[string]string{"note": "test"}
 			volumeObj, errr := sess.CreateVolume(*volume)
 			if errr == nil {
