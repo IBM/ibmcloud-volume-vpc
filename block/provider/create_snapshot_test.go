@@ -156,7 +156,7 @@ func TestCreateSnapshot(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:           "test-snapshot-name",
-				LifecycleState: "stable",
+				LifecycleState: "pending",
 				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
 				CreatedAt:      &timeNow,
 			},
@@ -187,19 +187,15 @@ func TestCreateSnapshot(t *testing.T) {
 			assert.NotNil(t, volumeService)
 			uc.VolumeServiceReturns(volumeService)
 
-			if testcase.skipErrTest == true {
-				snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, nil)
-				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New("errorUnclassified"))
+			if testcase.expectedErr != "" {
+				snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, errors.New(testcase.expectedReasonCode))
+				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
 			} else {
-				if testcase.expectedErr != "" {
-					snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, errors.New(testcase.expectedReasonCode))
-				} else {
-					snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, nil)
-				}
+				snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, nil)
+				volumeService.GetVolumeReturns(testcase.baseVolume, nil)
 			}
-
 			snapshot, err := vpcs.CreateSnapshot(*testcase.providerSnapshotRequest)
-			logger.Info("Snapshot details", zap.Reflect("snapshot", snapshot))
+			logger.Info("snapshot details", zap.Reflect("snapshot", snapshot))
 
 			if testcase.expectedErr != "" {
 				assert.NotNil(t, err)

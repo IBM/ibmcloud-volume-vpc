@@ -89,3 +89,56 @@ func TestGetSnapshot(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSnapshotByName(t *testing.T) {
+	// Setup new style zap logger
+	logger, _ := GetTestContextLogger()
+	defer logger.Sync()
+
+	testCases := []struct {
+		name string
+
+		// Response
+		status    int
+		snapshots string
+		content   string
+
+		// Expected return
+		expectErr string
+		verify    func(*testing.T, *models.Snapshot, error)
+	}{
+		{
+			name:   "Verify that the correct endpoint is invoked",
+			status: http.StatusNoContent,
+		}, {
+			name:      "Verify that a 404 is returned to the caller",
+			status:    http.StatusNotFound,
+			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
+			expectErr: "Trace Code:, testerr Please check ",
+		}, {
+			name:      "Verify that the snapshot is empty if the snapshots are empty",
+			status:    http.StatusOK,
+			expectErr: "Trace Code:, testerr Please check ",
+		},
+	}
+
+	for _, testcase := range testCases {
+		t.Run(testcase.name, func(t *testing.T) {
+			mux, client, teardown := test.SetupServer(t)
+			emptyString := ""
+			test.SetupMuxResponse(t, mux, vpcvolume.Version+"/snapshots", http.MethodGet, &emptyString, testcase.status, testcase.content, nil)
+
+			defer teardown()
+
+			logger.Info("Test case being executed", zap.Reflect("testcase", testcase.name))
+
+			snapshotService := vpcvolume.NewSnapshotManager(client)
+			snapshot, err := snapshotService.GetSnapshotByName("snap1", logger)
+			logger.Info("Snapshot details", zap.Reflect("snapshot", snapshot))
+
+			if testcase.verify != nil {
+				testcase.verify(t, snapshot, err)
+			}
+		})
+	}
+}
