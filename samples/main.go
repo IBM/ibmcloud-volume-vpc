@@ -372,6 +372,7 @@ func main() {
 			zone := "us-south-1"
 			volSize := 0
 			Iops := "0"
+			snapshotID := ""
 
 			volume.Az = zone
 
@@ -394,6 +395,10 @@ func main() {
 			_, _ = fmt.Scanf("%s", &Iops)
 			volume.Iops = &Iops
 
+			fmt.Printf("\nPlease enter snapshotID : ")
+			_, _ = fmt.Scanf("%d", &snapshotID)
+			volume.SnapshotID = snapshotID
+
 			fmt.Printf("\nPlease enter resource group info type : 1- for ID and 2- for Name: ")
 			_, _ = fmt.Scanf("%d", &resiurceGType)
 			if resiurceGType == 1 {
@@ -413,7 +418,6 @@ func main() {
 			_, _ = fmt.Scanf("%s", &zone)
 			volume.Az = zone
 
-			volume.SnapshotSpace = &volSize
 			volume.VPCVolume.Tags = []string{"Testing VPC Volume"}
 			volumeObj, errr := sess.CreateVolume(*volume)
 			if errr == nil {
