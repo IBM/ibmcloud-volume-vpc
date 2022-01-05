@@ -18,10 +18,14 @@
 package auth
 
 import (
+	"os"
+
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	vpciam "github.com/IBM/ibmcloud-volume-vpc/common/iam"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // NewVPCContextCredentialsFactory ...
@@ -43,5 +47,27 @@ func NewVPCContextCredentialsFactory(config *vpcconfig.VPCBlockConfig) (*auth.Co
 	if err != nil {
 		return nil, err
 	}
+	ccf.AuthType = auth.ComputeIdentity
+	ccf.ComputeIdentityProvider, err = iam.NewComputeIdentityProvider("", config.IKSConfig.Enabled, setUpLogger())
+	if err != nil {
+		return nil, err
+	}
 	return ccf, nil
+}
+
+func setUpLogger() *zap.Logger {
+	// Prepare a new logger
+	atom := zap.NewAtomicLevel()
+	encoderCfg := zap.NewProductionEncoderConfig()
+	encoderCfg.TimeKey = "timestamp"
+	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	logger := zap.New(zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderCfg),
+		zapcore.Lock(os.Stdout),
+		atom,
+	), zap.AddCaller()).With(zap.String("name", "compute-identity-provider")).With(zap.String("secret-provider", "compute-identity-provider"))
+
+	atom.SetLevel(zap.InfoLevel)
+	return logger
 }
