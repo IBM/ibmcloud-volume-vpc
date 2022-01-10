@@ -66,6 +66,15 @@ func TestGetSnapshot(t *testing.T) {
 				assert.NotNil(t, snapshot)
 				assert.Nil(t, err)
 			},
+		}, {
+			name:    "False positive: What if the snapshot ID is not matched",
+			status:  http.StatusOK,
+			content: "{\"id\":\"wrong-snap\",\"name\":\"wrong-snap\",\"lifecycle_state\":\"pending\"}",
+			verify: func(t *testing.T, snapshot *models.Snapshot, err error) {
+				if assert.NotNil(t, snapshot) {
+					assert.NotEqual(t, "snap1", snapshot.ID)
+				}
+			},
 		},
 	}
 
@@ -115,6 +124,15 @@ func TestGetSnapshotByName(t *testing.T) {
 			status:    http.StatusNotFound,
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
+		}, {
+			name:    "Verify that the snapshot name is parsed correctly",
+			status:  http.StatusOK,
+			content: "{\"snapshots\":[{\"id\":\"snap1\",\"name\":\"snap1\",\"lifecycle_state\":\"pending\"}]}",
+			verify: func(t *testing.T, snapshot *models.Snapshot, err error) {
+				if assert.NotNil(t, snapshot) {
+					assert.Equal(t, "snap1", snapshot.ID)
+				}
+			},
 		}, {
 			name:      "Verify that the snapshot is empty if the snapshots are empty",
 			status:    http.StatusOK,

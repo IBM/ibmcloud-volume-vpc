@@ -116,7 +116,7 @@ func main() {
 
 	valid := true
 	for valid {
-		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- Create volume \n 5- Snapshot details \n  6- Create volume from snapshot\n 7- Delete volume \n 8- Delete Snapshot \n 9- Authorize volume \n 10- Create VPC Volume \n 11- Attach VPC volume \n 12- Detach VPC volume \n 13- Get volume by name \n 14- List volumes \n 15- Expand volume \n 16- Get volume Attachment \n Your choice?:")
+		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- Create volume \n 5- Snapshot details \n  6- Create volume from snapshot\n 7- Delete volume \n 8- Delete Snapshot \n 9- Authorize volume \n 10- Create VPC Volume \n 11- Attach VPC volume \n 12- Detach VPC volume \n 13- Get volume by name \n 14- List volumes \n 15- Expand volume \n 16- Get volume Attachment \n 17- Get snapshot by name \n Your choice?:")
 
 		var choiceN int
 		var volumeID string
@@ -217,6 +217,7 @@ func main() {
 					ctxLogger.Info("Failed to get snapshot details ================>", zap.Reflect("Snapshot ID", volumeID), zap.Reflect("Error", er11))
 				}
 				fmt.Printf("\n\n")
+				break
 			}
 		} else if choiceN == 4 {
 			fmt.Println("You selected choice to Create volume")
@@ -395,10 +396,6 @@ func main() {
 			_, _ = fmt.Scanf("%s", &Iops)
 			volume.Iops = &Iops
 
-			fmt.Printf("\nPlease enter snapshotID : ")
-			_, _ = fmt.Scanf("%d", &snapshotID)
-			volume.SnapshotID = snapshotID
-
 			fmt.Printf("\nPlease enter resource group info type : 1- for ID and 2- for Name: ")
 			_, _ = fmt.Scanf("%d", &resiurceGType)
 			if resiurceGType == 1 {
@@ -417,6 +414,10 @@ func main() {
 			fmt.Printf("\nPlease enter zone: ")
 			_, _ = fmt.Scanf("%s", &zone)
 			volume.Az = zone
+
+			fmt.Printf("\nPlease enter snapshotID : ")
+			_, _ = fmt.Scanf("%s", &snapshotID)
+			volume.SnapshotID = snapshotID
 
 			volume.VPCVolume.Tags = []string{"Testing VPC Volume"}
 			volumeObj, errr := sess.CreateVolume(*volume)
@@ -508,6 +509,19 @@ func main() {
 		} else if choiceN == 16 {
 			volumeAttachmentManager.VolumeAttachment()
 		} else if choiceN == 17 {
+			fmt.Println("You selected get VPC snapshot by name")
+			snapshotName := ""
+			fmt.Printf("Please enter snapshot Name to get the details: ")
+			_, _ = fmt.Scanf("%s", &snapshotName)
+			snapshotobj1, er11 := sess.GetSnapshotByName(snapshotName)
+			if er11 == nil {
+				ctxLogger.Info("Successfully got VPC snapshot details ================>", zap.Reflect("SnapshotDetail", snapshotobj1))
+			} else {
+				er11 = updateRequestID(er11, requestID)
+				ctxLogger.Info("failed to get snapshot detail================>", zap.Reflect("snapshotName", snapshotName), zap.Reflect("Error", er11))
+			}
+			fmt.Printf("\n\n")
+		} else if choiceN == 18 {
 			volumeManager.UpdateVolume()
 			os.Exit(0)
 		} else {

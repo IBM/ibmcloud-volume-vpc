@@ -35,7 +35,7 @@ import "time"
 type SnapshotList struct {
 	First      *HReference `json:"first,omitempty"`
 	Next       *HReference `json:"next,omitempty"`
-	Snapshots  []*Snapshot `json:"volumes"`
+	Snapshots  []*Snapshot `json:"snapshots"`
 	Limit      int         `json:"limit,omitempty"`
 	TotalCount int         `json:"total_count,omitempty"`
 }

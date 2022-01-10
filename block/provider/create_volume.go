@@ -57,7 +57,10 @@ func (vpcs *VPCSession) CreateVolume(volumeRequest provider.Volume) (volumeRespo
 		Zone: &models.Zone{
 			Name: volumeRequest.Az,
 		},
-		SourceSnapshot: &models.Snapshot{ID: volumeRequest.SnapshotID},
+	}
+	// validate and add snapshot ID  if is provided
+	if len(volumeRequest.SnapshotID) > 0 {
+		volumeTemplate.SourceSnapshot = &models.Snapshot{ID: volumeRequest.SnapshotID}
 	}
 
 	var encryptionKeyCRN string
