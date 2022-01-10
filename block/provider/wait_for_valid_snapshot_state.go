@@ -46,14 +46,14 @@ func WaitForValidSnapshotState(vpcs *VPCSession, snapshotID string) (err error) 
 		}
 		vpcs.Logger.Info("Getting snapshot details from VPC provider...", zap.Reflect("snapshot", snapshot))
 		if snapshot != nil && snapshot.LifecycleState == validSnapshotStatus {
-			vpcs.Logger.Info("Snapshot got valid (available) state", zap.Reflect("SnapshotDetails", snapshot))
+			vpcs.Logger.Info("Snapshot got valid (stable) state", zap.Reflect("SnapshotDetails", snapshot))
 			return nil
 		}
 		return userError.GetUserError("SnapshotNotInValidState", err, snapshotID)
 	})
 
 	if err != nil {
-		vpcs.Logger.Info("Snapshot could not get valid (available) state", zap.Reflect("SnapshotDetails", snapshot))
+		vpcs.Logger.Info("Snapshot could not get valid (stable) state", zap.Reflect("SnapshotDetails", snapshot))
 		return userError.GetUserError("SnapshotNotInValidState", err, snapshotID)
 	}
 
