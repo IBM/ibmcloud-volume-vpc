@@ -18,7 +18,6 @@
 package provider
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM/ibmcloud-volume-interface/lib/metrics"
@@ -84,8 +83,6 @@ func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest)
 	} else {
 		respSnapshot.ReadyToUse = false
 	}
-
-	fmt.Println("=====>", respSnapshot)
 	return respSnapshot, nil
 }
 
