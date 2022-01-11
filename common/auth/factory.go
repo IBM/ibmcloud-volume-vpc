@@ -18,14 +18,14 @@
 package auth
 
 import (
-	"os"
-
+	"errors"
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	vpciam "github.com/IBM/ibmcloud-volume-vpc/common/iam"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 )
 
 // NewVPCContextCredentialsFactory ...
@@ -47,10 +47,16 @@ func NewVPCContextCredentialsFactory(config *vpcconfig.VPCBlockConfig) (*auth.Co
 	if err != nil {
 		return nil, err
 	}
-	ccf.AuthType = auth.ComputeIdentity
-	ccf.ComputeIdentityProvider, err = iam.NewComputeIdentityProvider("", config.IKSConfig.Enabled, setUpLogger())
-	if err != nil {
-		return nil, err
+	if authtype := os.Getenv("AUTH_TYPE"); authtype != "" && authtype == "COMPUTE_IDENTITY" {
+		ccf.AuthType = auth.ComputeIdentity
+		profileID := os.Getenv("TRUSTED_PROFILE")
+		if profileID == "" {
+			return nil, errors.New("TRUSTED_PROFILE not found")
+		}
+		ccf.ComputeIdentityProvider, err = iam.NewComputeIdentityProvider(profileID, config.IKSConfig.Enabled, setUpLogger())
+		if err != nil {
+			return nil, err
+		}
 	}
 	return ccf, nil
 }
