@@ -18,6 +18,7 @@
 package provider
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/IBM/ibmcloud-volume-interface/lib/metrics"
@@ -72,18 +73,19 @@ func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest)
 
 	vpcs.Logger.Info("Successfully created snapshot with backend (vpcclient) call")
 	vpcs.Logger.Info("Backend created snapshot details", zap.Reflect("Snapshot", snapshotResult))
-	vpcs.Logger.Info("Waiting for snapshot to be in valid (available) state", zap.Reflect("snapshotDetails", snapshotResult))
-	err = WaitForValidSnapshotState(vpcs, snapshotResult.ID)
-	if err != nil {
-		return nil, userError.GetUserError("SnapshotNotInValidState", err, snapshotResult.ID)
-	}
-	vpcs.Logger.Info("Snapshot got valid (available) state", zap.Reflect("SnapshotDetails", snapshotResult))
-
 	respSnapshot := &provider.Snapshot{
-		VolumeID:             snapshotRequest.SourceVolumeID,
+		VolumeID:             snapshotResult.SourceVolume.ID,
 		SnapshotID:           snapshotResult.ID,
 		SnapshotCreationTime: *snapshotResult.CreatedAt,
+		SnapshotSize:         snapshotResult.Size,
 	}
+	if snapshotResult.LifecycleState == "stable" {
+		respSnapshot.ReadyToUse = true
+	} else {
+		respSnapshot.ReadyToUse = false
+	}
+
+	fmt.Println("=====>", respSnapshot)
 	return respSnapshot, nil
 }
 

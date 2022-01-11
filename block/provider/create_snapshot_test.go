@@ -159,14 +159,25 @@ func TestCreateSnapshot(t *testing.T) {
 				LifecycleState: "pending",
 				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
 				CreatedAt:      &timeNow,
+				Size:           100,
 			},
 			providerSnapshotRequest: &provider.SnapshotRequest{
-				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:           String("test volume name"),
+				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db6",
+				Name:           String("test snapshot name"),
+			},
+			providerSnapshot: &provider.Snapshot{
+				VolumeID:             "16f293bf-test-4bff-816f-e199c0c65db6",
+				SnapshotID:           "16f293bf-test-4bff-816f-e199c0c65db5",
+				SnapshotSize:         100,
+				SnapshotCreationTime: timeNow,
+				ReadyToUse:           false,
+			},
+			baseVolume: &models.Volume{
+				ID: "16f293bf-test-4bff-816f-e199c0c65db6",
 			},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
-				assert.Nil(t, snapshotResponse)
-				assert.NotNil(t, err)
+				assert.NotNil(t, snapshotResponse)
+				assert.Nil(t, err)
 			},
 		},
 	}
