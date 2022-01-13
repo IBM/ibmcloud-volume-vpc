@@ -21,9 +21,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
+	//"strings"
 	"time"
-
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM-Cloud/ibm-cloud-cli-sdk/common/rest"
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
@@ -132,7 +132,7 @@ func (r *tokenExchangeIKSRequest) exchangeForAccessToken() (*iam.AccessToken, er
 func (r *tokenExchangeIKSRequest) sendTokenExchangeRequest() (*tokenExchangeIKSResponse, error) {
 	r.logger.Info("In tokenExchangeIKSRequest's sendTokenExchangeRequest()")
 	// Set headers
-	r.request = r.request.Add("X-CSRF-TOKEN", r.tes.iksAuthConfig.CSRFToken)
+	/*r.request = r.request.Add("X-CSRF-TOKEN", r.tes.iksAuthConfig.CSRFToken)
 	// Setting body
 	var apikey = struct {
 		APIKey string `json:"apikey"`
@@ -188,7 +188,20 @@ func (r *tokenExchangeIKSRequest) sendTokenExchangeRequest() (*tokenExchangeIKSR
 
 	return nil,
 		util.NewError("ErrorUnclassified",
-			"Unexpected IAM token exchange response")
+			"Unexpected IAM token exchange response") */
+		authen := new(core.ContainerAuthenticator)
+	authen.CRTokenFilename = "/var/run/secrets/tokens/vault-token"
+	authen.IAMProfileID = "Profile-62311fc1-c837-48d0-9ae3-39b61f527eea"
+	authen.URL = "https://iam.cloud.ibm.com/identity/token"
+	resp, err := authen.RequestToken()
+	if err != nil {
+		fmt.Println("--------Gunaerr--------")
+		fmt.Println(err)
+		return nil, err
+	}
+	fmt.Println("--------------Guna-----------")
+	fmt.Println(resp)
+	return &tokenExchangeIKSResponse{AccessToken: resp.AccessToken}, nil
 }
 
 // UpdateAPIKey ...
