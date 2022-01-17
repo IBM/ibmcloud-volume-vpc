@@ -189,18 +189,15 @@ func (r *tokenExchangeIKSRequest) sendTokenExchangeRequest() (*tokenExchangeIKSR
 	return nil,
 		util.NewError("ErrorUnclassified",
 			"Unexpected IAM token exchange response") */
-		authen := new(core.ContainerAuthenticator)
+	authen := new(core.ContainerAuthenticator)
 	authen.CRTokenFilename = "/var/run/secrets/tokens/vault-token"
-	authen.IAMProfileID = "Profile-62311fc1-c837-48d0-9ae3-39b61f527eea"
+	// setting appropriate profile ID
+	authen.IAMProfileID = ""
 	authen.URL = "https://iam.cloud.ibm.com/identity/token"
 	resp, err := authen.RequestToken()
 	if err != nil {
-		fmt.Println("--------Gunaerr--------")
-		fmt.Println(err)
 		return nil, err
 	}
-	fmt.Println("--------------Guna-----------")
-	fmt.Println(resp)
 	return &tokenExchangeIKSResponse{AccessToken: resp.AccessToken}, nil
 }
 
