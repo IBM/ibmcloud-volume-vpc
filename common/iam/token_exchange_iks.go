@@ -29,12 +29,15 @@ import (
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
 	"go.uber.org/zap"
+	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
+	"github.com/IBM/secret-common-lib/pkg/secret_provider"
 )
 
 // tokenExchangeIKSService ...
 type tokenExchangeIKSService struct {
 	iksAuthConfig *IksAuthConfiguration
 	httpClient    *http.Client
+	secretprovider sp.SecretProviderInterface
 }
 
 // IksAuthConfiguration ...
@@ -53,9 +56,14 @@ func NewTokenExchangeIKSService(iksAuthConfig *IksAuthConfiguration) (iam.TokenE
 	if err != nil {
 		return nil, err
 	}
+	spObject, err := secret_provider.NewSecretProvider(true)
+	if err != nil {
+		return nil, err
+	}
 	return &tokenExchangeIKSService{
 		iksAuthConfig: iksAuthConfig,
 		httpClient:    httpClient,
+		secretprovider: spObject,
 	}, nil
 }
 
@@ -82,8 +90,16 @@ func (tes *tokenExchangeIKSService) ExchangeRefreshTokenForAccessToken(refreshTo
 
 // ExchangeIAMAPIKeyForAccessToken ...
 func (tes *tokenExchangeIKSService) ExchangeIAMAPIKeyForAccessToken(iamAPIKey string, logger *zap.Logger) (*iam.AccessToken, error) {
-	r := tes.newTokenExchangeRequest(logger)
-	return r.exchangeForAccessToken()
+	logger.Info("Fetching using secret provider")
+	token, _, err := tes.secretprovider.GetDefaultIAMToken(false)
+	if err != nil {
+		logger.Error("Error fetching iam token", zap.Error(err))
+		return nil, err
+	}
+	logger.Info(token)
+	return &iam.AccessToken{Token: token}, nil
+	//r := tes.newTokenExchangeRequest(logger)
+	//return r.exchangeForAccessToken()
 }
 
 // newTokenExchangeRequest ...
