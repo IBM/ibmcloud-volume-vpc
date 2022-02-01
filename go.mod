@@ -4,13 +4,11 @@ go 1.15
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220131061958-371ea177f1d8
-	github.com/IBM/secret-common-lib v0.0.0-20220131061639-74a32d2e51d8
-	github.com/IBM/secret-utils-lib v0.0.0-20220130151432-e2add97db4ec
+	github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220201130745-7f3b37d37f31
+	github.com/IBM/secret-common-lib v0.0.0-20220201130438-c0e299a2c21c
+	github.com/IBM/secret-utils-lib v0.0.0-20220201130204-b30e719cc0e7
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/structs v1.1.0
-	github.com/pierrre/gotestcover v0.0.0-20160517101806-924dca7d15f0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.20.0
