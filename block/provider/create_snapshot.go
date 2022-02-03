@@ -28,6 +28,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const snapshotReadyState = "stable"
+
 // CreateSnapshot creates snapshot
 func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters provider.SnapshotParameters) (*provider.Snapshot, error) {
 	vpcs.Logger.Info("Entry CreateSnapshot", zap.Reflect("snapshotRequest", snapshotParameters), zap.Reflect("sourceVolumeID", sourceVolumeID))
@@ -79,7 +81,7 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters
 		SnapshotSize:         GiBToBytes(snapshotResult.Size),
 		VPC:                  &provider.VPC{Href: snapshotResult.Href},
 	}
-	if snapshotResult.LifecycleState == "stable" {
+	if snapshotResult.LifecycleState == snapshotReadyState {
 		respSnapshot.ReadyToUse = true
 	} else {
 		respSnapshot.ReadyToUse = false

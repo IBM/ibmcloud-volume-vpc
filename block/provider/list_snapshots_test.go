@@ -68,13 +68,13 @@ func TestListSnapshots(t *testing.T) {
 					{
 						ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 						Name:           "test-snapshot-name1",
-						LifecycleState: "stable",
+						LifecycleState: snapshotReadyState,
 						SourceVolume:   &models.SourceVolume{ID: "1234"},
 						CreatedAt:      &timeNow,
 					}, {
 						ID:             "16f293bf-test-4bff-816f-e199c0c65db6",
 						Name:           "test-snapshot-name2",
-						LifecycleState: "stable",
+						LifecycleState: snapshotReadyState,
 						SourceVolume:   &models.SourceVolume{ID: "1234"},
 						CreatedAt:      &timeNow,
 					},
@@ -98,13 +98,13 @@ func TestListSnapshots(t *testing.T) {
 					{
 						ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 						Name:           "test-snapshot-name1",
-						LifecycleState: "stable",
+						LifecycleState: snapshotReadyState,
 						SourceVolume:   &models.SourceVolume{ID: "1234"},
 						CreatedAt:      &timeNow,
 					}, {
 						ID:             "16f293bf-test-4bff-816f-e199c0c65db6",
 						Name:           "test-snapshot-name2",
-						LifecycleState: "stable",
+						LifecycleState: snapshotReadyState,
 						SourceVolume:   &models.SourceVolume{ID: "1234"},
 						CreatedAt:      &timeNow,
 					},

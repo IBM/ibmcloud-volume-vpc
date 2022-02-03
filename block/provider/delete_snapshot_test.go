@@ -138,7 +138,7 @@ func TestDeleteSnapshotTwo(t *testing.T) {
 	baseSnapshot = &models.Snapshot{
 		ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 		Name:           "test volume name",
-		LifecycleState: "stable",
+		LifecycleState: snapshotReadyState,
 		SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db5"},
 		CreatedAt:      &timeNow,
 	}

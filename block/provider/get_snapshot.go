@@ -50,7 +50,7 @@ func (vpcs *VPCSession) GetSnapshot(snapshotID string) (*provider.Snapshot, erro
 		SnapshotSize:         GiBToBytes(snapshot.Size),
 		VPC:                  &provider.VPC{Href: snapshot.Href},
 	}
-	if snapshot.LifecycleState == "stable" {
+	if snapshot.LifecycleState == snapshotReadyState {
 		respSnapshot.ReadyToUse = true
 	} else {
 		respSnapshot.ReadyToUse = false
@@ -89,7 +89,7 @@ func (vpcs *VPCSession) GetSnapshotByName(name string) (respSnap *provider.Snaps
 		SnapshotSize:         GiBToBytes(snapshot.Size),
 		VPC:                  &provider.VPC{Href: snapshot.Href},
 	}
-	if snapshot.LifecycleState == "stable" {
+	if snapshot.LifecycleState == snapshotReadyState {
 		respSnapshot.ReadyToUse = true
 	} else {
 		respSnapshot.ReadyToUse = false

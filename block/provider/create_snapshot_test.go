@@ -67,7 +67,7 @@ func TestCreateSnapshot(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:           "test snapshot name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 			},
 			expectedErr:        "{Code:ErrorUnclassified, Type:InvalidRequest, Description:'Name is required to complete the operation.",
 			expectedReasonCode: "ErrorUnclassified",
@@ -85,7 +85,7 @@ func TestCreateSnapshot(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:           "test snapshot name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 			},
 			expectedErr:        "{Code:ErrorUnclassified, Type:InvalidRequest, Description:'SourceVolumeID is required to complete the operation.",
 			expectedReasonCode: "ErrorUnclassified",
@@ -103,7 +103,7 @@ func TestCreateSnapshot(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:           "test snapshot name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 			},
 			expectedErr:        "{Code:ErrorUnclassified, Type:RetrivalFailed, Description:'A volume with the specified volume ID '16f293bf-test-4bff-816f-e199c0c65db5' could not be found.",
 			expectedReasonCode: "ErrorUnclassified",
@@ -121,7 +121,7 @@ func TestCreateSnapshot(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:           "test snapshot name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 			},
 			expectedReasonCode: "SnapshotSpaceOrderFailed",
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
@@ -142,7 +142,7 @@ func TestCreateSnapshot(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:           "test snapshot name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 			},
 			providerSnapshotParameters: &provider.SnapshotParameters{
 				Name: String(""),

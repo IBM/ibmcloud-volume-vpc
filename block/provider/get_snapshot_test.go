@@ -60,7 +60,7 @@ func TestGetSnapshot(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:           "test-snapshot-name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
 				CreatedAt:      &timeNow,
 			},
@@ -74,7 +74,7 @@ func TestGetSnapshot(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "wrong-wrong-id",
 				Name:           "test-snapshot-name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
 				CreatedAt:      &timeNow,
 			},
@@ -149,7 +149,7 @@ func TestGetSnapshotByName(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "wrong-wrong-id",
 				Name:           "test-snapshot-name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
 				CreatedAt:      &timeNow,
 			},
@@ -163,7 +163,7 @@ func TestGetSnapshotByName(t *testing.T) {
 			baseSnapshot: &models.Snapshot{
 				ID:             "wrong-wrong-id",
 				Name:           "test-snapshot-name",
-				LifecycleState: "stable",
+				LifecycleState: snapshotReadyState,
 				SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
 				CreatedAt:      &timeNow,
 			},

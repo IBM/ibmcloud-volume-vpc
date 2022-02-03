@@ -88,7 +88,7 @@ func (vpcs *VPCSession) ListSnapshots(limit int, start string, tags map[string]s
 					SnapshotSize:         GiBToBytes(snapItem.Size),
 					VPC:                  &provider.VPC{Href: snapItem.Href},
 				}
-				if snapItem.LifecycleState == "stable" {
+				if snapItem.LifecycleState == snapshotReadyState {
 					respSnapshot.ReadyToUse = true
 				} else {
 					respSnapshot.ReadyToUse = false
