@@ -29,25 +29,25 @@ import (
 )
 
 // CreateSnapshot creates snapshot
-func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest) (*provider.Snapshot, error) {
-	vpcs.Logger.Info("Entry CreateSnapshot", zap.Reflect("snapshotRequest", snapshotRequest))
-	defer vpcs.Logger.Info("Exit CreateSnapshot", zap.Reflect("snapshotRequest", snapshotRequest))
+func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters provider.SnapshotParameters) (*provider.Snapshot, error) {
+	vpcs.Logger.Info("Entry CreateSnapshot", zap.Reflect("snapshotRequest", snapshotParameters), zap.Reflect("sourceVolumeID", sourceVolumeID))
+	defer vpcs.Logger.Info("Exit CreateSnapshot", zap.Reflect("snapshotRequest", snapshotParameters), zap.Reflect("sourceVolumeID", sourceVolumeID))
 	defer metrics.UpdateDurationFromStart(vpcs.Logger, "CreateSnapshot", time.Now())
 	var err error
 
-	vpcs.Logger.Info("Validating basic inputs for CreateSnapshot method...", zap.Reflect("snapshotRequest", snapshotRequest))
-	err = vpcs.validateSnapshotRequest(snapshotRequest)
+	vpcs.Logger.Info("Validating basic inputs for CreateSnapshot method...", zap.Reflect("snapshotRequest", snapshotParameters), zap.Reflect("sourceVolumeID", sourceVolumeID))
+	err = vpcs.validateSnapshotRequest(sourceVolumeID, snapshotParameters)
 	if err != nil {
 		return nil, err
 	}
 	var snapshotResult *models.Snapshot
 
 	// Step 1- validate input which are required
-	vpcs.Logger.Info("Requested volume is:", zap.Reflect("Volume", snapshotRequest.SourceVolumeID))
+	vpcs.Logger.Info("Requested volume is:", zap.Reflect("Volume", sourceVolumeID))
 
 	var volume *models.Volume
 	err = retry(vpcs.Logger, func() error {
-		volume, err = vpcs.Apiclient.VolumeService().GetVolume(snapshotRequest.SourceVolumeID, vpcs.Logger)
+		volume, err = vpcs.Apiclient.VolumeService().GetVolume(sourceVolumeID, vpcs.Logger)
 		return err
 	})
 	if err != nil {
@@ -55,11 +55,11 @@ func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest)
 	}
 
 	if volume == nil {
-		return nil, userError.GetUserError("StorageFindFailedWithVolumeId", err, snapshotRequest.SourceVolumeID, "Not a valid volume ID")
+		return nil, userError.GetUserError("StorageFindFailedWithVolumeId", err, sourceVolumeID, "Not a valid volume ID")
 	}
 	snapshotTemplate := &models.Snapshot{
-		Name:         *snapshotRequest.Name,
-		SourceVolume: &models.SourceVolume{ID: snapshotRequest.SourceVolumeID},
+		Name:         *snapshotParameters.Name,
+		SourceVolume: &models.SourceVolume{ID: sourceVolumeID},
 	}
 
 	err = retry(vpcs.Logger, func() error {
@@ -76,7 +76,8 @@ func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest)
 		VolumeID:             snapshotResult.SourceVolume.ID,
 		SnapshotID:           snapshotResult.ID,
 		SnapshotCreationTime: *snapshotResult.CreatedAt,
-		SnapshotSize:         snapshotResult.Size,
+		SnapshotSize:         GiBToBytes(snapshotResult.Size),
+		VPC:                  &provider.VPC{Href: snapshotResult.Href},
 	}
 	if snapshotResult.LifecycleState == "stable" {
 		respSnapshot.ReadyToUse = true
@@ -87,20 +88,20 @@ func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest)
 }
 
 // validateSnapshotRequest validates request for snapshot
-func (vpcs *VPCSession) validateSnapshotRequest(snapshorRequest provider.SnapshotRequest) error {
+func (vpcs *VPCSession) validateSnapshotRequest(sourceVolumeID string, snapshotParameters provider.SnapshotParameters) error {
 	var err error
 	// Check for snapshot Name - required validation
-	if snapshorRequest.Name == nil {
+	if snapshotParameters.Name == nil {
 		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "Name")
 		vpcs.Logger.Error("snapshorRequest.Name is required", zap.Error(err))
 		return err
-	} else if len(*snapshorRequest.Name) == 0 {
+	} else if len(*snapshotParameters.Name) == 0 {
 		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "Name")
 		vpcs.Logger.Error("snapshorRequest.Name is required", zap.Error(err))
 		return err
 	}
 	// Check for VolumeID - required validation
-	if len(snapshorRequest.SourceVolumeID) == 0 {
+	if len(sourceVolumeID) == 0 {
 		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "SourceVolumeID")
 		vpcs.Logger.Error("snapshorRequest.SourceVolumeID is required", zap.Error(err))
 		return err

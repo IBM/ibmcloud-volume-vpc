@@ -47,7 +47,8 @@ func (vpcs *VPCSession) GetSnapshot(snapshotID string) (*provider.Snapshot, erro
 		VolumeID:             snapshot.SourceVolume.ID,
 		SnapshotID:           snapshot.ID,
 		SnapshotCreationTime: *snapshot.CreatedAt,
-		SnapshotSize:         snapshot.Size,
+		SnapshotSize:         GiBToBytes(snapshot.Size),
+		VPC:                  &provider.VPC{Href: snapshot.Href},
 	}
 	if snapshot.LifecycleState == "stable" {
 		respSnapshot.ReadyToUse = true
@@ -85,7 +86,8 @@ func (vpcs *VPCSession) GetSnapshotByName(name string) (respSnap *provider.Snaps
 		VolumeID:             snapshot.SourceVolume.ID,
 		SnapshotID:           snapshot.ID,
 		SnapshotCreationTime: *snapshot.CreatedAt,
-		SnapshotSize:         snapshot.Size,
+		SnapshotSize:         GiBToBytes(snapshot.Size),
+		VPC:                  &provider.VPC{Href: snapshot.Href},
 	}
 	if snapshot.LifecycleState == "stable" {
 		respSnapshot.ReadyToUse = true

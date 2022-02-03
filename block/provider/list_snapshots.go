@@ -85,7 +85,8 @@ func (vpcs *VPCSession) ListSnapshots(limit int, start string, tags map[string]s
 					VolumeID:             snapItem.SourceVolume.ID,
 					SnapshotID:           snapItem.ID,
 					SnapshotCreationTime: *snapItem.CreatedAt,
-					SnapshotSize:         snapItem.Size,
+					SnapshotSize:         GiBToBytes(snapItem.Size),
+					VPC:                  &provider.VPC{Href: snapItem.Href},
 				}
 				if snapItem.LifecycleState == "stable" {
 					respSnapshot.ReadyToUse = true

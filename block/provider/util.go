@@ -294,6 +294,11 @@ func roundUpSize(volumeSizeBytes int64, allocationUnitBytes int64) int64 {
 	return (volumeSizeBytes + allocationUnitBytes - 1) / allocationUnitBytes
 }
 
+// GiBToBytes converts GiB to Bytes
+func GiBToBytes(volumeSizeGiB int64) int64 {
+	return volumeSizeGiB * GiB
+}
+
 // isValidServiceSession check if Service Session is valid
 func isValidServiceSession(vpcs *VPCSession) (err error) {
 	//If VPC session contains valid SessionError then there is some session related issue

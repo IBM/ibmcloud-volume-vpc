@@ -43,12 +43,13 @@ func TestCreateSnapshot(t *testing.T) {
 	timeNow := time.Now()
 
 	testCases := []struct {
-		baseVolume              *models.Volume
-		testCaseName            string
-		baseSnapshot            *models.Snapshot
-		providerSnapshotRequest *provider.SnapshotRequest
-		providerSnapshot        *provider.Snapshot
-		setup                   func()
+		baseVolume                 *models.Volume
+		testCaseName               string
+		sourceVolumeID             string
+		baseSnapshot               *models.Snapshot
+		providerSnapshotParameters *provider.SnapshotParameters
+		providerSnapshot           *provider.Snapshot
+		setup                      func()
 
 		skipErrTest        bool
 		expectedErr        string
@@ -57,10 +58,10 @@ func TestCreateSnapshot(t *testing.T) {
 		verify func(t *testing.T, snapshotResponse *provider.Snapshot, err error)
 	}{
 		{
-			testCaseName: "Snapshot name not provided",
-			providerSnapshotRequest: &provider.SnapshotRequest{
-				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:           nil,
+			testCaseName:   "Snapshot name not provided",
+			sourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+			providerSnapshotParameters: &provider.SnapshotParameters{
+				Name: nil,
 			},
 			providerSnapshot: nil,
 			baseSnapshot: &models.Snapshot{
@@ -75,10 +76,10 @@ func TestCreateSnapshot(t *testing.T) {
 				assert.NotNil(t, err)
 			},
 		}, {
-			testCaseName: "Source VolumeID for snapshot not provided",
-			providerSnapshotRequest: &provider.SnapshotRequest{
-				SourceVolumeID: "",
-				Name:           String("test snapshot"),
+			testCaseName:   "Source VolumeID for snapshot not provided",
+			sourceVolumeID: "",
+			providerSnapshotParameters: &provider.SnapshotParameters{
+				Name: String("test snapshot"),
 			},
 			providerSnapshot: nil,
 			baseSnapshot: &models.Snapshot{
@@ -93,10 +94,10 @@ func TestCreateSnapshot(t *testing.T) {
 				assert.NotNil(t, err)
 			},
 		}, {
-			testCaseName: "Source Volume provided for snapshot not present",
-			providerSnapshotRequest: &provider.SnapshotRequest{
-				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:           String("test snapshot"),
+			testCaseName:   "Source Volume provided for snapshot not present",
+			sourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+			providerSnapshotParameters: &provider.SnapshotParameters{
+				Name: String("test snapshot"),
 			},
 			providerSnapshot: nil,
 			baseSnapshot: &models.Snapshot{
@@ -111,10 +112,10 @@ func TestCreateSnapshot(t *testing.T) {
 				assert.NotNil(t, err)
 			},
 		}, {
-			testCaseName: "Snapshot creation failed",
-			providerSnapshotRequest: &provider.SnapshotRequest{
-				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:           String("test snapshot"),
+			testCaseName:   "Snapshot creation failed",
+			sourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+			providerSnapshotParameters: &provider.SnapshotParameters{
+				Name: String("test snapshot"),
 			},
 			providerSnapshot: nil,
 			baseSnapshot: &models.Snapshot{
@@ -128,24 +129,23 @@ func TestCreateSnapshot(t *testing.T) {
 				assert.NotNil(t, err)
 			},
 		}, {
-			testCaseName: "Snapshot name is nil",
-			providerSnapshotRequest: &provider.SnapshotRequest{
-				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-			},
+			testCaseName:               "Snapshot name is nil",
+			sourceVolumeID:             "16f293bf-test-4bff-816f-e199c0c65db5",
+			providerSnapshotParameters: &provider.SnapshotParameters{},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.Nil(t, snapshotResponse)
 				assert.NotNil(t, err)
 			},
 		}, {
-			testCaseName: "Snapshot name is empty",
+			testCaseName:   "Snapshot name is empty",
+			sourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
 			baseSnapshot: &models.Snapshot{
 				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
 				Name:           "test snapshot name",
 				LifecycleState: "stable",
 			},
-			providerSnapshotRequest: &provider.SnapshotRequest{
-				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:           String(""),
+			providerSnapshotParameters: &provider.SnapshotParameters{
+				Name: String(""),
 			},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.Nil(t, snapshotResponse)
@@ -161,9 +161,9 @@ func TestCreateSnapshot(t *testing.T) {
 				CreatedAt:      &timeNow,
 				Size:           100,
 			},
-			providerSnapshotRequest: &provider.SnapshotRequest{
-				SourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db6",
-				Name:           String("test snapshot name"),
+			sourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+			providerSnapshotParameters: &provider.SnapshotParameters{
+				Name: String("test snapshot name"),
 			},
 			providerSnapshot: &provider.Snapshot{
 				VolumeID:             "16f293bf-test-4bff-816f-e199c0c65db6",
@@ -171,6 +171,7 @@ func TestCreateSnapshot(t *testing.T) {
 				SnapshotSize:         100,
 				SnapshotCreationTime: timeNow,
 				ReadyToUse:           false,
+				VPC:                  &provider.VPC{Href: "href"},
 			},
 			baseVolume: &models.Volume{
 				ID: "16f293bf-test-4bff-816f-e199c0c65db6",
@@ -205,7 +206,7 @@ func TestCreateSnapshot(t *testing.T) {
 				snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, nil)
 				volumeService.GetVolumeReturns(testcase.baseVolume, nil)
 			}
-			snapshot, err := vpcs.CreateSnapshot(*testcase.providerSnapshotRequest)
+			snapshot, err := vpcs.CreateSnapshot(testcase.sourceVolumeID, *testcase.providerSnapshotParameters)
 			logger.Info("snapshot details", zap.Reflect("snapshot", snapshot))
 
 			if testcase.expectedErr != "" {
