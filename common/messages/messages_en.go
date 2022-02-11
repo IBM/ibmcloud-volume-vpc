@@ -107,6 +107,13 @@ var messagesEn = map[string]util.Message{
 		RC:          400,
 		Action:      "Please check the snapshot ID once, You many need to verify by using 'ibmcloud is' cli.",
 	},
+	"StorageFindFailedWithSnapshotName": {
+		Code:        "StorageFindFailedWithSnapshotName",
+		Description: "A snapshot with the specified snapshot name '%s' could not be found.",
+		Type:        util.RetrivalFailed,
+		RC:          400,
+		Action:      "Please check the snapshot name once, You many need to verify by using 'ibmcloud is' cli.",
+	},
 	"VolumeAttachFindFailed": {
 		Code:        VolumeAttachFindFailed,
 		Description: "No volume attachment could be found for the specified volume ID '%s' and instance ID '%s'.",
@@ -246,6 +253,13 @@ var messagesEn = map[string]util.Message{
 		Type:        util.InvalidRequest,
 		RC:          400,
 		Action:      "Please verify that the start volume ID is correct and whether you have access to the volume ID.",
+	},
+	"StartSnapshotIDNotFound": {
+		Code:        "StartSnapshotIDNotFound",
+		Description: "The snapshot ID '%s' specified in the start parameter of the list volume call could not be found.",
+		Type:        util.InvalidRequest,
+		RC:          400,
+		Action:      "Please verify that the start snapshot ID is correct and whether you have access to the snapshot ID.",
 	},
 	"InvalidServiceSession": {
 		Code:        "InvalidServiceSession",

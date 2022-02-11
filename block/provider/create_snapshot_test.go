@@ -58,24 +58,6 @@ func TestCreateSnapshot(t *testing.T) {
 		verify func(t *testing.T, snapshotResponse *provider.Snapshot, err error)
 	}{
 		{
-			testCaseName:   "Snapshot name not provided",
-			sourceVolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
-			providerSnapshotParameters: &provider.SnapshotParameters{
-				Name: nil,
-			},
-			providerSnapshot: nil,
-			baseSnapshot: &models.Snapshot{
-				ID:             "16f293bf-test-4bff-816f-e199c0c65db5",
-				Name:           "test snapshot name",
-				LifecycleState: snapshotReadyState,
-			},
-			expectedErr:        "{Code:ErrorUnclassified, Type:InvalidRequest, Description:'Name is required to complete the operation.",
-			expectedReasonCode: "ErrorUnclassified",
-			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
-				assert.Nil(t, snapshotResponse)
-				assert.NotNil(t, err)
-			},
-		}, {
 			testCaseName:   "Source VolumeID for snapshot not provided",
 			sourceVolumeID: "",
 			providerSnapshotParameters: &provider.SnapshotParameters{
@@ -124,14 +106,6 @@ func TestCreateSnapshot(t *testing.T) {
 				LifecycleState: snapshotReadyState,
 			},
 			expectedReasonCode: "SnapshotSpaceOrderFailed",
-			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
-				assert.Nil(t, snapshotResponse)
-				assert.NotNil(t, err)
-			},
-		}, {
-			testCaseName:               "Snapshot name is nil",
-			sourceVolumeID:             "16f293bf-test-4bff-816f-e199c0c65db5",
-			providerSnapshotParameters: &provider.SnapshotParameters{},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.Nil(t, snapshotResponse)
 				assert.NotNil(t, err)

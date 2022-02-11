@@ -29,6 +29,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const startSnapshoIDNotFoundMsg = "start parameter is not valid"
+
 // ListSnapshots list all snapshots
 func (vpcs *VPCSession) ListSnapshots(limit int, start string, tags map[string]string) (*provider.SnapshotList, error) {
 	vpcs.Logger.Info("Entry ListeSnapshots")
@@ -60,6 +62,9 @@ func (vpcs *VPCSession) ListSnapshots(limit int, start string, tags map[string]s
 	})
 
 	if err != nil {
+		if strings.Contains(err.Error(), startSnapshoIDNotFoundMsg) {
+			return nil, userError.GetUserError("StartSnapshotIDNotFound", err, start)
+		}
 		return nil, userError.GetUserError("ListSnapshotsFailed", err)
 	}
 

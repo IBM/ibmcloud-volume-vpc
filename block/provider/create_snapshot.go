@@ -92,16 +92,6 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters
 // validateSnapshotRequest validates request for snapshot
 func (vpcs *VPCSession) validateSnapshotRequest(sourceVolumeID string, snapshotParameters provider.SnapshotParameters) error {
 	var err error
-	// Check for snapshot Name - required validation
-	if snapshotParameters.Name == nil {
-		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "Name")
-		vpcs.Logger.Error("snapshorRequest.Name is required", zap.Error(err))
-		return err
-	} else if len(*snapshotParameters.Name) == 0 {
-		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "Name")
-		vpcs.Logger.Error("snapshorRequest.Name is required", zap.Error(err))
-		return err
-	}
 	// Check for VolumeID - required validation
 	if len(sourceVolumeID) == 0 {
 		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "SourceVolumeID")
