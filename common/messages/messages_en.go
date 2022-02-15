@@ -226,6 +226,13 @@ var messagesEn = map[string]util.Message{
 		RC:          500,
 		Action:      "Wait for volume deletion",
 	},
+	"ListSnapshotsFailed": {
+		Code:        "ListSnapshotsFailed",
+		Description: "Unable to fetch list of volumes.",
+		Type:        util.RetrivalFailed,
+		RC:          404,
+		Action:      "Run 'ibmcloud is snapshots' to list available snapshots in your account.",
+	},
 	"ListVolumesFailed": {
 		Code:        "ListVolumesFailed",
 		Description: "Unable to fetch list of volumes.",
