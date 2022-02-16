@@ -28,15 +28,15 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
-	"go.uber.org/zap"
-	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
 	"github.com/IBM/secret-common-lib/pkg/secret_provider"
+	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
+	"go.uber.org/zap"
 )
 
 // tokenExchangeIKSService ...
 type tokenExchangeIKSService struct {
-	iksAuthConfig *IksAuthConfiguration
-	httpClient    *http.Client
+	iksAuthConfig  *IksAuthConfiguration
+	httpClient     *http.Client
 	secretprovider sp.SecretProviderInterface
 }
 
@@ -61,8 +61,8 @@ func NewTokenExchangeIKSService(iksAuthConfig *IksAuthConfiguration) (iam.TokenE
 		return nil, err
 	}
 	return &tokenExchangeIKSService{
-		iksAuthConfig: iksAuthConfig,
-		httpClient:    httpClient,
+		iksAuthConfig:  iksAuthConfig,
+		httpClient:     httpClient,
 		secretprovider: spObject,
 	}, nil
 }
