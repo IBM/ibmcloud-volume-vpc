@@ -7,12 +7,12 @@ github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7 h1:eHgfQl6IeSmzWUyiSi13CvoFYsovoyq
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
 github.com/IBM/go-sdk-core/v5 v5.9.1 h1:06pXbD9Rgmqqe2HA5YAeQbB4eYRRFgIoOT+Kh3cp1zo=
 github.com/IBM/go-sdk-core/v5 v5.9.1/go.mod h1:axE2JrRq79gIJTjKPBwV6gWHswvVptBjbcvvCPIxARM=
-github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220211052229-f7398e3b6586 h1:6RafDCNiwPPKqvss3e4/T+RoNvT00Mlls6r1AWyoyqE=
-github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220211052229-f7398e3b6586/go.mod h1:tC2xdwAFwIKspzGJ+8Mn6jlItrLVILCau+d/OSyirWg=
-github.com/IBM/secret-common-lib v0.0.0-20220211052008-6285061a2d5f h1:pdG306WZtEBqE6bq5xKpY9/VMtts3HyBap8eYJ4Zwlo=
-github.com/IBM/secret-common-lib v0.0.0-20220211052008-6285061a2d5f/go.mod h1:N8dwMr+5x+GLA017ttOhM72P5J50I8xkEOcckkIKsfw=
-github.com/IBM/secret-utils-lib v0.0.0-20220210045215-2c22c8f1a06e h1:duKcI8LdxuAqBYTZjxPXIkNT/mCruOe9VgvgYjTWtfI=
-github.com/IBM/secret-utils-lib v0.0.0-20220210045215-2c22c8f1a06e/go.mod h1:rJMB5NiyXgGP0rRw5XCp67cCJF6S5WZlf9foaxwOF1o=
+github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220216034035-8b8dc4ab8a5d h1:SrkeWB1NFiIpukQolGh2bAe+YkKU5K4bM1v5DgHLgFM=
+github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220216034035-8b8dc4ab8a5d/go.mod h1:p83GmWQmKFQl2R33X9mfc+GSBJjTtXF7EKYiw1DYsko=
+github.com/IBM/secret-common-lib v0.0.0-20220215125204-1504609ad5d9 h1:g4SHr7SO0QcI2N97OvwWPNKTtCRrRZHBl7M0H/UKSA8=
+github.com/IBM/secret-common-lib v0.0.0-20220215125204-1504609ad5d9/go.mod h1:2rZ8sBhTwbQayjuVad58qGDdpofXcK0Xly6zwzQDU9o=
+github.com/IBM/secret-utils-lib v0.0.0-20220215124047-4cba5e6be05a h1:1kB+ksArdvQB9QIknzloE4y8TEEmoY4N5h44LDcM9dI=
+github.com/IBM/secret-utils-lib v0.0.0-20220215124047-4cba5e6be05a/go.mod h1:TJStEWXUMqmuOz4dTmHv/vl9xrMGopvD9E2mfbBkYT4=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
@@ -71,6 +71,8 @@ github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/me
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
+github.com/golang-jwt/jwt/v4 v4.2.0 h1:besgBTC8w8HjP6NzQdxwKH9Z5oQMZ24ThTrHp3cZ8eU=
+github.com/golang-jwt/jwt/v4 v4.2.0/go.mod h1:/xlHOz8bRuivTWchD4jCa+NbatV+wEUSzwAxVc6locg=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
