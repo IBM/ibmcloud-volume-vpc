@@ -135,7 +135,7 @@ func (iksp *IksVpcBlockProvider) OpenSession(ctx context.Context, contextCredent
 
 // ContextCredentialsFactory ...
 func (iksp *IksVpcBlockProvider) ContextCredentialsFactory(zone *string) (local.ContextCredentialsFactory, error) {
-	return vpcauth.NewVPCContextCredentialsFactory(iksp.vpcBlockProvider.Config)
+	return iksp.iksBlockProvider.ContextCF, nil
 }
 
 // UpdateAPIKey ...
