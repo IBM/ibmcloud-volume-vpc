@@ -29,19 +29,14 @@ import (
 
 // DeleteSnapshot delete snapshot
 func (vpcs *VPCSession) DeleteSnapshot(snapshot *provider.Snapshot) error {
-	vpcs.Logger.Info("Entry DeleteSnapshot", zap.Reflect("snapshot", snapshot))
-	defer vpcs.Logger.Info("Exit DeleteSnapshot", zap.Reflect("snapshot", snapshot))
+	vpcs.Logger.Info("Entry DeleteSnapshot", zap.Reflect("snapshotID", snapshot.SnapshotID))
+	defer vpcs.Logger.Info("Exit DeleteSnapshot", zap.Reflect("snapshotID", snapshot.SnapshotID))
 	defer metrics.UpdateDurationFromStart(vpcs.Logger, "DeleteSnapshot", time.Now())
 
 	var err error
 	if snapshot == nil {
 		err = userError.GetUserError("InvalidSnapshotID", nil, nil)
 		return err
-	}
-
-	_, err = vpcs.GetSnapshot(snapshot.SnapshotID)
-	if err != nil {
-		return userError.GetUserError("StorageFindFailedWithSnapshotId", err, snapshot.SnapshotID, "Not a valid snapshot ID")
 	}
 
 	vpcs.Logger.Info("Deleting snapshot from VPC provider...")

@@ -173,7 +173,7 @@ func main() {
 			fmt.Printf("Please enter snapshot Name: ")
 			_, _ = fmt.Scanf("%s", &snapshotName)
 			snapshotRequest := provider.SnapshotParameters{}
-			snapshotRequest.Name = &snapshotName
+			snapshotRequest.Name = snapshotName
 			tags := make(map[string]string)
 			tags["tag1"] = "snapshot-tag1"
 			snapshotRequest.SnapshotTags = tags
@@ -207,17 +207,21 @@ func main() {
 			fmt.Printf("Please enter max number of snapshots entries per page to be returned(Optional): ")
 			_, _ = fmt.Scanf("%d", &limit)
 			for {
-				snapshotobj1, er11 := sess.ListSnapshots(limit, start, tags)
+				Snapobj1, er11 := sess.ListSnapshots(limit, start, tags)
 				if er11 == nil {
-					ctxLogger.Info("Successfully get snapshot details ================>", zap.Reflect("SourceVolumeID", SourceVolumeID))
-					ctxLogger.Info("List of snapshots ", zap.Reflect("Snapshots are->", snapshotobj1))
+					ctxLogger.Info("Successfully got snapshot list================>", zap.Reflect("SnapshotList", *Snapobj1))
+					if Snapobj1.Next != "" {
+						fmt.Printf("\n\nFetching next set of snapshots starting from %v...\n\n", Snapobj1.Next)
+						start = Snapobj1.Next
+						continue
+					}
 				} else {
 					er11 = updateRequestID(er11, requestID)
-					ctxLogger.Info("Failed to get snapshot details ================>", zap.Reflect("Snapshot ID", volumeID), zap.Reflect("Error", er11))
+					ctxLogger.Info("failed to list snapshots================>", zap.Reflect("Error", er11))
 				}
-				fmt.Printf("\n\n")
 				break
 			}
+			fmt.Printf("\n\n")
 		} else if choiceN == 4 {
 			fmt.Println("You selected choice to Create volume")
 			volume := &provider.Volume{}

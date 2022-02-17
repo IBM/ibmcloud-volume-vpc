@@ -32,7 +32,7 @@ import (
 const startSnapshoIDNotFoundMsg = "start parameter is not valid"
 
 // ListSnapshots list all snapshots
-func (vpcs *VPCSession) ListSnapshots(limit int, start string, tags map[string]string) (*provider.SnapshotList, error) {
+func (vpcs *VPCSession) ListSnapshots(limit int, start string, filters map[string]string) (*provider.SnapshotList, error) {
 	vpcs.Logger.Info("Entry ListeSnapshots")
 	defer vpcs.Logger.Info("Exit ListSnapshots")
 	defer metrics.UpdateDurationFromStart(vpcs.Logger, "ListSnapshots", time.Now())
@@ -46,10 +46,10 @@ func (vpcs *VPCSession) ListSnapshots(limit int, start string, tags map[string]s
 		limit = maxLimit
 	}
 
-	filters := &models.LisSnapshotFilters{
-		ResourceGroupID: tags["resource_group.id"],
-		Name:            tags["name"],
-		SourceVolumeID:  tags["source_volume.id"],
+	filter := &models.LisSnapshotFilters{
+		ResourceGroupID: filters["resource_group.id"],
+		Name:            filters["name"],
+		SourceVolumeID:  filters["source_volume.id"],
 	}
 
 	vpcs.Logger.Info("Getting snapshot list from VPC provider...", zap.Reflect("start", start), zap.Reflect("filters", filters))
@@ -57,7 +57,7 @@ func (vpcs *VPCSession) ListSnapshots(limit int, start string, tags map[string]s
 	var snapshots *models.SnapshotList
 	var err error
 	err = retry(vpcs.Logger, func() error {
-		snapshots, err = vpcs.Apiclient.SnapshotService().ListSnapshots(limit, start, filters, vpcs.Logger)
+		snapshots, err = vpcs.Apiclient.SnapshotService().ListSnapshots(limit, start, filter, vpcs.Logger)
 		return err
 	})
 
@@ -84,22 +84,24 @@ func (vpcs *VPCSession) ListSnapshots(limit int, start string, tags map[string]s
 		}
 
 		snapshotslist := snapshots.Snapshots
-		if len(snapshotslist) > 0 {
-			for _, snapItem := range snapshotslist {
-				respSnapshot := &provider.Snapshot{
-					VolumeID:             snapItem.SourceVolume.ID,
-					SnapshotID:           snapItem.ID,
-					SnapshotCreationTime: *snapItem.CreatedAt,
-					SnapshotSize:         GiBToBytes(snapItem.Size),
-					VPC:                  &provider.VPC{Href: snapItem.Href},
-				}
-				if snapItem.LifecycleState == snapshotReadyState {
-					respSnapshot.ReadyToUse = true
-				} else {
-					respSnapshot.ReadyToUse = false
-				}
-				respSnapshotList.Snapshots = append(respSnapshotList.Snapshots, respSnapshot)
+		for _, snapItem := range snapshotslist {
+			var createdTime time.Time
+			if snapItem.CreatedAt != nil {
+				createdTime = *snapItem.CreatedAt
 			}
+			respSnapshot := &provider.Snapshot{
+				VolumeID:             snapItem.SourceVolume.ID,
+				SnapshotID:           snapItem.ID,
+				SnapshotCreationTime: createdTime,
+				SnapshotSize:         GiBToBytes(snapItem.Size),
+				VPC:                  provider.VPC{Href: snapItem.Href},
+			}
+			if snapItem.LifecycleState == snapshotReadyState {
+				respSnapshot.ReadyToUse = true
+			} else {
+				respSnapshot.ReadyToUse = false
+			}
+			respSnapshotList.Snapshots = append(respSnapshotList.Snapshots, respSnapshot)
 		}
 	}
 	return respSnapshotList, err

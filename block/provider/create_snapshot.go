@@ -47,20 +47,8 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters
 	// Step 1- validate input which are required
 	vpcs.Logger.Info("Requested volume is:", zap.Reflect("Volume", sourceVolumeID))
 
-	var volume *models.Volume
-	err = retry(vpcs.Logger, func() error {
-		volume, err = vpcs.Apiclient.VolumeService().GetVolume(sourceVolumeID, vpcs.Logger)
-		return err
-	})
-	if err != nil {
-		return nil, userError.GetUserError("StorageFindFailedWithVolumeId", err, "Not a valid volume ID")
-	}
-
-	if volume == nil {
-		return nil, userError.GetUserError("StorageFindFailedWithVolumeId", err, sourceVolumeID, "Not a valid volume ID")
-	}
 	snapshotTemplate := &models.Snapshot{
-		Name:         *snapshotParameters.Name,
+		Name:         snapshotParameters.Name,
 		SourceVolume: &models.SourceVolume{ID: sourceVolumeID},
 	}
 
@@ -72,14 +60,17 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters
 		return nil, userError.GetUserError("SnapshotSpaceOrderFailed", err)
 	}
 
-	vpcs.Logger.Info("Successfully created snapshot with backend (vpcclient) call")
-	vpcs.Logger.Info("Backend created snapshot details", zap.Reflect("Snapshot", snapshotResult))
+	vpcs.Logger.Info("Successfully created snapshot with backend (vpcclient) call. Snapshot details", zap.Reflect("Snapshot", snapshotResult))
+	var createdTime time.Time
+	if snapshotResult.CreatedAt != nil {
+		createdTime = *snapshotResult.CreatedAt
+	}
 	respSnapshot := &provider.Snapshot{
 		VolumeID:             snapshotResult.SourceVolume.ID,
 		SnapshotID:           snapshotResult.ID,
-		SnapshotCreationTime: *snapshotResult.CreatedAt,
+		SnapshotCreationTime: createdTime,
 		SnapshotSize:         GiBToBytes(snapshotResult.Size),
-		VPC:                  &provider.VPC{Href: snapshotResult.Href},
+		VPC:                  provider.VPC{Href: snapshotResult.Href},
 	}
 	if snapshotResult.LifecycleState == snapshotReadyState {
 		respSnapshot.ReadyToUse = true
