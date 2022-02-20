@@ -33,7 +33,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	provider_util "github.com/IBM/ibmcloud-volume-vpc/block/utils"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
-	uid "github.com/satori/go.uuid"
+	uid "github.com/gofrs/uuid"
 )
 
 var (
@@ -133,7 +133,8 @@ func main() {
 			continue
 		}
 		ctxLogger, _ := getContextLogger()
-		requestID := uid.NewV4().String()
+		uuid, _ := uid.NewV4() // #nosec G104: Attempt to randomly generate uuid
+		requestID := uuid.String()
 		ctxLogger = ctxLogger.With(zap.String("RequestID", requestID))
 		ctx := context.WithValue(context.TODO(), provider.RequestID, requestID)
 		prov, err := providerRegistry.Get(providerName)
