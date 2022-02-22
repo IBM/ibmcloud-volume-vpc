@@ -56,7 +56,7 @@ func NewTokenExchangeIKSService(iksAuthConfig *IksAuthConfiguration) (iam.TokenE
 	if err != nil {
 		return nil, err
 	}
-	spObject, err := secret_provider.NewSecretProvider(true)
+	spObject, err := secret_provider.NewSecretProvider()
 	if err != nil {
 		return nil, err
 	}
