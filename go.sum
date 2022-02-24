@@ -46,10 +46,10 @@ github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7 h1:eHgfQl6IeSmzWUyiSi13CvoFYsovoyq
 github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7/go.mod h1:RiUvKuHKTBmBApDMUQzBL14pQUGKcx/IioKQPIcRQjs=
 github.com/IBM/go-sdk-core/v5 v5.9.1 h1:06pXbD9Rgmqqe2HA5YAeQbB4eYRRFgIoOT+Kh3cp1zo=
 github.com/IBM/go-sdk-core/v5 v5.9.1/go.mod h1:axE2JrRq79gIJTjKPBwV6gWHswvVptBjbcvvCPIxARM=
-github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220223174714-bc946aa16131 h1:YgRHa7xoRGxXgXHXxQ6aPXPFeWaPnA/dDC/qXnnup84=
-github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220223174714-bc946aa16131/go.mod h1:GT1POAxZyY8hAbXphB5ub0NVCsiEn5WgWXYy4ZwwXVg=
-github.com/IBM/secret-common-lib v0.0.0-20220223111213-8814275ab888 h1:az/l4fvzAtXbNlKUp2N1t35RUDbeAPhSF2C70ETB2EI=
-github.com/IBM/secret-common-lib v0.0.0-20220223111213-8814275ab888/go.mod h1:SF4pzpjaxLjzYA2VRPzPuJLs3x71RD+JOVIbb+slHFc=
+github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220224044225-8430830ed652 h1:rJlubvkJFBteHd2szgUc9QH/3fuz3Q1yllQnYsFywjQ=
+github.com/IBM/ibmcloud-volume-interface v1.0.1-0.20220224044225-8430830ed652/go.mod h1:EWTag6+8DRmrt2Q3Eu26RfRuEyazUuok0Q50Wjn/Qh0=
+github.com/IBM/secret-common-lib v0.0.0-20220224044015-b128a0d2b1a0 h1:fLw53QLsr3JoMiV67uOOx6zlo7TPDE8sHT5JPzi1b3c=
+github.com/IBM/secret-common-lib v0.0.0-20220224044015-b128a0d2b1a0/go.mod h1:SF4pzpjaxLjzYA2VRPzPuJLs3x71RD+JOVIbb+slHFc=
 github.com/IBM/secret-utils-lib v0.0.0-20220223110022-899e9e8c74e0 h1:ykPctjkhyS4zFfO1p3FT7ZsUuBDOEoTK+OQPG6PgeUM=
 github.com/IBM/secret-utils-lib v0.0.0-20220223110022-899e9e8c74e0/go.mod h1:kAUqVoy1qjG75BIgPbqOLYwZyOu+V7KHtTltkha7Los=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
