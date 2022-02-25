@@ -151,6 +151,22 @@ func TestFromProviderToLibVolume(t *testing.T) {
 	assert.NotNil(t, providerVolume)
 }
 
+func TestFromProviderToLibSnapshot(t *testing.T) {
+	// Setup new style zap logger
+	logger, _ := GetTestContextLogger()
+
+	timeNow := time.Now()
+	vpcSnapshot := &models.Snapshot{
+		ID:             "wrong-wrong-id",
+		Name:           "test-snapshot-name",
+		LifecycleState: snapshotReadyState,
+		SourceVolume:   &models.SourceVolume{ID: "16f293bf-test-4bff-816f-e199c0c65db6"},
+		CreatedAt:      &timeNow,
+	}
+	providerSnapshot := FromProviderToLibSnapshot(vpcSnapshot, logger)
+	assert.NotNil(t, providerSnapshot)
+}
+
 func TestToInt(t *testing.T) {
 	value := ToInt("519")
 	assert.Equal(t, value, 519)
