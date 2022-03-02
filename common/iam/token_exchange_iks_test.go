@@ -312,7 +312,7 @@ func Test_IKSExchangeIAMAPIKeyForAccessToken(t *testing.T) {
 			tes, err := NewTokenExchangeIKSService(iksAuthConfig)
 			assert.NoError(t, err)
 
-			r, actualError := tes.ExchangeIAMAPIKeyForAccessToken("apikey1", logger)
+			r, actualError := tes.ExchangeIAMAPIKeyForAccessToken(logger)
 			if testCase.expectedError == nil {
 				assert.NoError(t, actualError)
 				if assert.NotNil(t, r) {
