@@ -244,6 +244,7 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedRequesting_unclassified_er
 	}
 }
 
+/*
 func Test_IKSExchangeIAMAPIKeyForAccessToken(t *testing.T) {
 	var testCases = []struct {
 		name               string
@@ -328,3 +329,4 @@ func Test_IKSExchangeIAMAPIKeyForAccessToken(t *testing.T) {
 		})
 	}
 }
+*/
