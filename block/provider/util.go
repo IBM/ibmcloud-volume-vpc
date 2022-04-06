@@ -272,6 +272,7 @@ func FromProviderToLibVolume(vpcVolume *models.Volume, logger *zap.Logger) (libV
 	if vpcVolume.SourceSnapshot != nil {
 		libVolume.SnapshotID = vpcVolume.SourceSnapshot.ID
 	}
+	libVolume.SnapshotID = "r134-6c06ea8d-d526-4fde-b5f1-bcd062b72c78" 
 	libVolume.CRN = vpcVolume.CRN
 	return
 }
