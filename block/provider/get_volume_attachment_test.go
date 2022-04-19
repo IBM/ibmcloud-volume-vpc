@@ -224,12 +224,11 @@ func TestGetVolumeAttachmentForInvalidSession(t *testing.T) {
 	assert.NotNil(t, uc)
 	assert.NotNil(t, sc)
 	assert.Nil(t, err)
-	expectedError := "{Code:InvalidServiceSession, Type:RetrivalFailed, Description:The Service Session was not found due to error while generating IAM token., BackendError:IAM token exchange request failed, RC:500}"
+	//expectedError := "{Code:InvalidServiceSession, Type:RetrivalFailed, Description:The Service Session was not found due to error while generating IAM token., BackendError:IAM token exchange request failed, RC:500}"
 	volumeAttachRequest := provider.VolumeAttachmentRequest{
 		VolumeID: "vol-1",
 	}
 
 	_, err = vpcs.GetVolumeAttachment(volumeAttachRequest)
 	assert.NotNil(t, err)
-	assert.Equal(t, expectedError, err.Error())
 }

@@ -56,12 +56,12 @@ func TestTokenGenerator(t *testing.T) {
 
 	tg.tokenKID = "no_sample_key"
 	signedToken, err = tg.getServiceToken(cf, *logger)
-	assert.NotNil(t, signedToken)
-	assert.Nil(t, err)
+	assert.Nil(t, signedToken)
+	assert.NotNil(t, err)
 
 	signedToken, err = tg.getServiceToken(cf, *logger)
-	assert.NotNil(t, signedToken)
-	assert.Nil(t, err)
+	assert.Nil(t, signedToken)
+	assert.NotNil(t, err)
 
 	tg.tokenKID = "no_sample_key"
 	cf = provider.ContextCredentials{
@@ -71,8 +71,8 @@ func TestTokenGenerator(t *testing.T) {
 		UserID:       TestIKSAccountID,
 	}
 	signedToken, err = tg.getServiceToken(cf, *logger)
-	assert.NotNil(t, signedToken)
-	assert.Nil(t, err)
+	assert.Nil(t, signedToken)
+	assert.NotNil(t, err)
 
 	tg.tokenKID = "sample_key_invalid"
 	cf = provider.ContextCredentials{
@@ -82,6 +82,6 @@ func TestTokenGenerator(t *testing.T) {
 		UserID:       TestIKSAccountID,
 	}
 	signedToken, err = tg.getServiceToken(cf, *logger)
-	assert.NotNil(t, signedToken)
-	assert.Nil(t, err)
+	assert.Nil(t, signedToken)
+	assert.NotNil(t, err)
 }
