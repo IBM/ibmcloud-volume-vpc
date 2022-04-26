@@ -25,6 +25,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/lib/utils/reasoncode"
+	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	volumeAttachServiceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/instances/fakes"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	"github.com/stretchr/testify/assert"
@@ -224,6 +225,7 @@ func TestDetachVolume(t *testing.T) {
 }
 
 func TestDetachVolumeForInvalidSession(t *testing.T) {
+	userError.MessagesEn = userError.InitMessages()
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 	vpcs, uc, sc, err := GetTestOpenInvalidSession(t, logger)
@@ -231,7 +233,7 @@ func TestDetachVolumeForInvalidSession(t *testing.T) {
 	assert.NotNil(t, uc)
 	assert.NotNil(t, sc)
 	assert.Nil(t, err)
-	//expectedError := "{Code:InvalidServiceSession, Type:RetrivalFailed, Description:The Service Session was not found due to error while generating IAM token., BackendError:IAM token exchange request failed, RC:500}"
+	expectedError := "{Code:InvalidServiceSession, Type:RetrivalFailed, Description:The Service Session was not found due to error while generating IAM token., BackendError:IAM token exchange request failed, RC:500}"
 	volumeAttachRequest := provider.VolumeAttachmentRequest{
 		VolumeID: "vol-1",
 	}
@@ -247,4 +249,5 @@ func TestDetachVolumeForInvalidSession(t *testing.T) {
 	}
 
 	assert.NotNil(t, err)
+	assert.Equal(t, expectedError, err.Error())
 }
