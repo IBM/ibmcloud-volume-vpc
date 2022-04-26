@@ -55,40 +55,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func Test_IKSUpdateAPIKey(t *testing.T) {
-	logger := zap.New(
-		zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig()), consoleDebugging, lowPriority),
-		zap.AddCaller(),
-	)
-	httpSetup()
-
-	// IAM endpoint
-	mux.HandleFunc("/v1/iam/apikey",
-		func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(200)
-			fmt.Fprint(w, `{"token": "at_success"}`)
-		},
-	)
-
-	iksAuthConfig := &IksAuthConfiguration{
-		PrivateAPIRoute: server.URL,
-	}
-
-	var err error
-	tes := new(tokenExchangeIKSService)
-	tes.httpClient, err = config.GeneralCAHttpClient()
-	assert.Nil(t, err)
-	tes.iksAuthConfig = iksAuthConfig
-	tes.secretprovider = new(sp.FakeSecretProvider)
-
-	err = tes.UpdateAPIKey("invalid", logger)
-	assert.Nil(t, err)
-
-	tes.iksAuthConfig = nil
-	err = tes.UpdateAPIKey("invalid", logger)
-	assert.NotNil(t, err)
-}
-
 func Test_IKSExchangeRefreshTokenForAccessToken_Success(t *testing.T) {
 	logger := zap.New(
 		zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig()), consoleDebugging, lowPriority),
