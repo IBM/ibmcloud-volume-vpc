@@ -120,7 +120,7 @@ func TestWaitForDetachVolume(t *testing.T) {
 			},
 
 			verify: func(t *testing.T, err error) {
-				assert.NotNil(t, err)
+				assert.Nil(t, err)
 			},
 		},
 	}
