@@ -48,7 +48,7 @@ func NewProvider(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) (local.Prov
 	//Setup vpc provider
 	provider, err := vpcprovider.NewProvider(conf, logger)
 	if err != nil {
-		logger.Error("Error initializing VPC BLOCK Provider", zap.Error(err))
+		logger.Error("Error initializing VPC Provider", zap.Error(err))
 		return nil, err
 	}
 	vpcBlockProvider, _ := provider.(*vpcprovider.VPCBlockProvider)
@@ -56,7 +56,7 @@ func NewProvider(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) (local.Prov
 	// Setup IKS provider
 	provider, err = vpcprovider.NewProvider(conf, logger)
 	if err != nil {
-		logger.Error("Error initializing IKS BLOCK Provider", zap.Error(err))
+		logger.Error("Error initializing IKS Provider", zap.Error(err))
 		return nil, err
 	}
 	iksBlockProvider, _ := provider.(*vpcprovider.VPCBlockProvider)
