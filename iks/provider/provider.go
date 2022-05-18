@@ -46,13 +46,19 @@ var _ local.Provider = &IksVpcBlockProvider{}
 func NewProvider(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) (local.Provider, error) {
 	var err error
 	//Setup vpc provider
+	vpcBlockProvider := new(vpcprovider.VPCBlockProvider)
 	provider, _ := vpcprovider.NewProvider(conf, logger)
-	vpcBlockProvider, _ := provider.(*vpcprovider.VPCBlockProvider)
+	if provider != nil {
+		vpcBlockProvider, _ = provider.(*vpcprovider.VPCBlockProvider)
+	}
 
 	// Setup IKS provider
-	provider, _ = vpcprovider.NewProvider(conf, logger)
-	iksBlockProvider, _ := provider.(*vpcprovider.VPCBlockProvider)
+	provider, err = vpcprovider.NewProvider(conf, logger)
+	if err != nil {
+		return nil, err
+	}
 
+	iksBlockProvider, _ := provider.(*vpcprovider.VPCBlockProvider)
 	//Overrider Base URL
 	iksBlockProvider.APIConfig.BaseURL = conf.VPCConfig.IKSTokenExchangePrivateURL
 	// Setup IKS-VPC dual provider
