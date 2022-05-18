@@ -72,7 +72,7 @@ func NewProvider(conf *vpcconfig.VPCBlockConfig, logger *zap.Logger) (local.Prov
 
 	iksVpcBlockProvider.iksBlockProvider.ContextCF, err = vpcauth.NewVPCContextCredentialsFactory(iksVpcBlockProvider.vpcBlockProvider.Config)
 	if err != nil {
-		logger.Error("Error initializing IKS VPC BLOCK Provider", zap.Error(err))
+		logger.Error("Error initializing context credentials factory", zap.Error(err))
 		return nil, err
 	}
 	//vpcBlockProvider.ApiConfig.BaseURL = conf.VPC.IKSTokenExchangePrivateURL
