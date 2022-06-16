@@ -18,13 +18,14 @@
 package provider
 
 import (
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	"go.uber.org/zap"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // maxRetryAttempt ...
