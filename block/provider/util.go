@@ -18,14 +18,14 @@
 package provider
 
 import (
-	"strconv"
-	"strings"
-	"time"
 	"fmt"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	"go.uber.org/zap"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // maxRetryAttempt ...
@@ -50,9 +50,9 @@ var skipErrorCodes = map[string]bool{
 	"not_found":                            true,
 	"volume_id_not_found":                  true,
 	"volume_name_not_found":                true,
+	"volume_profile_capacity_iops_invalid": true,
 	"internal_error":                       false,
 	"invalid_route":                        false,
-	"volume_profile_capacity_iops_invalid": false,
 
 	// IKS ms error code for skip re-try
 	"ST0008": true, //resources not found
