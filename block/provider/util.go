@@ -18,7 +18,6 @@
 package provider
 
 import (
-	"fmt"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
@@ -77,8 +76,6 @@ func retry(logger *zap.Logger, retryfunc func() error) error {
 		if err != nil {
 			//Skip retry for the below type of Errors
 			modelError, ok := err.(*models.Error)
-			fmt.Println("--------------------")
-			fmt.Println(modelError)
 			if !ok {
 				continue
 			}
