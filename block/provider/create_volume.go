@@ -45,7 +45,9 @@ func (vpcs *VPCSession) CreateVolume(volumeRequest provider.Volume) (volumeRespo
 	}
 	vpcs.Logger.Info("Successfully validated inputs for CreateVolume request... ")
 
-	volumeRequest.VPCVolume.Tags = append(volumeRequest.VPCVolume.Tags, vpcs.Config.VPCConfig.ClusterVolumeLabel)
+	if len(vpcs.Config.VPCConfig.ClusterVolumeLabel) != 0 {
+		volumeRequest.VPCVolume.Tags = append(volumeRequest.VPCVolume.Tags, vpcs.Config.VPCConfig.ClusterVolumeLabel)
+	}
 
 	// Build the template to send to backend
 	volumeTemplate := &models.Volume{
