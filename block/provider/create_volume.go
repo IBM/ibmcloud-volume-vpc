@@ -39,7 +39,7 @@ func (vpcs *VPCSession) CreateVolume(volumeRequest provider.Volume) (volumeRespo
 	defer metrics.UpdateDurationFromStart(vpcs.Logger, "CreateVolume", time.Now())
 
 	vpcs.Logger.Info("Basic validation for CreateVolume request... ", zap.Reflect("RequestedVolumeDetails", volumeRequest))
-	resourceGroup, iops, err := validateVolumeRequest(volumeRequest, vpcs.Config.VPCConfig.ClusterVolumeLabel)
+	resourceGroup, iops, err := validateVolumeRequest(&volumeRequest, vpcs.Config.VPCConfig.ClusterVolumeLabel)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (vpcs *VPCSession) CreateVolume(volumeRequest provider.Volume) (volumeRespo
 }
 
 // validateVolumeRequest validating volume request
-func validateVolumeRequest(volumeRequest provider.Volume, clusterVolumeLabel string) (models.ResourceGroup, int64, error) {
+func validateVolumeRequest(volumeRequest *provider.Volume, clusterVolumeLabel string) (models.ResourceGroup, int64, error) {
 	resourceGroup := models.ResourceGroup{}
 	var iops int64
 	iops = 0
