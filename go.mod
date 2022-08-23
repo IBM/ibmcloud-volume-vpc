@@ -4,9 +4,9 @@ go 1.15
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.0.1-beta5.0.20220803184138-80305119c088
-	github.com/IBM/secret-common-lib v1.0.4-0.20220802111448-77a333181b58
-	github.com/IBM/secret-utils-lib v1.0.3-0.20220802093525-9274da516ad4
+	github.com/IBM/ibmcloud-volume-interface v1.0.1-beta5.0.20220823095508-f471723c7885
+	github.com/IBM/secret-common-lib v1.0.4-0.20220823024202-b6a95fb66b50
+	github.com/IBM/secret-utils-lib v1.0.3-0.20220822070217-4b66786cdf09
 	github.com/fatih/structs v1.1.0
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.2.0
