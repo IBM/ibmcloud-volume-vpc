@@ -36,7 +36,7 @@ var maxRetryGap = 60
 
 //ConstantRetryGap ...
 const (
-	ConstantRetryGap = 10 // seconds
+	ConstantRetryGap = 3 // seconds
 )
 
 var volumeIDPartsCount = 5
