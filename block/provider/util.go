@@ -196,7 +196,7 @@ func (fRetry *FlexyRetry) FlexyRetryWithConstGap(logger *zap.Logger, funcToRetry
 	var err error
 	var stopRetry bool
 	// lets have more number of try for wait for attach and detach specially
-	totalAttempt := fRetry.maxRetryAttempt * 134 // 40 time as per default values i.e 400 seconds
+	totalAttempt := 134 // 40 time as per default values i.e 400 seconds
 	for i := 0; i < totalAttempt; i++ {
 		if i > 0 {
 			time.Sleep(time.Duration(ConstantRetryGap) * time.Second)
