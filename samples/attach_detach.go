@@ -24,7 +24,7 @@ import (
 	"go.uber.org/zap"
 )
 
-//VolumeAttachmentManager ...
+// VolumeAttachmentManager ...
 type VolumeAttachmentManager struct {
 	Session   provider.Session
 	Logger    *zap.Logger
@@ -42,7 +42,7 @@ func NewVolumeAttachmentManager(session provider.Session, logger *zap.Logger, re
 
 var volumeAttachmentReq provider.VolumeAttachmentRequest
 
-//AttachVolume ...
+// AttachVolume ...
 func (vam *VolumeAttachmentManager) AttachVolume() {
 	vam.setupVolumeAttachmentRequest()
 	response, err := vam.Session.AttachVolume(volumeAttachmentReq)
@@ -62,7 +62,7 @@ func (vam *VolumeAttachmentManager) AttachVolume() {
 	fmt.Println("Volume attachment", response, err)
 }
 
-//DetachVolume ...
+// DetachVolume ...
 func (vam *VolumeAttachmentManager) DetachVolume() {
 	vam.setupVolumeAttachmentRequest()
 	response, err := vam.Session.DetachVolume(volumeAttachmentReq)

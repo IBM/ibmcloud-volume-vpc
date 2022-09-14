@@ -33,7 +33,7 @@ script:
 - rsync -az . $GOPATH/src/github.com/IBM/ibmcloud-volume-vpc
 
 - make vet
-- make fmt
+- make makefmt
 - travis_wait 300 make test
 - make coverage && touch "Passing" || touch "Failed"
 
