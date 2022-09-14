@@ -9,7 +9,6 @@ all: deps dofmt vet test
 
 .PHONY: deps
 deps:
-	go get github.ibm.com/alchemy-containers/go-build-tools/cmd/goproxy
 	go mod download
 	go get github.com/pierrre/gotestcover
 	go install github.com/pierrre/gotestcover
