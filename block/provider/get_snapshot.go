@@ -29,38 +29,56 @@ func (vpcs *VPCSession) GetSnapshot(snapshotID string) (*provider.Snapshot, erro
 	vpcs.Logger.Info("Entry GetSnapshot", zap.Reflect("SnapshotID", snapshotID))
 	defer vpcs.Logger.Info("Exit GetSnapshot", zap.Reflect("SnapshotID", snapshotID))
 
-	return nil, nil
-}
+	vpcs.Logger.Info("Getting snapshot details from VPC provider...", zap.Reflect("SnapshotID", snapshotID))
 
-// GetSnapshotWithVolumeID get snapshot
-func (vpcs *VPCSession) GetSnapshotWithVolumeID(volumeID string, snapshotID string) (*provider.Snapshot, error) {
-	vpcs.Logger.Info("Entry GetSnapshot", zap.Reflect("SnapshotID", snapshotID))
-	defer vpcs.Logger.Info("Exit GetSnapshot", zap.Reflect("SnapshotID", snapshotID))
-
-	var err error
 	var snapshot *models.Snapshot
-
+	var err error
 	err = retry(vpcs.Logger, func() error {
-		snapshot, err = vpcs.Apiclient.SnapshotService().GetSnapshot(volumeID, snapshotID, vpcs.Logger)
+		snapshot, err = vpcs.Apiclient.SnapshotService().GetSnapshot(snapshotID, vpcs.Logger)
 		return err
 	})
 
 	if err != nil {
-		return nil, userError.GetUserError("FailedToDeleteSnapshot", err)
+		return nil, userError.GetUserError("StorageFindFailedWithSnapshotId", err, snapshotID)
 	}
 
-	vpcs.Logger.Info("Successfully retrieved the snapshot details", zap.Reflect("Snapshot", snapshot))
-
-	volume, err := vpcs.GetVolume(volumeID)
-	if err != nil {
-		return nil, userError.GetUserError("StorageFindFailedWithVolumeId", err, volume.VolumeID, "Not a valid volume ID")
-	}
-
+	vpcs.Logger.Info("Successfully retrieved snpashot details from VPC backend", zap.Reflect("snapshotDetails", snapshot))
 	respSnapshot := &provider.Snapshot{
-		SnapshotID: snapshot.ID,
-		Volume:     *volume,
+		VolumeID:             snapshot.SourceVolume.ID,
+		SnapshotID:           snapshot.ID,
+		SnapshotCreationTime: *snapshot.CreatedAt,
+	}
+	return respSnapshot, nil
+}
+
+// GetSnapshotByName ...
+func (vpcs *VPCSession) GetSnapshotByName(name string) (respSnap *provider.Snapshot, err error) {
+	vpcs.Logger.Debug("Entry of GetSnapshotByName method...")
+	defer vpcs.Logger.Debug("Exit from GetSnapshotByName method...")
+
+	vpcs.Logger.Info("Basic validation for snapshot Name...", zap.Reflect("SnapshotName", name))
+	if len(name) <= 0 {
+		err = userError.GetUserError("InvalidSnapshotName", nil, name)
+		return
 	}
 
-	vpcs.Logger.Info("Successfully retrieved the snapshot details", zap.Reflect("Provider snapshot", respSnapshot))
+	vpcs.Logger.Info("Getting snapshot details from VPC provider...", zap.Reflect("SnapshotName", name))
+
+	var snapshot *models.Snapshot
+	err = retry(vpcs.Logger, func() error {
+		snapshot, err = vpcs.Apiclient.SnapshotService().GetSnapshotByName(name, vpcs.Logger)
+		return err
+	})
+
+	if err != nil {
+		return nil, userError.GetUserError("StorageFindFailedWithSnapshotName", err, snapshot)
+	}
+
+	vpcs.Logger.Info("Successfully retrieved snpashot details from VPC backend", zap.Reflect("snapshotDetails", snapshot))
+	respSnapshot := &provider.Snapshot{
+		VolumeID:             snapshot.SourceVolume.ID,
+		SnapshotID:           snapshot.ID,
+		SnapshotCreationTime: *snapshot.CreatedAt,
+	}
 	return respSnapshot, nil
 }

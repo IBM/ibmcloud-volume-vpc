@@ -18,30 +18,35 @@
 package provider
 
 import (
+	"time"
+
+	"github.com/IBM/ibmcloud-volume-interface/lib/metrics"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
+	"github.com/IBM/ibmcloud-volume-interface/lib/utils/reasoncode"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	"go.uber.org/zap"
 )
 
-// CreateSnapshot Create snapshot from given volume
-func (vpcs *VPCSession) CreateSnapshot(volumeRequest *provider.Volume, tags map[string]string) (*provider.Snapshot, error) {
-	vpcs.Logger.Info("Entry CreateSnapshot", zap.Reflect("volumeRequest", volumeRequest))
-	defer vpcs.Logger.Info("Exit CreateSnapshot", zap.Reflect("volumeRequest", volumeRequest))
-
-	if volumeRequest == nil {
-		return nil, userError.GetUserError("StorageFindFailedWithVolumeId", nil, "Not a valid volume ID")
-	}
-
-	var snapshot *models.Snapshot
+func (vpcs *VPCSession) CreateSnapshot(snapshotRequest provider.SnapshotRequest) (*provider.Snapshot, error) {
+	vpcs.Logger.Info("Entry CreateSnapshot", zap.Reflect("snapshotRequest", snapshotRequest))
+	defer vpcs.Logger.Info("Exit CreateSnapshot", zap.Reflect("snapshotRequest", snapshotRequest))
+	defer metrics.UpdateDurationFromStart(vpcs.Logger, "CreateSnapshot", time.Now())
 	var err error
 
+	vpcs.Logger.Info("Validating basic inputs for CreateSnapshot method...", zap.Reflect("snapshotRequest", snapshotRequest))
+	err = vpcs.validateSnapshotRequest(snapshotRequest)
+	if err != nil {
+		return nil, err
+	}
+	var snapshotResult *models.Snapshot
+
 	// Step 1- validate input which are required
-	vpcs.Logger.Info("Requested volume is:", zap.Reflect("Volume", volumeRequest))
+	vpcs.Logger.Info("Requested volume is:", zap.Reflect("Volume", snapshotRequest.SourceVolumeID))
 
 	var volume *models.Volume
 	err = retry(vpcs.Logger, func() error {
-		volume, err = vpcs.Apiclient.VolumeService().GetVolume(volumeRequest.VolumeID, vpcs.Logger)
+		volume, err = vpcs.Apiclient.VolumeService().GetVolume(snapshotRequest.SourceVolumeID, vpcs.Logger)
 		return err
 	})
 	if err != nil {
@@ -49,11 +54,15 @@ func (vpcs *VPCSession) CreateSnapshot(volumeRequest *provider.Volume, tags map[
 	}
 
 	if volume == nil {
-		return nil, userError.GetUserError("StorageFindFailedWithVolumeId", err, volumeRequest.VolumeID, "Not a valid volume ID")
+		return nil, userError.GetUserError("StorageFindFailedWithVolumeId", err, snapshotRequest.SourceVolumeID, "Not a valid volume ID")
+	}
+	snapshotTemplate := &models.Snapshot{
+		Name:         *snapshotRequest.Name,
+		SourceVolume: &models.SourceVolume{ID: snapshotRequest.SourceVolumeID},
 	}
 
 	err = retry(vpcs.Logger, func() error {
-		snapshot, err = vpcs.Apiclient.SnapshotService().CreateSnapshot(volumeRequest.VolumeID, snapshot, vpcs.Logger)
+		snapshotResult, err = vpcs.Apiclient.SnapshotService().CreateSnapshot(snapshotTemplate, vpcs.Logger)
 		return err
 	})
 	if err != nil {
@@ -61,18 +70,41 @@ func (vpcs *VPCSession) CreateSnapshot(volumeRequest *provider.Volume, tags map[
 	}
 
 	vpcs.Logger.Info("Successfully created snapshot with backend (vpcclient) call")
-	vpcs.Logger.Info("Backend created snapshot details", zap.Reflect("Snapshot", snapshot))
-
-	// Converting volume to lib volume type
-	volumeResponse := FromProviderToLibVolume(volume, vpcs.Logger)
-	if volumeResponse != nil {
-		respSnapshot := &provider.Snapshot{
-			Volume:               *volumeResponse,
-			SnapshotID:           snapshot.ID,
-			SnapshotCreationTime: *snapshot.CreatedAt,
-		}
-		return respSnapshot, nil
+	vpcs.Logger.Info("Backend created snapshot details", zap.Reflect("Snapshot", snapshotResult))
+	vpcs.Logger.Info("Waiting for snapshot to be in valid (available) state", zap.Reflect("snapshotDetails", snapshotResult))
+	err = WaitForValidSnapshotState(vpcs, snapshotResult.ID)
+	if err != nil {
+		return nil, userError.GetUserError("SnapshotNotInValidState", err, snapshotResult.ID)
 	}
+	vpcs.Logger.Info("Snapshot got valid (available) state", zap.Reflect("SnapshotDetails", snapshotResult))
 
-	return nil, userError.GetUserError("CoversionNotSuccessful", err, "Not able to prepare provider volume")
+	respSnapshot := &provider.Snapshot{
+		VolumeID:             *&snapshotRequest.SourceVolumeID,
+		SnapshotID:           snapshotResult.ID,
+		SnapshotCreationTime: *snapshotResult.CreatedAt,
+	}
+	return respSnapshot, nil
+
+}
+
+// validateSnapshotRequest validates request for snapshot
+func (vpcs *VPCSession) validateSnapshotRequest(snapshorRequest provider.SnapshotRequest) error {
+	var err error
+	// Check for snapshot Name - required validation
+	if snapshorRequest.Name == nil {
+		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "Name")
+		vpcs.Logger.Error("snapshorRequest.Name is required", zap.Error(err))
+		return err
+	} else if len(*snapshorRequest.Name) == 0 {
+		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "Name")
+		vpcs.Logger.Error("snapshorRequest.Name is required", zap.Error(err))
+		return err
+	}
+	// Check for VolumeID - required validation
+	if len(snapshorRequest.SourceVolumeID) == 0 {
+		err = userError.GetUserError(string(reasoncode.ErrorRequiredFieldMissing), nil, "SourceVolumeID")
+		vpcs.Logger.Error("snapshorRequest.SourceVolumeID is required", zap.Error(err))
+		return err
+	}
+	return nil
 }
