@@ -53,6 +53,7 @@ var skipErrorCodes = map[string]bool{
 	"volume_profile_capacity_iops_invalid": true,
 	"internal_error":                       false,
 	"invalid_route":                        false,
+	"snapshots_not_found":                  true,
 
 	// IKS ms error code for skip re-try
 	"ST0008": true, //resources not found
