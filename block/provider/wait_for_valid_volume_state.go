@@ -39,7 +39,7 @@ func WaitForValidVolumeState(vpcs *VPCSession, volumeObj *models.Volume) (err er
 	var volumeID string
 	var volume *models.Volume
 
-	if volumeObj.ID != "" {
+	if volumeObj != nil {
 		volumeID = volumeObj.ID
 		vpcs.Logger.Info("Getting volume details from VPC provider...", zap.Reflect("VolumeID", volumeID))
 	}
