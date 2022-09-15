@@ -36,7 +36,6 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters
 	defer vpcs.Logger.Info("Exit CreateSnapshot", zap.Reflect("snapshotRequest", snapshotParameters), zap.Reflect("sourceVolumeID", sourceVolumeID))
 	defer metrics.UpdateDurationFromStart(vpcs.Logger, "CreateSnapshot", time.Now())
 	var err error
-	vpcs.Logger.Info("Validating basic inputs for CreateSnapshot method...", zap.Reflect("snapshotRequest", snapshotParameters), zap.Reflect("sourceVolumeID", sourceVolumeID))
 	err = vpcs.validateSnapshotRequest(sourceVolumeID, snapshotParameters)
 	if err != nil {
 		return nil, err
@@ -44,7 +43,6 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters
 	var snapshotResult *models.Snapshot
 
 	// Step 1- validate input which are required
-	vpcs.Logger.Info("Requested volume is:", zap.Reflect("Volume", sourceVolumeID))
 
 	snapshotTemplate := &models.Snapshot{
 		Name:          snapshotParameters.Name,
