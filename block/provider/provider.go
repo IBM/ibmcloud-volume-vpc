@@ -226,8 +226,8 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 		maxRetryGap = vpcp.Config.VPCConfig.MaxRetryGap
 	}
 
-	// Update retry logic default values
-	/*if vpcp.Config.VPCConfig.MinVPCRetryGap > 3 && vpcp.Config.VPCConfig.MinVPCRetryGap < 10 {
+	//Update retry logic default values
+	if vpcp.Config.VPCConfig.MinVPCRetryGap > 3 && vpcp.Config.VPCConfig.MinVPCRetryGap < 10 {
 		ctxLogger.Debug("", zap.Reflect("MinVPCRetryGap", vpcp.Config.VPCConfig.MinVPCRetryGap))
 		minVPCRetryGap = vpcp.Config.VPCConfig.MinVPCRetryGap
 	}
@@ -239,7 +239,7 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 	if vpcp.Config.VPCConfig.MaxVPCRetryAttempt > 46 {
 		ctxLogger.Debug("", zap.Reflect("MaxVPCRetryAttempt", vpcp.Config.VPCConfig.MaxVPCRetryAttempt))
 		maxVPCRetryAttempt = vpcp.Config.VPCConfig.MaxVPCRetryAttempt
-	}*/
+	}
 
 	vpcSession := &VPCSession{
 		VPCAccountID:          contextCredentials.IAMAccountID,
