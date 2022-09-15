@@ -34,7 +34,16 @@ var maxRetryAttempt = 10
 // maxRetryGap ...
 var maxRetryGap = 60
 
-// ConstantRetryGap ...
+// minVPCRetryGap ...
+var minVPCRetryGap = 3
+
+// minVPCRetryGapAttempt ...
+var minVPCRetryGapAttempt = 3
+
+// maxRetryAttempt ...
+var maxVPCRetryAttempt = 46
+
+//ConstantRetryGap ...
 const (
 	ConstantRetryGap = 10 // seconds
 )
@@ -141,16 +150,22 @@ func skipRetryForObviousErrors(err error, isIKS bool) bool {
 
 // FlexyRetry ...
 type FlexyRetry struct {
-	maxRetryAttempt int
-	maxRetryGap     int
+	maxRetryAttempt       int
+	maxRetryGap           int
+	minVPCRetryGap        int
+	minVPCRetryGapAttempt int
+	maxVPCRetryAttempt    int
 }
 
 // NewFlexyRetryDefault ...
 func NewFlexyRetryDefault() FlexyRetry {
 	return FlexyRetry{
 		// Default values as we configuration
-		maxRetryAttempt: maxRetryAttempt,
-		maxRetryGap:     maxRetryGap,
+		maxRetryAttempt:       maxRetryAttempt,
+		maxRetryGap:           maxRetryGap,
+		minVPCRetryGap:        minVPCRetryGap,
+		minVPCRetryGapAttempt: minVPCRetryGapAttempt,
+		maxVPCRetryAttempt:    maxVPCRetryAttempt,
 	}
 }
 
@@ -212,6 +227,45 @@ func (fRetry *FlexyRetry) FlexyRetryWithConstGap(logger *zap.Logger, funcToRetry
 		if (i + 1) < totalAttempt {
 			logger.Info("UNEXPECTED RESULT from FlexyRetryWithConstGap, Re-attempting execution ..", zap.Int("attempt..", i+2),
 				zap.Int("retry-gap", ConstantRetryGap), zap.Int("max-retry-Attempts", totalAttempt),
+				zap.Bool("stopRetry", stopRetry), zap.Error(err))
+		}
+	}
+	return err
+}
+
+// FlexyRetryWithCustomGap ...
+func (fRetry *FlexyRetry) FlexyRetryWithCustomGap(logger *zap.Logger, funcToRetry func() (error, bool)) error {
+	var err error
+	var stopRetry bool
+	retryGap := fRetry.minVPCRetryGap
+	totalAttempt := fRetry.maxVPCRetryAttempt // 46 time as per default values 3 times 3 sec + 6 times 6 sec + 37 times 10 sec i.e 415 seconds
+	for i := 0; i <= totalAttempt; i++ {
+		if i > 0 {
+			time.Sleep(time.Duration(retryGap) * time.Second)
+		}
+		// Call function which required retry, retry is decided by function itself
+		err, stopRetry = funcToRetry()
+		if stopRetry {
+			break
+		}
+
+		//First fRetry.minVPCRetryGapAttempt attempts fRetry.minVPCRetryGap second and next (2 * fRetry.minVPCRetryGap)  attempts (2 * fRetry.minVPCRetryGap) second
+		if i == fRetry.minVPCRetryGapAttempt {
+			if (2 * fRetry.minVPCRetryGap) < 10 { //If minVPCRetryGap is resulting in value more than 10 secs lets default to 10 secs
+				retryGap = 2 * fRetry.minVPCRetryGap
+			} else {
+				retryGap = 10
+			}
+		}
+
+		//Remaining attempts 10 seconds
+		if (i + 1) == ((2 * fRetry.minVPCRetryGapAttempt) + fRetry.minVPCRetryGapAttempt) {
+			retryGap = 10 // 10 seconds
+		}
+
+		if (i + 1) < totalAttempt {
+			logger.Info("UNEXPECTED RESULT from FlexyRetryWithCustomGap, Re-attempting execution ..", zap.Int("attempt..", i+2),
+				zap.Int("retry-gap", retryGap), zap.Int("max-retry-Attempts", totalAttempt),
 				zap.Bool("stopRetry", stopRetry), zap.Error(err))
 		}
 	}
