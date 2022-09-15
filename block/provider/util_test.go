@@ -101,6 +101,7 @@ func TestFlexyRetryWithCustomGap(t *testing.T) {
 
 	customRetry := NewFlexyRetryDefault()
 
+	//Testing retry with successful attempt
 	err = customRetry.FlexyRetryWithCustomGap(logger, func() (error, bool) {
 		logger.Info("Testing retry with successful attempt")
 		if attempt == 2 {
@@ -121,6 +122,7 @@ func TestFlexyRetryWithCustomGap(t *testing.T) {
 		return err, skip
 	})
 
+	//Testing retry with unsuccessful attempt
 	err = customRetry.FlexyRetryWithCustomGap(logger, func() (error, bool) {
 		logger.Info("Testing retry with unsuccessful attempt")
 		errCode := models.ErrorCode("wrong_code")
@@ -134,6 +136,7 @@ func TestFlexyRetryWithCustomGap(t *testing.T) {
 		return err, false
 	})
 
+	//Testing retry with unsuccessful attempt with custom gap
 	customRetry.minVPCRetryGap = 6
 	customRetry.minVPCRetryGapAttempt = 6
 
