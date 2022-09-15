@@ -259,7 +259,7 @@ func (fRetry *FlexyRetry) FlexyRetryWithCustomGap(logger *zap.Logger, funcToRetr
 		}
 
 		//Remaining attempts 10 seconds
-		if (i + 1) == ((2 * fRetry.minVPCRetryGapAttempt) + fRetry.minVPCRetryGapAttempt) {
+		if i == ((2 * fRetry.minVPCRetryGapAttempt) + fRetry.minVPCRetryGapAttempt) {
 			retryGap = 10 // 10 seconds
 		}
 
