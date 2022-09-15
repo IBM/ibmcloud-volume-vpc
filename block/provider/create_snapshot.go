@@ -36,7 +36,7 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters
 	defer vpcs.Logger.Info("Exit CreateSnapshot", zap.Reflect("snapshotRequest", snapshotParameters), zap.Reflect("sourceVolumeID", sourceVolumeID))
 	defer metrics.UpdateDurationFromStart(vpcs.Logger, "CreateSnapshot", time.Now())
 	var err error
-	err = vpcs.validateSnapshotRequest(sourceVolumeID, snapshotParameters)
+	err = vpcs.validateSnapshotRequest(sourceVolumeID)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotParameters
 }
 
 // validateSnapshotRequest validates request for snapshot
-func (vpcs *VPCSession) validateSnapshotRequest(sourceVolumeID string, snapshotParameters provider.SnapshotParameters) error {
+func (vpcs *VPCSession) validateSnapshotRequest(sourceVolumeID string) error {
 	var err error
 	// Check for VolumeID - required validation
 	if len(sourceVolumeID) == 0 {
