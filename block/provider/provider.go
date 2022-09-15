@@ -226,7 +226,7 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 		maxRetryGap = vpcp.Config.VPCConfig.MaxRetryGap
 	}
 
-	//Update retry logic default values
+	//Update retry logic for custom retry with default values
 	if vpcp.Config.VPCConfig.MinVPCRetryGap > 3 && vpcp.Config.VPCConfig.MinVPCRetryGap < 10 {
 		ctxLogger.Debug("", zap.Reflect("MinVPCRetryGap", vpcp.Config.VPCConfig.MinVPCRetryGap))
 		minVPCRetryGap = vpcp.Config.VPCConfig.MinVPCRetryGap
