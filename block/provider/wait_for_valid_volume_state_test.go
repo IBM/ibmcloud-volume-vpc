@@ -106,7 +106,7 @@ func TestWaitForValidVolumeState(t *testing.T) {
 			} else {
 				volumeService.GetVolumeReturns(testcase.baseVolume, nil)
 			}
-			err = WaitForValidVolumeState(vpcs, testcase.volumeID)
+			err = WaitForValidVolumeState(vpcs, testcase.baseVolume)
 
 			if testcase.expectedErr != "" {
 				assert.NotNil(t, err)

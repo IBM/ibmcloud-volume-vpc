@@ -49,17 +49,17 @@ func TestSetSnapshotTag(t *testing.T) {
 		{
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
-			url:    vpcvolume.Version + "/volumes/volume-id/snapshots/snapshotid/tags/tag1",
+			url:    vpcvolume.Version + "/snapshots/snapshotid/tags/tag1",
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			url:       vpcvolume.Version + "/volumes/volume-id/snapshots/snapshotid/tags/tag1",
+			url:       vpcvolume.Version + "/snapshots/snapshotid/tags/tag1",
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
 		}, {
 			name:   "Verify that the snapshot is parsed correctly",
 			status: http.StatusOK,
-			url:    vpcvolume.Version + "/volumes/volume-id/snapshots/snapshotid/tags/tag1",
+			url:    vpcvolume.Version + "/snapshots/snapshotid/tags/tag1",
 			verify: func(t *testing.T, err error) {
 				assert.NotNil(t, err)
 			},
@@ -78,7 +78,7 @@ func TestSetSnapshotTag(t *testing.T) {
 
 			snapshotService := vpcvolume.NewSnapshotManager(client)
 
-			err := snapshotService.SetSnapshotTag("volume-id", "snapshot-id", "tag1", logger)
+			err := snapshotService.SetSnapshotTag("", "snapshot-id", "tag1", logger)
 			// vpc snapshot functionality is not yet ready. It would return error for now
 			if testcase.verify != nil {
 				testcase.verify(t, err)

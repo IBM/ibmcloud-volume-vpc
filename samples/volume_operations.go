@@ -33,7 +33,7 @@ var (
 
 var volumeReq provider.Volume
 
-//VolumeManager ...
+// VolumeManager ...
 type VolumeManager struct {
 	Session   provider.Session
 	Logger    *zap.Logger
@@ -49,7 +49,7 @@ func NewVolumeManager(session provider.Session, logger *zap.Logger, requestID st
 	}
 }
 
-//UpdateVolume ...
+// UpdateVolume ...
 func (vam *VolumeManager) UpdateVolume() {
 	vam.setupVolumeRequest()
 	err := vam.Session.UpdateVolume(volumeReq)

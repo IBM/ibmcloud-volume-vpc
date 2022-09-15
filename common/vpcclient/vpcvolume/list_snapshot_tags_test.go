@@ -51,18 +51,18 @@ func TestListSnapshotTags(t *testing.T) {
 		{
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
-			url:    vpcvolume.Version + "/volumes/volume-id/snapshots/snapshot-id/tags",
+			url:    vpcvolume.Version + "/snapshots/snapshot-id/tags",
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
-			url:       "/volumes/volume-id/snapshots/snapshot-id/tags",
+			url:       "/snapshots/snapshot-id/tags",
 			expectErr: "Trace Code:, testerr Please check ",
 		}, {
 			name:    "Verify that the snapshot is parsed correctly",
 			status:  http.StatusOK,
 			content: "[\"tag1\"]",
-			url:     vpcvolume.Version + "/volumes/volume-id/snapshots/snapshot-id/tags",
+			url:     vpcvolume.Version + "/snapshots/snapshot-id/tags",
 			verify: func(t *testing.T, tags *[]string, err error) {
 				assert.NotNil(t, tags)
 			},

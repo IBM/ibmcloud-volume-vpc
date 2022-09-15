@@ -51,26 +51,26 @@ func TestCreateSnapshot(t *testing.T) {
 		{
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
-			url:    "/volumes/volume-id/snapshots",
+			url:    "/snapshots",
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			url:       vpcvolume.Version + "/volumes/volume-id/snapshots",
+			url:       vpcvolume.Version + "/snapshots",
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
 		}, {
 			name:    "Verify that the snapshot is parsed correctly",
 			status:  http.StatusOK,
-			url:     vpcvolume.Version + "/volumes/volume-id/snapshots",
-			content: "{\"id\":\"snapshot1\",\"status\":\"pending\"}",
+			url:     vpcvolume.Version + "/snapshots",
+			content: "{\"id\":\"snapshot1\",\"lifecycle_state\":\"pending\"}",
 			verify: func(t *testing.T, snapshot *models.Snapshot, err error) {
 				assert.NotNil(t, snapshot)
 			},
 		}, {
 			name:    "Verify that the snapshot is parsed correctly",
 			status:  http.StatusOK,
-			content: "{\"id\":\"snapshot1\",\"status\":\"pending\"}",
-			url:     vpcvolume.Version + "/volumes/volume-id/snapshots",
+			content: "{\"id\":\"snapshot1\",\"lifecycle_state\":\"pending\"}",
+			url:     vpcvolume.Version + "/snapshots",
 			verify: func(t *testing.T, snapshot *models.Snapshot, err error) {
 				assert.NotNil(t, snapshot)
 			},
@@ -97,7 +97,7 @@ func TestCreateSnapshot(t *testing.T) {
 
 			snapshotService := vpcvolume.NewSnapshotManager(client)
 
-			snapshot, err := snapshotService.CreateSnapshot("volume-id", template, logger)
+			snapshot, err := snapshotService.CreateSnapshot(template, logger)
 			logger.Info("Snapshot", zap.Reflect("snapshot", snapshot))
 
 			// vpc snapshot functionality is not yet ready. It would return error for now
