@@ -251,16 +251,16 @@ func (fRetry *FlexyRetry) FlexyRetryWithCustomGap(logger *zap.Logger, funcToRetr
 
 		//First fRetry.minVPCRetryGapAttempt attempts fRetry.minVPCRetryGap second and next (2 * fRetry.minVPCRetryGap)  attempts (2 * fRetry.minVPCRetryGap) second
 		if i == fRetry.minVPCRetryGapAttempt {
-			if (2 * fRetry.minVPCRetryGap) < 10 { //If minVPCRetryGap is resulting in value more than 10 secs lets default to 10 secs
+			if (2 * fRetry.minVPCRetryGap) < ConstantRetryGap { //If minVPCRetryGap is resulting in value more than 10 secs lets default to 10 secs
 				retryGap = 2 * fRetry.minVPCRetryGap
 			} else {
-				retryGap = 10
+				retryGap = ConstantRetryGap
 			}
 		}
 
 		//Remaining attempts 10 seconds
 		if i == ((2 * fRetry.minVPCRetryGapAttempt) + fRetry.minVPCRetryGapAttempt) {
-			retryGap = 10 // 10 seconds
+			retryGap = ConstantRetryGap // 10 seconds
 		}
 
 		if (i + 1) < totalAttempt {
