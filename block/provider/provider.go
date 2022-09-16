@@ -228,18 +228,18 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 
 	//Update retry logic for custom retry with default values
 	if vpcp.Config.VPCConfig.MinVPCRetryGap > ConstMinVPCRetryGap && vpcp.Config.VPCConfig.MinVPCRetryGap < ConstantRetryGap {
-		ctxLogger.Debug("", zap.Reflect("MinVPCRetryGap", vpcp.Config.VPCConfig.MinVPCRetryGap))
 		minVPCRetryGap = vpcp.Config.VPCConfig.MinVPCRetryGap
 	}
+
 	if vpcp.Config.VPCConfig.MinVPCRetryGapAttempt > 0 {
-		ctxLogger.Debug("", zap.Reflect("MinVPCRetryGapAttempt", vpcp.Config.VPCConfig.MinVPCRetryGapAttempt))
 		minVPCRetryGapAttempt = vpcp.Config.VPCConfig.MinVPCRetryGapAttempt
 	}
 
 	if vpcp.Config.VPCConfig.MaxVPCRetryAttempt > ConstMaxVPCRetryAttempt {
-		ctxLogger.Debug("", zap.Reflect("MaxVPCRetryAttempt", vpcp.Config.VPCConfig.MaxVPCRetryAttempt))
 		maxVPCRetryAttempt = vpcp.Config.VPCConfig.MaxVPCRetryAttempt
 	}
+
+	ctxLogger.Info("VPC Retry details for WaitAttach and WaitDetach operations", zap.Reflect("MinVPCRetryGap", minVPCRetryGap), zap.Reflect("MinVPCRetryGapAttempt", minVPCRetryGapAttempt), zap.Reflect("MaxVPCRetryAttempt", maxVPCRetryAttempt))
 
 	vpcSession := &VPCSession{
 		VPCAccountID:          contextCredentials.IAMAccountID,
