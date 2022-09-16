@@ -45,7 +45,9 @@ var maxVPCRetryAttempt = 46
 
 //ConstantRetryGap ...
 const (
-	ConstantRetryGap = 10 // seconds
+	ConstantRetryGap        = 10 // seconds
+	ConstMaxVPCRetryAttempt = 46
+	ConstMinVPCRetryGap     = 3 //seconds
 )
 
 var volumeIDPartsCount = 5
