@@ -41,7 +41,7 @@ var minVPCRetryGap = 3
 var minVPCRetryGapAttempt = 3
 
 // maxRetryAttempt ...
-var maxVPCRetryAttempt = 20
+var maxVPCRetryAttempt = 46
 
 //ConstantRetryGap ...
 const (
