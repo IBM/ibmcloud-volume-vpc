@@ -92,6 +92,69 @@ func TestRetry(t *testing.T) {
 	})
 }
 
+func TestFlexyRetryWithCustomGap(t *testing.T) {
+	// Setup new style zap logger
+	logger, _ := GetTestContextLogger()
+	var err error
+	var attempt = 0
+	var skip = false
+
+	customRetry := NewFlexyRetryDefault()
+
+	//Testing retry with successful attempt
+	err = customRetry.FlexyRetryWithCustomGap(logger, func() (error, bool) {
+		logger.Info("Testing retry with successful attempt")
+		if attempt == 2 {
+			err = nil
+			skip = true
+		} else {
+			errCode := models.ErrorCode("validation_invalid_name")
+			errItem := models.ErrorItem{
+				Code: errCode,
+			}
+
+			err = &models.Error{
+				Errors: []models.ErrorItem{errItem},
+			}
+			skip = false
+		}
+		attempt = attempt + 1
+		return err, skip
+	})
+
+	//Testing retry with unsuccessful attempt
+	err = customRetry.FlexyRetryWithCustomGap(logger, func() (error, bool) {
+		logger.Info("Testing retry with unsuccessful attempt")
+		errCode := models.ErrorCode("wrong_code")
+		errItem := models.ErrorItem{
+			Code: errCode,
+		}
+
+		err = &models.Error{
+			Errors: []models.ErrorItem{errItem},
+		}
+		return err, false
+	})
+
+	//Testing retry with unsuccessful attempt with custom gap
+	customRetry.minVPCRetryGap = 6
+	customRetry.minVPCRetryGapAttempt = 6
+
+	err = customRetry.FlexyRetryWithCustomGap(logger, func() (error, bool) {
+		logger.Info("Testing retry with unsuccessful attempt with custom gap")
+		errCode := models.ErrorCode("wrong_code")
+		errItem := models.ErrorItem{
+			Code: errCode,
+		}
+
+		err = &models.Error{
+			Errors: []models.ErrorItem{errItem},
+		}
+		return err, false
+	})
+
+}
+
 func TestSkipRetry(t *testing.T) {
 	errCode := models.ErrorCode("validation_invalid_name")
 	errItem := models.ErrorItem{
