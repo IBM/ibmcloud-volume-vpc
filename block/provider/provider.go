@@ -227,6 +227,12 @@ func (vpcp *VPCBlockProvider) OpenSession(ctx context.Context, contextCredential
 	}
 
 	//Update retry logic for custom retry with default values
+	/*
+		Default MaxVPCRetryAttempt = 46 times(~7 mins), MinVPCRetryGap = 3sec , MinVPCRetryGapAttempt = 3sec
+		1.) Honour the MinVPCRetryGap only if it is greater than 3 and less than 10 sec
+		2.) Honour the MinVPCRetryGapAttempt only if it is greater than 0
+		3.) Honour the MaxVPCRetryAttempt only if it is greater than 46 ( ~7 mins default)
+	*/
 	if vpcp.Config.VPCConfig.MinVPCRetryGap > ConstMinVPCRetryGap && vpcp.Config.VPCConfig.MinVPCRetryGap < ConstantRetryGap {
 		minVPCRetryGap = vpcp.Config.VPCConfig.MinVPCRetryGap
 	}
