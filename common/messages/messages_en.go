@@ -104,14 +104,14 @@ var messagesEn = map[string]util.Message{
 		Code:        "StorageFindFailedWithSnapshotId",
 		Description: "A snapshot with the specified snapshot ID '%s' could not be found.",
 		Type:        util.RetrivalFailed,
-		RC:          400,
+		RC:          404,
 		Action:      "Please check the snapshot ID once, You many need to verify by using 'ibmcloud is' cli.",
 	},
 	"StorageFindFailedWithSnapshotName": {
 		Code:        "StorageFindFailedWithSnapshotName",
 		Description: "A snapshot with the specified snapshot name '%s' could not be found.",
 		Type:        util.RetrivalFailed,
-		RC:          400,
+		RC:          404,
 		Action:      "Please check the snapshot name once, You many need to verify by using 'ibmcloud is' cli.",
 	},
 	"VolumeAttachFindFailed": {
