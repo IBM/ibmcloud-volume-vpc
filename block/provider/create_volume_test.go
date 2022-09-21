@@ -24,6 +24,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/lib/utils/reasoncode"
+	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	volumeServiceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
@@ -305,8 +306,8 @@ func TestCreateVolume(t *testing.T) {
 				},
 				SnapshotID: "invalid snapshot Id",
 			},
-			expectedErr:        "{Code:StorageFindFailedWithSnapshotId, Message: Snapshot not found}",
-			expectedReasonCode: "ErrorUnclassified",
+			expectedErr:        "{Code:StorageFindFailedWithSnapshotId, Type:RetrivalFailed, Description:'Not a valid snapshot ID'}",
+			expectedReasonCode: "StorageFindFailedWithSnapshotId",
 			errorCode: &models.Error{
 				Errors: []models.ErrorItem{models.ErrorItem{
 					Code: models.ErrorCode("snapshot_id_not_found"),
@@ -320,6 +321,7 @@ func TestCreateVolume(t *testing.T) {
 	}
 
 	for _, testcase := range testCases {
+		userError.MessagesEn = userError.InitMessages()
 		t.Run(testcase.testCaseName, func(t *testing.T) {
 			vpcs, uc, sc, err := GetTestOpenSession(t, logger)
 			assert.NotNil(t, vpcs)
@@ -344,10 +346,14 @@ func TestCreateVolume(t *testing.T) {
 			volume, err := vpcs.CreateVolume(testcase.providerVolume)
 			logger.Info("Volume details", zap.Reflect("volume", volume))
 
-			if testcase.expectedErr != "" {
+			if testcase.expectedErr != "" && testcase.errorCode == nil {
 				assert.NotNil(t, err)
 				logger.Info("Error details", zap.Reflect("Error details", err.Error()))
 				assert.Equal(t, reasoncode.ReasonCode(testcase.expectedReasonCode), util.ErrorReasonCode(err))
+			} else if testcase.errorCode != nil {
+				assert.NotNil(t, err)
+				logger.Info("Error details", zap.Reflect("Error details", err.Error()))
+				assert.Equal(t, testcase.expectedReasonCode, err.(util.Message).Code)
 			}
 
 			if testcase.verify != nil {
