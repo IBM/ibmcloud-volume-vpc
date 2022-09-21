@@ -305,9 +305,13 @@ func TestCreateVolume(t *testing.T) {
 				},
 				SnapshotID: "invalid snapshot Id",
 			},
-			expectedErr:        "{Code:snapshot_id_not_found, Message: Snapshot not found}",
+			expectedErr:        "{Code:StorageFindFailedWithSnapshotId, Message: Snapshot not found}",
 			expectedReasonCode: "ErrorUnclassified",
-			errorCode:          &models.Error{Errors: []models.ErrorItem{models.ErrorItem{Code: "snapshot_id_not_found", Message: "Snapshot not found"}}, Trace: ""},
+			errorCode: &models.Error{
+				Errors: []models.ErrorItem{models.ErrorItem{
+					Code: models.ErrorCode("snapshot_id_not_found"),
+				}},
+			},
 			verify: func(t *testing.T, volumeResponse *provider.Volume, err error) {
 				assert.Nil(t, volumeResponse)
 				assert.NotNil(t, err)
@@ -328,8 +332,8 @@ func TestCreateVolume(t *testing.T) {
 			uc.VolumeServiceReturns(volumeService)
 
 			if testcase.errorCode != nil {
-				volumeService.CreateVolumeReturns(nil, errors.New(testcase.expectedReasonCode))
-				volumeService.GetVolumeReturns(nil, errors.New(testcase.expectedReasonCode))
+				volumeService.CreateVolumeReturns(nil, testcase.errorCode)
+				volumeService.GetVolumeReturns(nil, testcase.errorCode)
 			} else if testcase.expectedErr != "" {
 				volumeService.CreateVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
 				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
