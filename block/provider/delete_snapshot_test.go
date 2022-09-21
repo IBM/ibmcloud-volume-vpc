@@ -74,7 +74,7 @@ func TestDeleteSnapshot(t *testing.T) {
 				VolumeID:   "16f293bf-test-4bff-816f-e199c0c65db5",
 				SnapshotID: "16f293bf-test-4bff-816f-e199c0c65db6",
 			},
-			expectedErr:        "{Code:ErrorUnclassified, Type:RetrivalFailed, Description:'Not a valid volume ID",
+			expectedErr:        "{Code:StorageFindFailedWithSnapshotId, Type:RetrivalFailed, Description:'Not a valid snapshot ID",
 			expectedReasonCode: "ErrorUnclassified",
 			verify: func(t *testing.T, err error) {
 				assert.NotNil(t, err)

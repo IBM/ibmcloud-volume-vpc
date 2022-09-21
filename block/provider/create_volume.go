@@ -79,6 +79,10 @@ func (vpcs *VPCSession) CreateVolume(volumeRequest provider.Volume) (volumeRespo
 
 	if err != nil {
 		vpcs.Logger.Debug("Failed to create volume from VPC provider", zap.Reflect("BackendError", err))
+		modelError, ok := err.(*models.Error)
+		if ok && string(modelError.Errors[0].Code) == "snapshot_id_not_found" {
+			return nil, userError.GetUserError("StorageFindFailedWithSnapshotId", err)
+		}
 		return nil, userError.GetUserError("FailedToPlaceOrder", err)
 	}
 

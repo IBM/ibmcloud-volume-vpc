@@ -65,6 +65,8 @@ var skipErrorCodes = map[string]bool{
 	"internal_error":                       false,
 	"invalid_route":                        false,
 	"snapshots_not_found":                  true,
+	"snapshots_not_authorized":             true,
+	"snapshot_id_not_found":                true,
 
 	// IKS ms error code for skip re-try
 	"ST0008": true, //resources not found

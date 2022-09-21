@@ -51,6 +51,7 @@ func TestCreateVolume(t *testing.T) {
 		skipErrTest        bool
 		expectedErr        string
 		expectedReasonCode string
+		errorCode          *models.Error
 
 		verify func(t *testing.T, volumeResponse *provider.Volume, err error)
 	}{
@@ -290,6 +291,28 @@ func TestCreateVolume(t *testing.T) {
 				assert.NotNil(t, err)
 			},
 		},
+		{
+			testCaseName: "source Snapshot id not found",
+			profileName:  "general-purpose",
+			providerVolume: provider.Volume{
+				VolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:     String("test volume name"),
+				Capacity: Int(10),
+				Iops:     String("0"),
+				VPCVolume: provider.VPCVolume{
+					Profile:       &provider.Profile{Name: profileName},
+					ResourceGroup: &provider.ResourceGroup{ID: "default resource group id", Name: "default resource group"},
+				},
+				SnapshotID: "invalid snapshot Id",
+			},
+			expectedErr:        "{Code:snapshot_id_not_found, Message: Snapshot not found}",
+			expectedReasonCode: "ErrorUnclassified",
+			errorCode:          &models.Error{Errors: []models.ErrorItem{models.ErrorItem{Code: "snapshot_id_not_found", Message: "Snapshot not found"}}, Trace: ""},
+			verify: func(t *testing.T, volumeResponse *provider.Volume, err error) {
+				assert.Nil(t, volumeResponse)
+				assert.NotNil(t, err)
+			},
+		},
 	}
 
 	for _, testcase := range testCases {
@@ -304,7 +327,10 @@ func TestCreateVolume(t *testing.T) {
 			assert.NotNil(t, volumeService)
 			uc.VolumeServiceReturns(volumeService)
 
-			if testcase.expectedErr != "" {
+			if testcase.errorCode != nil {
+				volumeService.CreateVolumeReturns(nil, errors.New(testcase.expectedReasonCode))
+				volumeService.GetVolumeReturns(nil, errors.New(testcase.expectedReasonCode))
+			} else if testcase.expectedErr != "" {
 				volumeService.CreateVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
 				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
 			} else {

@@ -46,6 +46,10 @@ func (vpcs *VPCSession) DeleteSnapshot(snapshot *provider.Snapshot) error {
 	})
 
 	if err != nil {
+		modelError, ok := err.(*models.Error)
+		if ok && string(modelError.Errors[0].Code) == "snapshots_not_found" {
+			return userError.GetUserError("StorageFindFailedWithSnapshotId", err)
+		}
 		return userError.GetUserError("FailedToDeleteSnapshot", err)
 	}
 
