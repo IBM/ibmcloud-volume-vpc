@@ -306,11 +306,11 @@ func TestCreateVolume(t *testing.T) {
 				},
 				SnapshotID: "invalid snapshot Id",
 			},
-			expectedErr:        "{Code:StorageFindFailedWithSnapshotId, Type:RetrivalFailed, Description:'Not a valid snapshot ID'}",
-			expectedReasonCode: "StorageFindFailedWithSnapshotId",
+			expectedErr:        "{Code:SnapshotIDNotFound, Type:RetrivalFailed, Description:'Not a valid snapshot ID'}",
+			expectedReasonCode: "SnapshotIDNotFound",
 			errorCode: &models.Error{
 				Errors: []models.ErrorItem{models.ErrorItem{
-					Code: models.ErrorCode("snapshot_id_not_found"),
+					Code: models.ErrorCode(SnapshotIDNotFound),
 				}},
 			},
 			verify: func(t *testing.T, volumeResponse *provider.Volume, err error) {

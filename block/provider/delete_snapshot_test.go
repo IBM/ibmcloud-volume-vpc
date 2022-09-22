@@ -77,11 +77,11 @@ func TestDeleteSnapshot(t *testing.T) {
 				VolumeID:   "16f293bf-test-4bff-816f-e199c0c65db5",
 				SnapshotID: "16f293bf-test-4bff-816f-e199c0c65db6",
 			},
-			expectedErr:        "{Code:StorageFindFailedWithSnapshotId, Type:RetrivalFailed, Description:'Not a valid snapshot ID",
-			expectedReasonCode: "StorageFindFailedWithSnapshotId",
+			expectedErr:        "{Code:SnapshotIDNotFound, Type:RetrivalFailed, Description:'Not a valid snapshot ID",
+			expectedReasonCode: "SnapshotIDNotFound",
 			errorCode: &models.Error{
 				Errors: []models.ErrorItem{models.ErrorItem{
-					Code: models.ErrorCode("snapshots_not_found"),
+					Code: models.ErrorCode(SnapshotNotFound),
 				}},
 			},
 			verify: func(t *testing.T, err error) {

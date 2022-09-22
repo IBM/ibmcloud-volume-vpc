@@ -100,8 +100,8 @@ var messagesEn = map[string]util.Message{
 		RC:          404,
 		Action:      "Verify that the specified volume exists. Run 'ibmcloud is volumes' to list available volumes in your account.",
 	},
-	"StorageFindFailedWithSnapshotId": {
-		Code:        "StorageFindFailedWithSnapshotId",
+	"SnapshotIDNotFound": {
+		Code:        "SnapshotIDNotFound",
 		Description: "A snapshot with the specified snapshot ID '%s' could not be found.",
 		Type:        util.RetrivalFailed,
 		RC:          404,
