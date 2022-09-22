@@ -176,7 +176,7 @@ func TestGetSnapshotByName(t *testing.T) {
 		}, {
 			testCaseName:       "Empty volume name",
 			snapshotName:       "",
-			expectedErr:        "{Code:ErrorUnclassified, Type:RetrivalFailed, Description:Failed to find '16f293bf-test-4bff-816f-e199c0c65db5' snapshot ID., BackendError:StorageFindFailedWithSnapshotId, RC:404}",
+			expectedErr:        "{Code:ErrorUnclassified, Type:RetrivalFailed, Description:Failed to find '16f293bf-test-4bff-816f-e199c0c65db5' snapshot ID., BackendError:SnapshotIDNotFound, RC:404}",
 			expectedReasonCode: "ErrorUnclassified",
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.Nil(t, snapshotResponse)

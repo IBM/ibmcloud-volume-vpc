@@ -24,6 +24,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/lib/utils/reasoncode"
+	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	volumeServiceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
@@ -51,6 +52,7 @@ func TestCreateVolume(t *testing.T) {
 		skipErrTest        bool
 		expectedErr        string
 		expectedReasonCode string
+		errorCode          *models.Error
 
 		verify func(t *testing.T, volumeResponse *provider.Volume, err error)
 	}{
@@ -290,9 +292,36 @@ func TestCreateVolume(t *testing.T) {
 				assert.NotNil(t, err)
 			},
 		},
+		{
+			testCaseName: "source Snapshot id not found",
+			profileName:  "general-purpose",
+			providerVolume: provider.Volume{
+				VolumeID: "16f293bf-test-4bff-816f-e199c0c65db5",
+				Name:     String("test volume name"),
+				Capacity: Int(10),
+				Iops:     String("0"),
+				VPCVolume: provider.VPCVolume{
+					Profile:       &provider.Profile{Name: profileName},
+					ResourceGroup: &provider.ResourceGroup{ID: "default resource group id", Name: "default resource group"},
+				},
+				SnapshotID: "invalid snapshot Id",
+			},
+			expectedErr:        "{Code:SnapshotIDNotFound, Type:RetrivalFailed, Description:'Not a valid snapshot ID'}",
+			expectedReasonCode: "SnapshotIDNotFound",
+			errorCode: &models.Error{
+				Errors: []models.ErrorItem{models.ErrorItem{
+					Code: models.ErrorCode(SnapshotIDNotFound),
+				}},
+			},
+			verify: func(t *testing.T, volumeResponse *provider.Volume, err error) {
+				assert.Nil(t, volumeResponse)
+				assert.NotNil(t, err)
+			},
+		},
 	}
 
 	for _, testcase := range testCases {
+		userError.MessagesEn = userError.InitMessages()
 		t.Run(testcase.testCaseName, func(t *testing.T) {
 			vpcs, uc, sc, err := GetTestOpenSession(t, logger)
 			assert.NotNil(t, vpcs)
@@ -304,7 +333,10 @@ func TestCreateVolume(t *testing.T) {
 			assert.NotNil(t, volumeService)
 			uc.VolumeServiceReturns(volumeService)
 
-			if testcase.expectedErr != "" {
+			if testcase.errorCode != nil {
+				volumeService.CreateVolumeReturns(nil, testcase.errorCode)
+				volumeService.GetVolumeReturns(nil, testcase.errorCode)
+			} else if testcase.expectedErr != "" {
 				volumeService.CreateVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
 				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
 			} else {
@@ -314,10 +346,14 @@ func TestCreateVolume(t *testing.T) {
 			volume, err := vpcs.CreateVolume(testcase.providerVolume)
 			logger.Info("Volume details", zap.Reflect("volume", volume))
 
-			if testcase.expectedErr != "" {
+			if testcase.expectedErr != "" && testcase.errorCode == nil {
 				assert.NotNil(t, err)
 				logger.Info("Error details", zap.Reflect("Error details", err.Error()))
 				assert.Equal(t, reasoncode.ReasonCode(testcase.expectedReasonCode), util.ErrorReasonCode(err))
+			} else if testcase.errorCode != nil {
+				assert.NotNil(t, err)
+				logger.Info("Error details", zap.Reflect("Error details", err.Error()))
+				assert.Equal(t, testcase.expectedReasonCode, err.(util.Message).Code)
 			}
 
 			if testcase.verify != nil {
