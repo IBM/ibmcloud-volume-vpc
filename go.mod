@@ -4,9 +4,9 @@ go 1.18
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.0.1-beta7
-	github.com/IBM/secret-common-lib v1.0.3
-	github.com/IBM/secret-utils-lib v1.0.2
+	github.com/IBM/ibmcloud-volume-interface v1.0.1-beta8
+	github.com/IBM/secret-common-lib v1.0.5
+	github.com/IBM/secret-utils-lib v1.0.4
 	github.com/fatih/structs v1.1.0
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.2.0
@@ -32,7 +32,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -61,8 +61,8 @@ require (
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20210402141018-6c239bbf2bb1 // indirect
-	google.golang.org/grpc v1.36.1 // indirect
-	google.golang.org/protobuf v1.27.1 // indirect
+	google.golang.org/grpc v1.47.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
