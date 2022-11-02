@@ -93,7 +93,6 @@ func (vpcs *VPCSession) CreateVolume(volumeRequest provider.Volume) (volumeRespo
 	if err != nil {
 		return nil, userError.GetUserError("VolumeNotInValidState", err, volume.ID)
 	}
-	vpcs.Logger.Info("Volume got valid (available) state", zap.Reflect("VolumeDetails", volume))
 
 	// Converting volume to lib volume type
 	volumeResponse = FromProviderToLibVolume(volume, vpcs.Logger)
