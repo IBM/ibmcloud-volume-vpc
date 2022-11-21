@@ -152,7 +152,6 @@ func TestFlexyRetryWithCustomGap(t *testing.T) {
 		}
 		return err, false
 	})
-
 }
 
 func TestSkipRetry(t *testing.T) {
