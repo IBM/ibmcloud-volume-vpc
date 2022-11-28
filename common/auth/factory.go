@@ -22,16 +22,17 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	vpciam "github.com/IBM/ibmcloud-volume-vpc/common/iam"
+	
 )
 
 // NewVPCContextCredentialsFactory ...
-func NewVPCContextCredentialsFactory(config *vpcconfig.VPCBlockConfig) (*auth.ContextCredentialsFactory, error) {
+func NewVPCContextCredentialsFactory(config *vpcconfig.VPCBlockConfig, spObject sp.SecretProviderInterface) (*auth.ContextCredentialsFactory, error) {
 	authConfig := &iam.AuthConfiguration{
 		IamURL:          config.VPCConfig.TokenExchangeURL,
 		IamClientID:     config.VPCConfig.IamClientID,
 		IamClientSecret: config.VPCConfig.IamClientSecret,
 	}
-	ccf, err := auth.NewContextCredentialsFactory(authConfig, iam.VPC)
+	ccf, err := auth.NewContextCredentialsFactory(authConfig, spObject)
 	if err != nil {
 		return nil, err
 	}
