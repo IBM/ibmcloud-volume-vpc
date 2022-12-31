@@ -45,7 +45,6 @@ github.com/IBM/secret-common-lib v1.1.1 h1:Ijm7lRnbChQzFtDKKwsUg9ojxQ2KFw06hD/P+
 github.com/IBM/secret-common-lib v1.1.1/go.mod h1:XAMi3upx2DZRblj8UII+LRopY5lpW1sd3d/vs92DWoA=
 github.com/IBM/secret-utils-lib v1.1.1 h1:hipBsSa7FqWTI015BaAmxEwBIL2ZffGB6vrF4GfpYtI=
 github.com/IBM/secret-utils-lib v1.1.1/go.mod h1:Yfla8xgZ938htp3tgw1NVYPKa8UOGq3QcRIpBE3gLgU=
-github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/purell v1.1.1 h1:WEQqlqaGbrPkxLJWfBwQmfEAE1Z7ONdDLqrN38tNFfI=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV/sSk/8dngufqelfh6jnri85riMAaF/M=
