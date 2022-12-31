@@ -37,6 +37,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
+	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
 	"go.uber.org/zap"
 )
 

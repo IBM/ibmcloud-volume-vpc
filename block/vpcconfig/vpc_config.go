@@ -18,7 +18,7 @@
 package utils
 
 import (
-	"github.com/IBM/secret-utils-lib/pkg/config"
+	"github.com/IBM/ibmcloud-volume-interface/config"
 )
 
 // VPCBlockConfig ...
