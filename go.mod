@@ -4,8 +4,7 @@ go 1.18
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.1.2-0.20221231120501-addce41e4751
-	github.com/IBM/secret-common-lib v1.1.1
+	github.com/IBM/ibmcloud-volume-interface v1.1.2-0.20230112015916-82243a7b3b5e
 	github.com/IBM/secret-utils-lib v1.1.1
 	github.com/fatih/structs v1.1.0
 	github.com/gofrs/uuid v4.2.0+incompatible
@@ -18,6 +17,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.0.0 // indirect
 	github.com/IBM/go-sdk-core/v5 v5.9.1 // indirect
+	github.com/IBM/secret-common-lib v1.1.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef // indirect
