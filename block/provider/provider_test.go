@@ -33,6 +33,7 @@ import (
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/fakes"
 	volumeServiceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
+	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -105,9 +106,10 @@ func TestNewProvider(t *testing.T) {
 		},
 	}
 
-	prov, err := NewProvider(conf, logger)
-	assert.Nil(t, prov)
-	assert.NotNil(t, err)
+	spObject := new(sp.FakeSecretProvider)
+	prov, err := NewProvider(conf, spObject, logger)
+	assert.NotNil(t, prov)
+	assert.Nil(t, err)
 }
 
 func GetTestProvider(t *testing.T, logger *zap.Logger) (*VPCBlockProvider, error) {

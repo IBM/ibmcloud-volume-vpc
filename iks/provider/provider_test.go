@@ -25,6 +25,7 @@ import (
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
+	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -95,7 +96,8 @@ func TestNewProvider(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
-	prov, err := NewProvider(conf, logger)
-	assert.NotNil(t, err)
-	assert.Nil(t, prov)
+	spObject := new(sp.FakeSecretProvider)
+	prov, err := NewProvider(conf, spObject, logger)
+	assert.Nil(t, err)
+	assert.NotNil(t, prov)
 }

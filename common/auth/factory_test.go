@@ -22,20 +22,26 @@ import (
 
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
+	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewContextCredentialsFactory(t *testing.T) {
 	conf := &vpcconfig.VPCBlockConfig{
 		VPCConfig: &config.VPCProviderConfig{
-			Enabled:         true,
-			EndpointURL:     "test-iam-url",
-			VPCTimeout:      "30s",
-			IamClientID:     "test-iam_client_id",
-			IamClientSecret: "test-iam_client_secret",
+			Enabled:                    true,
+			EndpointURL:                "test-iam-url",
+			VPCTimeout:                 "30s",
+			IamClientID:                "test-iam_client_id",
+			IamClientSecret:            "test-iam_client_secret",
+			IKSTokenExchangePrivateURL: "token-exchange-private-URL",
+		},
+		APIConfig: &config.APIConfig{
+			PassthroughSecret: "pass-through-secret",
 		},
 	}
 
-	_, err := NewVPCContextCredentialsFactory(conf)
-	assert.NotNil(t, err)
+	spObject := new(sp.FakeSecretProvider)
+	_, err := NewVPCContextCredentialsFactory(conf, spObject)
+	assert.Nil(t, err)
 }

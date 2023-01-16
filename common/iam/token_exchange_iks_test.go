@@ -79,7 +79,7 @@ func Test_IKSExchangeRefreshTokenForAccessToken_Success(t *testing.T) {
 	tes.httpClient, err = config.GeneralCAHttpClient()
 	assert.Nil(t, err)
 	tes.iksAuthConfig = iksAuthConfig
-	tes.secretprovider = new(sp.FakeSecretProvider)
+	tes.spObject = new(sp.FakeSecretProvider)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("testrefreshtoken", logger)
 	assert.Nil(t, err)
@@ -121,7 +121,7 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedDuringRequest(t *testing.T
 	tes.httpClient, err = config.GeneralCAHttpClient()
 	assert.Nil(t, err)
 	tes.iksAuthConfig = iksAuthConfig
-	tes.secretprovider = new(sp.FakeSecretProvider)
+	tes.spObject = new(sp.FakeSecretProvider)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("badrefreshtoken", logger)
 	assert.Nil(t, r)
@@ -154,7 +154,7 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedDuringRequest_no_message(t
 	tes.httpClient, err = config.GeneralCAHttpClient()
 	assert.Nil(t, err)
 	tes.iksAuthConfig = iksAuthConfig
-	tes.secretprovider = new(sp.FakeSecretProvider)
+	tes.spObject = new(sp.FakeSecretProvider)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("badrefreshtoken", logger)
 	assert.Nil(t, r)
@@ -188,7 +188,7 @@ func Test_IKSExchangeRefreshTokenForAccessToken_FailedWrongApiUrl(t *testing.T) 
 	tes.httpClient, err = config.GeneralCAHttpClient()
 	assert.Nil(t, err)
 	tes.iksAuthConfig = iksAuthConfig
-	tes.secretprovider = new(sp.FakeSecretProvider)
+	tes.spObject = new(sp.FakeSecretProvider)
 
 	r, err := tes.ExchangeRefreshTokenForAccessToken("testrefreshtoken", logger)
 	assert.Nil(t, r)
@@ -260,7 +260,7 @@ func Test_IKSExchangeIAMAPIKeyForAccessToken(t *testing.T) {
 			tes.httpClient, err = config.GeneralCAHttpClient()
 			assert.Nil(t, err)
 			tes.iksAuthConfig = iksAuthConfig
-			tes.secretprovider = new(sp.FakeSecretProvider)
+			tes.spObject = new(sp.FakeSecretProvider)
 
 			_, actualError := tes.ExchangeIAMAPIKeyForAccessToken("apikey1", logger)
 			if testCase.expectedError == nil {
@@ -276,9 +276,9 @@ func TestNewTokenExchangeIKSService(t *testing.T) {
 	iksAuthConfig := &IksAuthConfiguration{
 		PrivateAPIRoute: server.URL,
 	}
-
-	_, err := NewTokenExchangeIKSService(iksAuthConfig)
-	assert.NotNil(t, err)
+	spObject := new(sp.FakeSecretProvider)
+	_, err := NewTokenExchangeIKSService(iksAuthConfig, spObject)
+	assert.Nil(t, err)
 }
 
 func TestExchangeAccessTokenForIMSToken(t *testing.T) {
