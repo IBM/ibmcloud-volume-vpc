@@ -26,6 +26,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
+
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/metrics"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
@@ -37,7 +39,6 @@ import (
 	"github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas"
-	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
 	"go.uber.org/zap"
 )
 
@@ -71,7 +72,7 @@ type VPCBlockProvider struct {
 var _ local.Provider = &VPCBlockProvider{}
 
 // NewProvider initialises an instance of an IaaS provider.
-func NewProvider(conf *vpcconfig.VPCBlockConfig, spObject sp.SecretProviderInterface, logger *zap.Logger) (local.Provider, error) {
+func NewProvider(conf *vpcconfig.VPCBlockConfig, k8sClient k8s_utils.KubernetesClient, logger *zap.Logger) (local.Provider, error) {
 	logger.Info("Entering NewProvider")
 
 	if conf.VPCConfig == nil {
@@ -105,7 +106,7 @@ func NewProvider(conf *vpcconfig.VPCBlockConfig, spObject sp.SecretProviderInter
 	//Mark this as enabled/active
 	conf.VPCConfig.VPCTypeEnabled = VPCNextGen
 
-	contextCF, err := vpcauth.NewVPCContextCredentialsFactory(conf, spObject)
+	contextCF, err := vpcauth.NewVPCContextCredentialsFactory(conf, k8sClient)
 	if err != nil {
 		return nil, err
 	}
