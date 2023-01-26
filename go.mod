@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.1.2-0.20230126211019-64dc6c2c766e
+	github.com/IBM/ibmcloud-volume-interface v1.1.2-0.20230126215232-644f32546a1c
 	github.com/IBM/secret-common-lib v1.1.2-0.20230126210227-804d495635b6
 	github.com/IBM/secret-utils-lib v1.1.2-0.20230126205657-f30b56d8a191
 	github.com/fatih/structs v1.1.0
