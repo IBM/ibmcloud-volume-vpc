@@ -30,7 +30,6 @@ import (
 	provider_util "github.com/IBM/ibmcloud-volume-vpc/block/utils"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
-	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
 	uid "github.com/gofrs/uuid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -80,7 +79,7 @@ func main() {
 	defer logger.Sync()
 
 	// Load config file
-	k8sClient, _ := k8s_utils.FakeGetk8sClientSet(logger)
+	k8sClient, _ := k8s_utils.FakeGetk8sClientSet()
 	conf, err := config.ReadConfig(k8sClient, logger)
 	if err != nil {
 		logger.Fatal("Error loading configuration")
@@ -100,8 +99,7 @@ func main() {
 		ServerConfig: conf.Server,
 	}
 	// Prepare provider registry
-	spObject := new(sp.FakeSecretProvider)
-	providerRegistry, err := provider_util.InitProviders(vpcBlockConfig, spObject, logger)
+	providerRegistry, err := provider_util.InitProviders(vpcBlockConfig, &k8sClient, logger)
 	if err != nil {
 		logger.Fatal("Error configuring providers", local.ZapError(err))
 	}

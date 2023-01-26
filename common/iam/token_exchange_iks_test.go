@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,6 +34,7 @@ import (
 	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/lib/utils/reasoncode"
 	"github.com/IBM/ibmcloud-volume-interface/provider/iam"
+	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
 	sp "github.com/IBM/secret-utils-lib/pkg/secret_provider"
 )
 
@@ -276,8 +278,11 @@ func TestNewTokenExchangeIKSService(t *testing.T) {
 	iksAuthConfig := &IksAuthConfiguration{
 		PrivateAPIRoute: server.URL,
 	}
-	spObject := new(sp.FakeSecretProvider)
-	_, err := NewTokenExchangeIKSService(iksAuthConfig, spObject)
+	kc, _ := k8s_utils.FakeGetk8sClientSet()
+	pwd, _ := os.Getwd()
+	file := filepath.Join(pwd, "..", "..", "etc", "libconfig.toml")
+	_ = k8s_utils.FakeCreateSecret(kc, "DEFAULT", file)
+	_, err := NewTokenExchangeIKSService(iksAuthConfig, &kc)
 	assert.Nil(t, err)
 }
 
