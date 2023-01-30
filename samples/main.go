@@ -23,17 +23,17 @@ import (
 	"os"
 	"strings"
 
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"golang.org/x/net/context"
-
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	userError "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	provider_util "github.com/IBM/ibmcloud-volume-vpc/block/utils"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
+	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
 	uid "github.com/gofrs/uuid"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"golang.org/x/net/context"
 )
 
 var (
@@ -79,8 +79,8 @@ func main() {
 	defer logger.Sync()
 
 	// Load config file
-	goPath := os.Getenv("GOPATH")
-	conf, err := config.ReadConfig(goPath+"/src/github.com/IBM/ibmcloud-volume-vpc/etc/libconfig.toml", logger)
+	k8sClient, _ := k8s_utils.FakeGetk8sClientSet()
+	conf, err := config.ReadConfig(k8sClient, logger)
 	if err != nil {
 		logger.Fatal("Error loading configuration")
 	}
@@ -99,7 +99,7 @@ func main() {
 		ServerConfig: conf.Server,
 	}
 	// Prepare provider registry
-	providerRegistry, err := provider_util.InitProviders(vpcBlockConfig, logger)
+	providerRegistry, err := provider_util.InitProviders(vpcBlockConfig, &k8sClient, logger)
 	if err != nil {
 		logger.Fatal("Error configuring providers", local.ZapError(err))
 	}

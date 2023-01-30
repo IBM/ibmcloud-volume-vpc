@@ -19,12 +19,15 @@ package provider
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/provider/auth"
 	"github.com/IBM/ibmcloud-volume-interface/provider/local"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
+	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -95,7 +98,11 @@ func TestNewProvider(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
-	prov, err := NewProvider(conf, logger)
-	assert.NotNil(t, err)
-	assert.Nil(t, prov)
+	kc, _ := k8s_utils.FakeGetk8sClientSet()
+	pwd, _ := os.Getwd()
+	file := filepath.Join(pwd, "..", "..", "etc", "libconfig.toml")
+	err = k8s_utils.FakeCreateSecret(kc, "DEFAULT", file)
+	prov, err := NewProvider(conf, &kc, logger)
+	assert.Nil(t, err)
+	assert.NotNil(t, prov)
 }

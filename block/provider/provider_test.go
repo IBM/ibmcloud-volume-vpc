@@ -22,6 +22,8 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -33,6 +35,7 @@ import (
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/fakes"
 	volumeServiceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
+	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -105,9 +108,13 @@ func TestNewProvider(t *testing.T) {
 		},
 	}
 
-	prov, err := NewProvider(conf, logger)
-	assert.Nil(t, prov)
-	assert.NotNil(t, err)
+	kc, _ := k8s_utils.FakeGetk8sClientSet()
+	pwd, _ := os.Getwd()
+	file := filepath.Join(pwd, "..", "..", "etc", "libconfig.toml")
+	err = k8s_utils.FakeCreateSecret(kc, "DEFAULT", file)
+	prov, err := NewProvider(conf, &kc, logger)
+	assert.NotNil(t, prov)
+	assert.Nil(t, err)
 }
 
 func GetTestProvider(t *testing.T, logger *zap.Logger) (*VPCBlockProvider, error) {

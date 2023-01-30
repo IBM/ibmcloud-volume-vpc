@@ -18,24 +18,35 @@
 package auth
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
+	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewContextCredentialsFactory(t *testing.T) {
 	conf := &vpcconfig.VPCBlockConfig{
 		VPCConfig: &config.VPCProviderConfig{
-			Enabled:         true,
-			EndpointURL:     "test-iam-url",
-			VPCTimeout:      "30s",
-			IamClientID:     "test-iam_client_id",
-			IamClientSecret: "test-iam_client_secret",
+			Enabled:                    true,
+			EndpointURL:                "test-iam-url",
+			VPCTimeout:                 "30s",
+			IamClientID:                "test-iam_client_id",
+			IamClientSecret:            "test-iam_client_secret",
+			IKSTokenExchangePrivateURL: "token-exchange-private-URL",
+		},
+		APIConfig: &config.APIConfig{
+			PassthroughSecret: "pass-through-secret",
 		},
 	}
 
-	_, err := NewVPCContextCredentialsFactory(conf)
-	assert.NotNil(t, err)
+	kc, _ := k8s_utils.FakeGetk8sClientSet()
+	pwd, _ := os.Getwd()
+	file := filepath.Join(pwd, "..", "..", "etc", "libconfig.toml")
+	_ = k8s_utils.FakeCreateSecret(kc, "DEFAULT", file)
+	_, err := NewVPCContextCredentialsFactory(conf, &kc)
+	assert.Nil(t, err)
 }
