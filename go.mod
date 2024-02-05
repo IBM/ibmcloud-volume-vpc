@@ -87,9 +87,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
-
-replace (
-	k8s.io/api => k8s.io/api v0.28.6
-	k8s.io/apimachinery => k8s.io/apimachinery v0.28.6
-	k8s.io/client-go => k8s.io/client-go v0.28.6
-)
