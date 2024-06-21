@@ -81,7 +81,7 @@ func main() {
 
 	// Load config file
 	k8sClient, _ := k8s_utils.FakeGetk8sClientSet()
-	k8s_utils.FakeCreateSecret(k8sClient, utils.DEFAULT, "./samples/sample-secret-config.toml")
+	_ = k8s_utils.FakeCreateSecret(k8sClient, utils.DEFAULT, "./samples/sample-secret-config.toml")
 	conf, err := config.ReadConfig(k8sClient, logger)
 	if err != nil {
 		logger.Fatal("Error loading configuration")
@@ -299,8 +299,8 @@ func main() {
 			fmt.Println("You selected choice to Create volume from snapshot")
 			var snapshotVol provider.Snapshot
 			var tags map[string]string
-			//fmt.Printf("Please enter original volume ID to create the volume from snapshot: ")
-			//_, _ = fmt.Scanf("%s", &volumeID)
+			fmt.Printf("Please enter original volume ID to create the volume from snapshot: ")
+			_, _ = fmt.Scanf("%s", &volumeID)
 
 			fmt.Printf("Please enter snapshot ID for creating volume:")
 			_, _ = fmt.Scanf("%s", &snapshotID)

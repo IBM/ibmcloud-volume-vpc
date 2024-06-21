@@ -304,7 +304,7 @@ func TestCreateVolume(t *testing.T) {
 					Profile:       &provider.Profile{Name: profileName},
 					ResourceGroup: &provider.ResourceGroup{ID: "default resource group id", Name: "default resource group"},
 				},
-				SnapshotID: "invalid snapshot Id",
+				Snapshot: provider.Snapshot{SnapshotID: "invalid snapshot Id"},
 			},
 			expectedErr:        "{Code:SnapshotIDNotFound, Type:RetrivalFailed, Description:'Not a valid snapshot ID'}",
 			expectedReasonCode: "SnapshotIDNotFound",
