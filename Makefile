@@ -47,3 +47,6 @@ coverage:
 .PHONY: vet
 vet:
 	go vet ${GOPACKAGES}
+
+clean:
+	rm -rf libSample
