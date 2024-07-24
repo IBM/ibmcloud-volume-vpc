@@ -80,7 +80,7 @@ func TestDeleteSnapshot(t *testing.T) {
 			expectedErr:        "{Code:SnapshotIDNotFound, Type:RetrivalFailed, Description:'Not a valid snapshot ID",
 			expectedReasonCode: "SnapshotIDNotFound",
 			errorCode: &models.Error{
-				Errors: []models.ErrorItem{models.ErrorItem{
+				Errors: []models.ErrorItem{{
 					Code: models.ErrorCode(SnapshotNotFound),
 				}},
 			},

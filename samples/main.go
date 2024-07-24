@@ -30,6 +30,7 @@ import (
 	provider_util "github.com/IBM/ibmcloud-volume-vpc/block/utils"
 	vpcconfig "github.com/IBM/ibmcloud-volume-vpc/block/vpcconfig"
 	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
+	utils "github.com/IBM/secret-utils-lib/pkg/utils"
 	uid "github.com/gofrs/uuid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -80,6 +81,7 @@ func main() {
 
 	// Load config file
 	k8sClient, _ := k8s_utils.FakeGetk8sClientSet()
+	_ = k8s_utils.FakeCreateSecret(k8sClient, utils.DEFAULT, "./samples/sample-secret-config.toml")
 	conf, err := config.ReadConfig(k8sClient, logger)
 	if err != nil {
 		logger.Fatal("Error loading configuration")
@@ -98,6 +100,8 @@ func main() {
 		APIConfig:    conf.API,
 		ServerConfig: conf.Server,
 	}
+	// enabling VPC provider as default
+	vpcBlockConfig.VPCConfig.Enabled = true
 	// Prepare provider registry
 	providerRegistry, err := provider_util.InitProviders(vpcBlockConfig, &k8sClient, logger)
 	if err != nil {
@@ -116,7 +120,7 @@ func main() {
 
 	valid := true
 	for valid {
-		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- Create volume \n 5- Snapshot details \n  6- Create volume from snapshot\n 7- Delete volume \n 8- Delete Snapshot \n 9- Authorize volume \n 10- Create VPC Volume \n 11- Attach VPC volume \n 12- Detach VPC volume \n 13- Get volume by name \n 14- List volumes \n 15- Expand volume \n 16- Get volume Attachment \n 17- Get snapshot by name \n Your choice?:")
+		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- Create volume \n 5- Snapshot details\n  6- Create volume from snapshot\n 7- Delete volume \n 8- Delete Snapshot \n 9- Authorize volume \n 10- Create VPC Volume \n 11- Attach VPC volume \n 12- Detach VPC volume \n 13- Get volume by name \n 14- List volumes \n 15- Expand volume \n 16- Get volume Attachment \n 17- Get snapshot by name \n Your choice?:")
 
 		var choiceN int
 		var volumeID string
@@ -251,11 +255,11 @@ func main() {
 			_, _ = fmt.Scanf("%s", &dcName)
 			volume.Az = dcName
 
-			fmt.Printf("\nPlease enter volume size in GB like 20, 40 80 etc : ")
+			fmt.Printf("\nPlease enter volume size in GB like 20, 40 80 etc: ")
 			_, _ = fmt.Scanf("%d", &volSize)
 			volume.Capacity = &volSize
 
-			fmt.Printf("\nPlease enter snapshotID : ")
+			fmt.Printf("\nPlease enter snapshotID: ")
 			_, _ = fmt.Scanf("%d", &snapshotID)
 			volume.SnapshotID = snapshotID
 
@@ -297,6 +301,7 @@ func main() {
 			var tags map[string]string
 			fmt.Printf("Please enter original volume ID to create the volume from snapshot: ")
 			_, _ = fmt.Scanf("%s", &volumeID)
+
 			fmt.Printf("Please enter snapshot ID for creating volume:")
 			_, _ = fmt.Scanf("%s", &snapshotID)
 			snapshotVol.SnapshotID = snapshotID
@@ -418,9 +423,15 @@ func main() {
 			_, _ = fmt.Scanf("%s", &zone)
 			volume.Az = zone
 
-			fmt.Printf("\nPlease enter snapshotID : ")
-			_, _ = fmt.Scanf("%s", &snapshotID)
-			volume.SnapshotID = snapshotID
+			snapshotCRN := ""
+			fmt.Printf("\nPlease enter snapshot CRN(if you want to create from snapshot CRN): ")
+			_, _ = fmt.Scanf("%s", &snapshotCRN)
+			volume.SnapshotCRN = snapshotCRN
+			if len(snapshotCRN) <= 1 {
+				fmt.Printf("\nPlease enter snapshotID : ")
+				_, _ = fmt.Scanf("%s", &snapshotID)
+				volume.SnapshotID = snapshotID
+			}
 
 			volume.VPCVolume.Tags = []string{"Testing VPC Volume"}
 			volumeObj, errr := sess.CreateVolume(*volume)
