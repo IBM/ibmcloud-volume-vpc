@@ -41,7 +41,7 @@ const (
 	IamURL                  = "test-iam-url"
 	IamClientID             = "test-iam_client_id"
 	IamClientSecret         = "test-iam_client_secret"
-	IamAPIKey               = "test-iam_api_key"
+	IamAPIKey               = "test-iam_api_key" // #nosec G101: Test code
 	RefreshToken            = "test-refresh_token"
 	TestEndpointURL         = "http://some_endpoint"
 	TestAPIVersion          = "2019-07-02"
@@ -101,7 +101,7 @@ func TestNewProvider(t *testing.T) {
 	kc, _ := k8s_utils.FakeGetk8sClientSet()
 	pwd, _ := os.Getwd()
 	file := filepath.Join(pwd, "..", "..", "etc", "libconfig.toml")
-	err = k8s_utils.FakeCreateSecret(kc, "DEFAULT", file)
+	_ = k8s_utils.FakeCreateSecret(kc, "DEFAULT", file)
 	prov, err := NewProvider(conf, &kc, logger)
 	assert.Nil(t, err)
 	assert.NotNil(t, prov)
