@@ -120,7 +120,7 @@ func TestNewIBMCloudStorageProvider(t *testing.T) {
 			secretConfPath := filepath.Join(pwd, "..", "..", testcase.secretConfPath)
 			_ = k8s_utils.FakeCreateSecret(kc, "DEFAULT", secretConfPath)
 
-			os.Setenv("IKS_ENABLED", testcase.iksEnabled)
+			os.Setenv("IKS_ENABLED", testcase.iksEnabled) // #nosec G104: Test code
 			_, err = NewIBMCloudStorageProvider("test", &kc, logger)
 			if testcase.expectedError != nil {
 				assert.NotNil(t, err)
