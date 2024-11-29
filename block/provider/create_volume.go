@@ -122,13 +122,6 @@ func validateVolumeRequest(volumeRequest *provider.Volume, clusterVolumeLabel st
 		return resourceGroup, iops, userError.GetUserError("InvalidVolumeName", nil, *volumeRequest.Name)
 	}
 
-	// Capacity should not be empty
-	if volumeRequest.Capacity == nil {
-		return resourceGroup, iops, userError.GetUserError("VolumeCapacityInvalid", nil, nil)
-	} else if *volumeRequest.Capacity < minSize {
-		return resourceGroup, iops, userError.GetUserError("VolumeCapacityInvalid", nil, *volumeRequest.Capacity)
-	}
-
 	// Read user provided error, no harm to pass the 0 values to RIaaS in case of tiered profiles
 	if volumeRequest.Iops != nil {
 		iops = ToInt64(*volumeRequest.Iops)
@@ -136,6 +129,14 @@ func validateVolumeRequest(volumeRequest *provider.Volume, clusterVolumeLabel st
 	if volumeRequest.VPCVolume.Profile == nil {
 		return resourceGroup, iops, userError.GetUserError("VolumeProfileEmpty", nil)
 	}
+
+	// Capacity should not be empty
+	if volumeRequest.Capacity == nil {
+		return resourceGroup, iops, userError.GetUserError("VolumeCapacityInvalid", nil, nil)
+	} else if volumeRequest.VPCVolume.Profile.Name != sdpProfile && *volumeRequest.Capacity < minSize {
+		return resourceGroup, iops, userError.GetUserError("VolumeCapacityInvalid", nil, *volumeRequest.Capacity)
+	}
+
 	if (volumeRequest.VPCVolume.Profile.Name != customProfile && volumeRequest.VPCVolume.Profile.Name != sdpProfile) && iops > 0 {
 		return resourceGroup, iops, userError.GetUserError("VolumeProfileIopsInvalid", nil)
 	}
