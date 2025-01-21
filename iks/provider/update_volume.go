@@ -67,6 +67,7 @@ func (vpcIks *IksVpcSession) UpdateVolume(volumeRequest provider.Volume) (err er
 		return userError.GetUserError("UpdateFailed", err)
 	}
 
+	vpcIks.IksSession.Logger.Info("Successfully updated volume with tags via RIAAS...")
 	return err
 }
 
