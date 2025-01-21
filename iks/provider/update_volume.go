@@ -42,7 +42,6 @@ func (vpcIks *IksVpcSession) UpdateVolume(volumeRequest provider.Volume) (err er
 	if err != nil {
 		return err
 	}
-
 	vpcIks.Logger.Info("Successfully validated inputs for UpdateVolume request... ")
 
 	vpcIks.Logger.Info("Calling  provider for volume update in ETCD...")
@@ -52,10 +51,12 @@ func (vpcIks *IksVpcSession) UpdateVolume(volumeRequest provider.Volume) (err er
 	})
 
 	if err != nil {
-		vpcIks.Logger.Debug("Failed to update volume", zap.Reflect("BackendError", err))
+		vpcIks.Logger.Debug("Failed to update volume in ETCD", zap.Reflect("BackendError", err))
 		return userError.GetUserError("UpdateFailed", err)
 	}
+	vpcIks.Logger.Info("Successfully updated volume in ETCD...")
 
+	// Lets invoke Update Volume with Tags via RIAAS, we will skip this call if there is no change in tags.
 	err = vpc_provider.RetryWithMinRetries(vpcIks.Logger, func() error {
 		vpcIks.Logger.Info("Calling  provider for volume update with tags via RIAAS...")
 		err = vpcIks.VPCSession.UpdateVolume(volumeRequest)
@@ -63,7 +64,7 @@ func (vpcIks *IksVpcSession) UpdateVolume(volumeRequest provider.Volume) (err er
 	})
 
 	if err != nil {
-		vpcIks.Logger.Error("Failed to update volume with tags", zap.Reflect("BackendError", err))
+		vpcIks.Logger.Error("Failed to update volume with tags via RIAAS", zap.Reflect("BackendError", err))
 		return userError.GetUserError("UpdateFailed", err)
 	}
 
