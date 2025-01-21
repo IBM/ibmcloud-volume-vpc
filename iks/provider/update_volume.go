@@ -47,7 +47,7 @@ func (vpcIks *IksVpcSession) UpdateVolume(volumeRequest provider.Volume) (err er
 
 	vpcIks.Logger.Info("Calling  provider for volume update in ETCD...")
 	err = vpcIks.APIRetry.FlexyRetry(vpcIks.Logger, func() (error, bool) {
-		err = vpcIks.Apiclient.VolumeService().UpdateVolume(&volumeTemplate, vpcIks.Logger)
+		err = vpcIks.IksSession.Apiclient.VolumeService().UpdateVolume(&volumeTemplate, vpcIks.Logger)
 		return err, err == nil || vpc_provider.SkipRetryForIKS(err)
 	})
 
