@@ -57,7 +57,10 @@ func (vpcs *VPCSession) UpdateVolume(volumeRequest provider.Volume) error {
 
 	vpcs.Logger.Info("Calling VPC provider for volume UpdateVolumeWithTags...")
 
-	err = vpcs.Apiclient.VolumeService().UpdateVolume(volume, vpcs.Logger)
+	err = RetryWithMinRetries(vpcs.Logger, func() error {
+		err = vpcs.Apiclient.VolumeService().UpdateVolume(volume, vpcs.Logger)
+		return err
+	})
 
 	if err != nil {
 		vpcs.Logger.Debug("Failed to update volume with tags from VPC provider", zap.Reflect("BackendError", err))
