@@ -18,8 +18,6 @@
 package ibmcloudprovider
 
 import (
-	"bytes"
-	"testing"
 
 	"github.com/IBM/ibmcloud-volume-interface/config"
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
