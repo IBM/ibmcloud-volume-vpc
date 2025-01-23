@@ -64,35 +64,6 @@ const (
 	TestAPIVersion = "2019-07-02"
 )
 
-// GetTestLogger ...
-func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
-	atom := zap.NewAtomicLevel()
-	atom.SetLevel(zap.DebugLevel)
-
-	encoderCfg := zap.NewProductionEncoderConfig()
-	encoderCfg.TimeKey = "timestamp"
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-
-	buf := &bytes.Buffer{}
-
-	logger = zap.New(
-		zapcore.NewCore(
-			zapcore.NewJSONEncoder(encoderCfg),
-			zapcore.AddSync(buf),
-			atom,
-		),
-		zap.AddCaller(),
-	)
-
-	teardown = func() {
-		_ = logger.Sync()
-		if t.Failed() {
-			t.Log(buf)
-		}
-	}
-	return
-}
-
 // FakeIBMCloudStorageProvider Provider
 type FakeIBMCloudStorageProvider struct {
 	ProviderName   string
