@@ -73,7 +73,19 @@ func TestUpdateVolume(t *testing.T) {
 			},
 			tags: []string{"tag1:val1", "tag2:val2"},
 		},
-
+		{
+			testCaseName: "New tags added",
+			volumeID:     "16f293bf-test-4bff-816f-e199c0c65db5",
+			baseVolume: &models.Volume{
+				ID:       "16f293bf-test-4bff-816f-e199c0c65db5",
+				Status:   models.StatusType("available"),
+				Capacity: int64(10),
+				Iops:     int64(1000),
+				UserTags: []string{"tag3:val3"},
+				Zone:     &models.Zone{Name: "test-zone"},
+			},
+			tags: []string{"tag1:val1", "tag2:val2"},
+		},
 		{
 			testCaseName: "Volume is not available for update",
 			volumeID:     "16f293bf-test-4bff-816f-e199c0c65db5",
