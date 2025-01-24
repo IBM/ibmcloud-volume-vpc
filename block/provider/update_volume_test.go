@@ -130,7 +130,7 @@ func TestUpdateVolume(t *testing.T) {
 				volumeService.UpdateVolumeReturns(nil)
 			}
 			requestExp := provider.Volume{VolumeID: testcase.volumeID,
-				VPCVolume: provider.VPCVolume{VPCBlockVolume: provider.VPCBlockVolume{Tags: testcase.tags}}}
+				VPCVolume: provider.VPCVolume{Tags: testcase.tags}}
 
 			err = vpcs.UpdateVolume(requestExp)
 

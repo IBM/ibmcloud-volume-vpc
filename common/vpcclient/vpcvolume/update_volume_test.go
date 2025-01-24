@@ -46,7 +46,7 @@ func TestVPCUpdateVolume(t *testing.T) {
 			status: http.StatusNoContent,
 		},
 		{
-			name:   "Verify that the volume updated was successfull",
+			name:   "Verify that the volume updated was successful",
 			status: http.StatusOK,
 			verify: func(t *testing.T, volume *models.Volume, err error) {
 				if assert.NotNil(t, volume) {
