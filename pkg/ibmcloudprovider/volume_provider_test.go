@@ -25,8 +25,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	cloudProvider "github.com/IBM/ibm-csi-common/pkg/ibmcloudprovider"
-
 	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -150,7 +148,7 @@ func TestNewFakeIBMCloudStorageProvider(t *testing.T) {
 	}
 
 	configPath := filepath.Join(pwd, "..", "..", "test-fixtures", "slconfig.toml")
-	ibmFakeCloudProvider, err := cloudProvider.NewFakeIBMCloudStorageProvider(configPath, logger)
+	ibmFakeCloudProvider, err := NewFakeIBMCloudStorageProvider(configPath, logger)
 	assert.Nil(t, err)
 	assert.NotNil(t, ibmFakeCloudProvider)
 
