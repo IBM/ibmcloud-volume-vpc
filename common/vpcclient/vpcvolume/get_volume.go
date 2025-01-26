@@ -46,7 +46,10 @@ func (vs *VolumeService) GetVolume(volumeID string, ctxLogger *zap.Logger) (*mod
 	ctxLogger.Info("Equivalent curl command", zap.Reflect("URL", request.URL()), zap.Reflect("Operation", operation))
 
 	req := request.PathParameter(volumeIDParam, volumeID)
-	_, err := req.JSONSuccess(&volume).JSONError(&apiErr).Invoke()
+	resp, err := req.JSONSuccess(&volume).JSONError(&apiErr).Invoke()
+	//Set the etag to be used for update volume to update the user_tags
+	volume.ETag = resp.Header.Get("etag")
+
 	if err != nil {
 		return nil, err
 	}
