@@ -40,6 +40,7 @@ func TestUpdateVolume(t *testing.T) {
 	testCases := []struct {
 		testCaseName       string
 		volumeID           string
+		etag               string
 		baseVolume         *models.Volume
 		newSize            int64
 		tags               []string
@@ -50,6 +51,7 @@ func TestUpdateVolume(t *testing.T) {
 		{
 			testCaseName: "OK",
 			volumeID:     "16f293bf-test-4bff-816f-e199c0c65db5",
+			etag:         "abc",
 			baseVolume: &models.Volume{
 				ID:       "16f293bf-test-4bff-816f-e199c0c65db5",
 				Status:   models.StatusType("available"),
@@ -63,6 +65,7 @@ func TestUpdateVolume(t *testing.T) {
 		{
 			testCaseName: "Tags are equal",
 			volumeID:     "16f293bf-test-4bff-816f-e199c0c65db5",
+			etag:         "abc",
 			baseVolume: &models.Volume{
 				ID:       "16f293bf-test-4bff-816f-e199c0c65db5",
 				Status:   models.StatusType("available"),
@@ -75,6 +78,7 @@ func TestUpdateVolume(t *testing.T) {
 		},
 		{
 			testCaseName: "New tags added",
+			etag:         "abc",
 			volumeID:     "16f293bf-test-4bff-816f-e199c0c65db5",
 			baseVolume: &models.Volume{
 				ID:       "16f293bf-test-4bff-816f-e199c0c65db5",
@@ -88,6 +92,7 @@ func TestUpdateVolume(t *testing.T) {
 		},
 		{
 			testCaseName: "Volume is not available for update",
+			etag:         "abc",
 			volumeID:     "16f293bf-test-4bff-816f-e199c0c65db5",
 			baseVolume: &models.Volume{
 				ID:       "16f293bf-test-4bff-816f-e199c0c65db5",
@@ -123,11 +128,11 @@ func TestUpdateVolume(t *testing.T) {
 			uc.VolumeServiceReturns(volumeService)
 
 			if testcase.expectedErr != "" {
-				volumeService.GetVolumeReturns(testcase.baseVolume, errors.New(testcase.expectedReasonCode))
-				volumeService.UpdateVolumeReturns(errors.New(testcase.expectedReasonCode))
+				volumeService.GetVolumeEtagReturns(testcase.baseVolume, testcase.etag, errors.New(testcase.expectedReasonCode))
+				volumeService.UpdateVolumeWithEtagReturns(errors.New(testcase.expectedReasonCode))
 			} else {
-				volumeService.GetVolumeReturns(testcase.baseVolume, nil)
-				volumeService.UpdateVolumeReturns(nil)
+				volumeService.GetVolumeEtagReturns(testcase.baseVolume, testcase.etag, nil)
+				volumeService.UpdateVolumeWithEtagReturns(nil)
 			}
 			requestExp := provider.Volume{VolumeID: testcase.volumeID,
 				VPCVolume: provider.VPCVolume{Tags: testcase.tags}}

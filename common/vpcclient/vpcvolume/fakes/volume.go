@@ -176,6 +176,20 @@ type VolumeService struct {
 	updateVolumeReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UpdateVolumeWithEtagStub        func(string, string, *models.Volume, *zap.Logger) error
+	updateVolumeWithEtagMutex       sync.RWMutex
+	updateVolumeWithEtagArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 *models.Volume
+		arg4 *zap.Logger
+	}
+	updateVolumeWithEtagReturns struct {
+		result1 error
+	}
+	updateVolumeWithEtagReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -954,6 +968,70 @@ func (fake *VolumeService) UpdateVolumeReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *VolumeService) UpdateVolumeWithEtag(arg1 string, arg2 string, arg3 *models.Volume, arg4 *zap.Logger) error {
+	fake.updateVolumeWithEtagMutex.Lock()
+	ret, specificReturn := fake.updateVolumeWithEtagReturnsOnCall[len(fake.updateVolumeWithEtagArgsForCall)]
+	fake.updateVolumeWithEtagArgsForCall = append(fake.updateVolumeWithEtagArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 *models.Volume
+		arg4 *zap.Logger
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.UpdateVolumeWithEtagStub
+	fakeReturns := fake.updateVolumeWithEtagReturns
+	fake.recordInvocation("UpdateVolumeWithEtag", []interface{}{arg1, arg2, arg3, arg4})
+	fake.updateVolumeWithEtagMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *VolumeService) UpdateVolumeWithEtagCallCount() int {
+	fake.updateVolumeWithEtagMutex.RLock()
+	defer fake.updateVolumeWithEtagMutex.RUnlock()
+	return len(fake.updateVolumeWithEtagArgsForCall)
+}
+
+func (fake *VolumeService) UpdateVolumeWithEtagCalls(stub func(string, string, *models.Volume, *zap.Logger) error) {
+	fake.updateVolumeWithEtagMutex.Lock()
+	defer fake.updateVolumeWithEtagMutex.Unlock()
+	fake.UpdateVolumeWithEtagStub = stub
+}
+
+func (fake *VolumeService) UpdateVolumeWithEtagArgsForCall(i int) (string, string, *models.Volume, *zap.Logger) {
+	fake.updateVolumeWithEtagMutex.RLock()
+	defer fake.updateVolumeWithEtagMutex.RUnlock()
+	argsForCall := fake.updateVolumeWithEtagArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *VolumeService) UpdateVolumeWithEtagReturns(result1 error) {
+	fake.updateVolumeWithEtagMutex.Lock()
+	defer fake.updateVolumeWithEtagMutex.Unlock()
+	fake.UpdateVolumeWithEtagStub = nil
+	fake.updateVolumeWithEtagReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *VolumeService) UpdateVolumeWithEtagReturnsOnCall(i int, result1 error) {
+	fake.updateVolumeWithEtagMutex.Lock()
+	defer fake.updateVolumeWithEtagMutex.Unlock()
+	fake.UpdateVolumeWithEtagStub = nil
+	if fake.updateVolumeWithEtagReturnsOnCall == nil {
+		fake.updateVolumeWithEtagReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.updateVolumeWithEtagReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *VolumeService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -981,6 +1059,8 @@ func (fake *VolumeService) Invocations() map[string][][]interface{} {
 	defer fake.setVolumeTagMutex.RUnlock()
 	fake.updateVolumeMutex.RLock()
 	defer fake.updateVolumeMutex.RUnlock()
+	fake.updateVolumeWithEtagMutex.RLock()
+	defer fake.updateVolumeWithEtagMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
