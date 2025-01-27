@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.2.8
+	github.com/IBM/ibmcloud-volume-interface v1.2.9
 	github.com/IBM/secret-common-lib v1.1.11
 	github.com/IBM/secret-utils-lib v1.1.11
 	github.com/fatih/structs v1.1.0
@@ -56,7 +56,6 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/onsi/ginkgo/v2 v2.19.0 // indirect
 	github.com/onsi/gomega v1.33.1 // indirect
-	github.com/pierrre/gotestcover v0.0.0-20160517101806-924dca7d15f0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.19.1 // indirect
