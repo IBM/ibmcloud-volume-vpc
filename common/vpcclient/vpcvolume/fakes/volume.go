@@ -2,11 +2,11 @@
 package fakes
 
 import (
-	sync "sync"
+	"sync"
 
-	models "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
-	vpcvolume "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
-	zap "go.uber.org/zap"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
+	"go.uber.org/zap"
 )
 
 type VolumeService struct {
@@ -105,6 +105,22 @@ type VolumeService struct {
 		result1 *models.Volume
 		result2 error
 	}
+	GetVolumeEtagStub        func(string, *zap.Logger) (*models.Volume, string, error)
+	getVolumeEtagMutex       sync.RWMutex
+	getVolumeEtagArgsForCall []struct {
+		arg1 string
+		arg2 *zap.Logger
+	}
+	getVolumeEtagReturns struct {
+		result1 *models.Volume
+		result2 string
+		result3 error
+	}
+	getVolumeEtagReturnsOnCall map[int]struct {
+		result1 *models.Volume
+		result2 string
+		result3 error
+	}
 	ListVolumeTagsStub        func(string, *zap.Logger) (*[]string, error)
 	listVolumeTagsMutex       sync.RWMutex
 	listVolumeTagsArgsForCall []struct {
@@ -172,15 +188,16 @@ func (fake *VolumeService) CheckVolumeTag(arg1 string, arg2 string, arg3 *zap.Lo
 		arg2 string
 		arg3 *zap.Logger
 	}{arg1, arg2, arg3})
+	stub := fake.CheckVolumeTagStub
+	fakeReturns := fake.checkVolumeTagReturns
 	fake.recordInvocation("CheckVolumeTag", []interface{}{arg1, arg2, arg3})
 	fake.checkVolumeTagMutex.Unlock()
-	if fake.CheckVolumeTagStub != nil {
-		return fake.CheckVolumeTagStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.checkVolumeTagReturns
 	return fakeReturns.result1
 }
 
@@ -233,15 +250,16 @@ func (fake *VolumeService) CreateVolume(arg1 *models.Volume, arg2 *zap.Logger) (
 		arg1 *models.Volume
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.CreateVolumeStub
+	fakeReturns := fake.createVolumeReturns
 	fake.recordInvocation("CreateVolume", []interface{}{arg1, arg2})
 	fake.createVolumeMutex.Unlock()
-	if fake.CreateVolumeStub != nil {
-		return fake.CreateVolumeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createVolumeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -297,15 +315,16 @@ func (fake *VolumeService) DeleteVolume(arg1 string, arg2 *zap.Logger) error {
 		arg1 string
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.DeleteVolumeStub
+	fakeReturns := fake.deleteVolumeReturns
 	fake.recordInvocation("DeleteVolume", []interface{}{arg1, arg2})
 	fake.deleteVolumeMutex.Unlock()
-	if fake.DeleteVolumeStub != nil {
-		return fake.DeleteVolumeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteVolumeReturns
 	return fakeReturns.result1
 }
 
@@ -359,15 +378,16 @@ func (fake *VolumeService) DeleteVolumeTag(arg1 string, arg2 string, arg3 *zap.L
 		arg2 string
 		arg3 *zap.Logger
 	}{arg1, arg2, arg3})
+	stub := fake.DeleteVolumeTagStub
+	fakeReturns := fake.deleteVolumeTagReturns
 	fake.recordInvocation("DeleteVolumeTag", []interface{}{arg1, arg2, arg3})
 	fake.deleteVolumeTagMutex.Unlock()
-	if fake.DeleteVolumeTagStub != nil {
-		return fake.DeleteVolumeTagStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteVolumeTagReturns
 	return fakeReturns.result1
 }
 
@@ -421,15 +441,16 @@ func (fake *VolumeService) ExpandVolume(arg1 string, arg2 *models.Volume, arg3 *
 		arg2 *models.Volume
 		arg3 *zap.Logger
 	}{arg1, arg2, arg3})
+	stub := fake.ExpandVolumeStub
+	fakeReturns := fake.expandVolumeReturns
 	fake.recordInvocation("ExpandVolume", []interface{}{arg1, arg2, arg3})
 	fake.expandVolumeMutex.Unlock()
-	if fake.ExpandVolumeStub != nil {
-		return fake.ExpandVolumeStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.expandVolumeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -485,15 +506,16 @@ func (fake *VolumeService) GetVolume(arg1 string, arg2 *zap.Logger) (*models.Vol
 		arg1 string
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.GetVolumeStub
+	fakeReturns := fake.getVolumeReturns
 	fake.recordInvocation("GetVolume", []interface{}{arg1, arg2})
 	fake.getVolumeMutex.Unlock()
-	if fake.GetVolumeStub != nil {
-		return fake.GetVolumeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getVolumeReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -549,15 +571,16 @@ func (fake *VolumeService) GetVolumeByName(arg1 string, arg2 *zap.Logger) (*mode
 		arg1 string
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.GetVolumeByNameStub
+	fakeReturns := fake.getVolumeByNameReturns
 	fake.recordInvocation("GetVolumeByName", []interface{}{arg1, arg2})
 	fake.getVolumeByNameMutex.Unlock()
-	if fake.GetVolumeByNameStub != nil {
-		return fake.GetVolumeByNameStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getVolumeByNameReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -606,6 +629,74 @@ func (fake *VolumeService) GetVolumeByNameReturnsOnCall(i int, result1 *models.V
 	}{result1, result2}
 }
 
+func (fake *VolumeService) GetVolumeEtag(arg1 string, arg2 *zap.Logger) (*models.Volume, string, error) {
+	fake.getVolumeEtagMutex.Lock()
+	ret, specificReturn := fake.getVolumeEtagReturnsOnCall[len(fake.getVolumeEtagArgsForCall)]
+	fake.getVolumeEtagArgsForCall = append(fake.getVolumeEtagArgsForCall, struct {
+		arg1 string
+		arg2 *zap.Logger
+	}{arg1, arg2})
+	stub := fake.GetVolumeEtagStub
+	fakeReturns := fake.getVolumeEtagReturns
+	fake.recordInvocation("GetVolumeEtag", []interface{}{arg1, arg2})
+	fake.getVolumeEtagMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *VolumeService) GetVolumeEtagCallCount() int {
+	fake.getVolumeEtagMutex.RLock()
+	defer fake.getVolumeEtagMutex.RUnlock()
+	return len(fake.getVolumeEtagArgsForCall)
+}
+
+func (fake *VolumeService) GetVolumeEtagCalls(stub func(string, *zap.Logger) (*models.Volume, string, error)) {
+	fake.getVolumeEtagMutex.Lock()
+	defer fake.getVolumeEtagMutex.Unlock()
+	fake.GetVolumeEtagStub = stub
+}
+
+func (fake *VolumeService) GetVolumeEtagArgsForCall(i int) (string, *zap.Logger) {
+	fake.getVolumeEtagMutex.RLock()
+	defer fake.getVolumeEtagMutex.RUnlock()
+	argsForCall := fake.getVolumeEtagArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *VolumeService) GetVolumeEtagReturns(result1 *models.Volume, result2 string, result3 error) {
+	fake.getVolumeEtagMutex.Lock()
+	defer fake.getVolumeEtagMutex.Unlock()
+	fake.GetVolumeEtagStub = nil
+	fake.getVolumeEtagReturns = struct {
+		result1 *models.Volume
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *VolumeService) GetVolumeEtagReturnsOnCall(i int, result1 *models.Volume, result2 string, result3 error) {
+	fake.getVolumeEtagMutex.Lock()
+	defer fake.getVolumeEtagMutex.Unlock()
+	fake.GetVolumeEtagStub = nil
+	if fake.getVolumeEtagReturnsOnCall == nil {
+		fake.getVolumeEtagReturnsOnCall = make(map[int]struct {
+			result1 *models.Volume
+			result2 string
+			result3 error
+		})
+	}
+	fake.getVolumeEtagReturnsOnCall[i] = struct {
+		result1 *models.Volume
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *VolumeService) ListVolumeTags(arg1 string, arg2 *zap.Logger) (*[]string, error) {
 	fake.listVolumeTagsMutex.Lock()
 	ret, specificReturn := fake.listVolumeTagsReturnsOnCall[len(fake.listVolumeTagsArgsForCall)]
@@ -613,15 +704,16 @@ func (fake *VolumeService) ListVolumeTags(arg1 string, arg2 *zap.Logger) (*[]str
 		arg1 string
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.ListVolumeTagsStub
+	fakeReturns := fake.listVolumeTagsReturns
 	fake.recordInvocation("ListVolumeTags", []interface{}{arg1, arg2})
 	fake.listVolumeTagsMutex.Unlock()
-	if fake.ListVolumeTagsStub != nil {
-		return fake.ListVolumeTagsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listVolumeTagsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -679,15 +771,16 @@ func (fake *VolumeService) ListVolumes(arg1 int, arg2 string, arg3 *models.ListV
 		arg3 *models.ListVolumeFilters
 		arg4 *zap.Logger
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.ListVolumesStub
+	fakeReturns := fake.listVolumesReturns
 	fake.recordInvocation("ListVolumes", []interface{}{arg1, arg2, arg3, arg4})
 	fake.listVolumesMutex.Unlock()
-	if fake.ListVolumesStub != nil {
-		return fake.ListVolumesStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.listVolumesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -744,15 +837,16 @@ func (fake *VolumeService) SetVolumeTag(arg1 string, arg2 string, arg3 *zap.Logg
 		arg2 string
 		arg3 *zap.Logger
 	}{arg1, arg2, arg3})
+	stub := fake.SetVolumeTagStub
+	fakeReturns := fake.setVolumeTagReturns
 	fake.recordInvocation("SetVolumeTag", []interface{}{arg1, arg2, arg3})
 	fake.setVolumeTagMutex.Unlock()
-	if fake.SetVolumeTagStub != nil {
-		return fake.SetVolumeTagStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.setVolumeTagReturns
 	return fakeReturns.result1
 }
 
@@ -805,15 +899,16 @@ func (fake *VolumeService) UpdateVolume(arg1 *models.Volume, arg2 *zap.Logger) e
 		arg1 *models.Volume
 		arg2 *zap.Logger
 	}{arg1, arg2})
+	stub := fake.UpdateVolumeStub
+	fakeReturns := fake.updateVolumeReturns
 	fake.recordInvocation("UpdateVolume", []interface{}{arg1, arg2})
 	fake.updateVolumeMutex.Unlock()
-	if fake.UpdateVolumeStub != nil {
-		return fake.UpdateVolumeStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateVolumeReturns
 	return fakeReturns.result1
 }
 
@@ -876,6 +971,8 @@ func (fake *VolumeService) Invocations() map[string][][]interface{} {
 	defer fake.getVolumeMutex.RUnlock()
 	fake.getVolumeByNameMutex.RLock()
 	defer fake.getVolumeByNameMutex.RUnlock()
+	fake.getVolumeEtagMutex.RLock()
+	defer fake.getVolumeEtagMutex.RUnlock()
 	fake.listVolumeTagsMutex.RLock()
 	defer fake.listVolumeTagsMutex.RUnlock()
 	fake.listVolumesMutex.RLock()
