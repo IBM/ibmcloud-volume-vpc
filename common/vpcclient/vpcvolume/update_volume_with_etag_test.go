@@ -35,24 +35,19 @@ func TestVPCUpdateVolumeWithEtag(t *testing.T) {
 	testCases := []struct {
 		name string
 		// Response
-		status     int
-		getStatus  int
-		content    string
-		getContent string
+		status  int
+		content string
 		// Expected return
 		expectErr string
 		verify    func(*testing.T, *models.Volume, error)
 	}{
 		{
-			name:      "Verify that the correct endpoint is invoked",
-			status:    http.StatusNoContent,
-			getStatus: http.StatusNoContent,
+			name:   "Verify that the correct endpoint is invoked",
+			status: http.StatusNoContent,
 		},
 		{
-			name:       "Verify that the volume updated was successful",
-			status:     http.StatusOK,
-			getStatus:  http.StatusOK,
-			getContent: "{\"id\":\"vol1\",\"name\":\"vol1\",\"capacity\":10,\"iops\":3000,\"status\":\"pending\",\"zone\":{\"name\":\"test-1\",\"href\":\"https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/test-1\"},\"crn\":\"crn:v1:bluemix:public:is:test-1:a/rg1::volume:vol1\"}",
+			name:   "Verify that the volume updated was successful",
+			status: http.StatusOK,
 			verify: func(t *testing.T, volume *models.Volume, err error) {
 				if assert.NotNil(t, volume) {
 					assert.Equal(t, "volume-id", volume.ID)
@@ -62,7 +57,6 @@ func TestVPCUpdateVolumeWithEtag(t *testing.T) {
 		{
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			getStatus: http.StatusNotFound,
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
 		},
