@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 IBM Corp.
+ * Copyright 2025 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	uid "github.com/gofrs/uuid"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/golang/glog"
 
@@ -167,7 +170,7 @@ func (pvw *PVWatcher) Start() {
 func (pvw *PVWatcher) updateVolume(oldobj, obj interface{}) {
 	// Run as non-blocking thread to allow parallel processing of volumes
 	go func() {
-		ctxLogger, requestID := cloudprovider.GetContextLogger(context.Background(), false)
+		ctxLogger, requestID := GetContextLogger(context.Background(), false)
 		// panic-recovery function that avoid watcher thread to stop because of unexexpected error
 		defer func() {
 			if r := recover(); r != nil {
@@ -284,4 +287,44 @@ func (pvw *PVWatcher) filter(obj interface{}) bool {
 // BytesToGiB converts Bytes to GiB
 func BytesToGiB(volumeSizeBytes int64) int {
 	return int(volumeSizeBytes / GiB)
+}
+
+// GetContextLogger ...
+func GetContextLogger(ctx context.Context, isDebug bool) (*zap.Logger, string) {
+	return GetContextLoggerWithRequestID(ctx, isDebug, nil)
+}
+
+// GetContextLoggerWithRequestID  adds existing requestID in the logger
+// The Existing requestID might be coming from ControllerPublishVolume etc
+func GetContextLoggerWithRequestID(ctx context.Context, isDebug bool, requestIDIn *string) (*zap.Logger, string) {
+	consoleDebugging := zapcore.Lock(os.Stdout)
+	consoleErrors := zapcore.Lock(os.Stderr)
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.TimeKey = "ts"
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	traceLevel := zap.NewAtomicLevel()
+	if isDebug {
+		traceLevel.SetLevel(zap.DebugLevel)
+	} else {
+		traceLevel.SetLevel(zap.InfoLevel)
+	}
+
+	core := zapcore.NewTee(
+		zapcore.NewCore(zapcore.NewJSONEncoder(encoderConfig), consoleDebugging, zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+			return (lvl >= traceLevel.Level()) && (lvl < zapcore.ErrorLevel)
+		})),
+		zapcore.NewCore(zapcore.NewJSONEncoder(encoderConfig), consoleErrors, zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+			return lvl >= zapcore.ErrorLevel
+		})),
+	)
+	logger := zap.New(core, zap.AddCaller())
+	// generating a unique request ID so that logs can be filter
+	if requestIDIn == nil {
+		// Generate New RequestID if not provided
+		uuid, _ := uid.NewV4() // #nosec G104: Attempt to randomly generate uuid
+		requestID := uuid.String()
+		requestIDIn = &requestID
+	}
+	logger = logger.With(zap.String("RequestID", *requestIDIn))
+	return logger, *requestIDIn + " "
 }
