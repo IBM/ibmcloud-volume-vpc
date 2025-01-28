@@ -24,8 +24,8 @@ import (
 	"strings"
 	"testing"
 
-	cloudprovider "github.com/IBM/ibmcloud-volume-vpc/pkg/ibmcloudprovider"
 	"github.com/IBM/ibmcloud-volume-interface/config"
+	cloudprovider "github.com/IBM/ibmcloud-volume-vpc/pkg/ibmcloudprovider"
 	"github.com/golang/glog"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/stretchr/testify/assert"
@@ -42,7 +42,7 @@ import (
 
 func TestNew(t *testing.T) {
 	// Creating test logger
-	_, teardown := cloudprovider.GetTestLogger(t)
+	_, teardown := GetTestLogger(t)
 	defer teardown()
 }
 

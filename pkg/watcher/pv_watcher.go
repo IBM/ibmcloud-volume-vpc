@@ -100,6 +100,9 @@ const (
 
 	// ZoneLabel ...
 	ZoneLabel = "zone"
+
+	// GiB in bytes
+	GiB = 1024 * 1024 * 1024
 )
 
 // VolumeTypeMap ...
