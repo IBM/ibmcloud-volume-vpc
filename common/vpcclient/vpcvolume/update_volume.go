@@ -18,39 +18,13 @@
 package vpcvolume
 
 import (
-	"time"
+	"errors"
 
-	util "github.com/IBM/ibmcloud-volume-interface/lib/utils"
-	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/client"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	"go.uber.org/zap"
 )
 
-// UpdateVolume PATCH to /volumes for updating user tags only
+// UpdateVolume PATCH to /volumes for updating
 func (vs *VolumeService) UpdateVolume(volumeTemplate *models.Volume, ctxLogger *zap.Logger) error {
-	ctxLogger.Debug("Entry Backend UpdateVolume")
-	defer ctxLogger.Debug("Exit Backend UpdateVolume")
-
-	defer util.TimeTracker("UpdateVolume", time.Now())
-
-	operation := &client.Operation{
-		Name:        "UpdateVolume",
-		Method:      "PATCH",
-		PathPattern: volumeIDPath,
-	}
-
-	var apiErr models.Error
-
-	request := vs.client.NewRequest(operation)
-	request.SetHeader("If-Match", volumeTemplate.ETag)
-
-	req := request.PathParameter(volumeIDParam, volumeTemplate.ID)
-	ctxLogger.Info("Equivalent curl command and payload details", zap.Reflect("URL", req.URL()), zap.Reflect("Payload", volumeTemplate), zap.Reflect("Operation", operation))
-	_, err := req.JSONBody(volumeTemplate).JSONError(&apiErr).Invoke()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return errors.New("unsupported Operation")
 }
