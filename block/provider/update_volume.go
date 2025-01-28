@@ -28,20 +28,20 @@ import (
 
 // UpdateVolume PATCH to /volumes
 func (vpcs *VPCSession) UpdateVolume(volumeRequest provider.Volume) error {
-	var volume *models.Volume
-	var existVolume *provider.Volume
+	var existVolume *models.Volume
 	var err error
+	var etag string
 
-	//Fetch existing volume Tags	
+	//Fetch existing volume Tags
 	err = RetryWithMinRetries(vpcs.Logger, func() error {
 		// Get volume details
-		existVolume, err = vpcs.GetVolume(volumeRequest.VolumeID)
+		existVolume, etag, err = vpcs.Apiclient.VolumeService().GetVolumeEtag(volumeRequest.VolumeID, vpcs.Logger)
 
 		if err != nil {
 			return err
 		}
 		if existVolume != nil && existVolume.Status == validVolumeStatus {
-			vpcs.Logger.Info("Volume got valid (available) state")
+			vpcs.Logger.Info("Volume got valid (available) state",zap.Reflect("etag", etag))
 			return nil
 		}
 		return userError.GetUserError("VolumeNotInValidState", err, volumeRequest.VolumeID)
@@ -52,24 +52,22 @@ func (vpcs *VPCSession) UpdateVolume(volumeRequest provider.Volume) error {
 	}
 
 	//If tags are equal then skip the UpdateVolume RIAAS API call
-	if ifTagsEqual(existVolume.Tags, volumeRequest.VPCVolume.Tags) {
-		vpcs.Logger.Info("There is no change in user tags for volume, skipping the updateVolume for VPC IaaS... ", zap.Reflect("existVolume", existVolume.Tags), zap.Reflect("volumeRequest", volumeRequest.VPCVolume.Tags))
+	if ifTagsEqual(existVolume.UserTags, volumeRequest.VPCVolume.Tags) {
+		vpcs.Logger.Info("There is no change in user tags for volume, skipping the updateVolume for VPC IaaS... ", zap.Reflect("existVolume", existVolume.UserTags), zap.Reflect("volumeRequest", volumeRequest.VPCVolume.Tags))
 		return nil
 	}
 
 	//Append the existing tags with the requested input tags
-	existVolume.Tags = append(existVolume.Tags, volumeRequest.VPCVolume.Tags...)
+	existVolume.UserTags = append(existVolume.UserTags, volumeRequest.VPCVolume.Tags...)
 
-	volume = &models.Volume{
-		ID:       volumeRequest.VolumeID,
-		UserTags: existVolume.Tags,
-		ETag:     existVolume.ETag,
+	volume := &models.Volume{
+		UserTags: existVolume.UserTags,
 	}
 
 	vpcs.Logger.Info("Calling VPC provider for volume UpdateVolumeWithTags...")
 
 	err = RetryWithMinRetries(vpcs.Logger, func() error {
-		err = vpcs.Apiclient.VolumeService().UpdateVolume(volume, vpcs.Logger)
+		err = vpcs.Apiclient.VolumeService().UpdateVolumeWithEtag(volumeRequest.VolumeID, etag, volume, vpcs.Logger)
 		return err
 	})
 

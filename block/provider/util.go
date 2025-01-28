@@ -389,7 +389,6 @@ func FromProviderToLibVolume(vpcVolume *models.Volume, logger *zap.Logger) (libV
 	}
 	libVolume.CRN = vpcVolume.CRN
 	libVolume.Tags = vpcVolume.UserTags
-	libVolume.ETag = vpcVolume.ETag
 	libVolume.Status = string(vpcVolume.Status)
 	return
 }

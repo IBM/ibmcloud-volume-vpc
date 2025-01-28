@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 IBM Corp.
+ * Copyright 2020 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,18 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestVPCUpdateVolume(t *testing.T) {
+func TestGetVolumeEtag(t *testing.T) {
 	// Setup new style zap logger
 	logger, _ := GetTestContextLogger()
 	defer logger.Sync()
 
 	testCases := []struct {
 		name string
+
 		// Response
 		status  int
 		content string
+
 		// Expected return
 		expectErr string
 		verify    func(*testing.T, *models.Volume, error)
@@ -44,34 +46,37 @@ func TestVPCUpdateVolume(t *testing.T) {
 		{
 			name:   "Verify that the correct endpoint is invoked",
 			status: http.StatusNoContent,
-		},
-		{
-			name:   "Verify that the volume updated was successful",
-			status: http.StatusOK,
-			verify: func(t *testing.T, volume *models.Volume, err error) {
-				if assert.NotNil(t, volume) {
-					assert.Equal(t, "volume-id", volume.ID)
-				}
-			},
-		},
-		{
+		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
 			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
 			expectErr: "Trace Code:, testerr Please check ",
+		}, {
+			name:    "Verify that the volume is parsed correctly",
+			status:  http.StatusOK,
+			content: "{\"id\":\"vol1\",\"name\":\"vol1\",\"capacity\":10,\"iops\":3000,\"status\":\"pending\",\"zone\":{\"name\":\"test-1\",\"href\":\"https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/test-1\"},\"crn\":\"crn:v1:bluemix:public:is:test-1:a/rg1::volume:vol1\"}",
+			verify: func(t *testing.T, volume *models.Volume, err error) {
+				if assert.NotNil(t, volume) {
+					assert.Equal(t, "vol1", volume.ID)
+				}
+			},
+		}, {
+			name:    "False positive: What if the volume ID is not matched",
+			status:  http.StatusOK,
+			content: "{\"id\":\"wrong-vol\",\"name\":\"wrong-vol\",\"capacity\":10,\"iops\":3000,\"status\":\"pending\",\"zone\":{\"name\":\"test-1\",\"href\":\"https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/test-1\"},\"crn\":\"crn:v1:bluemix:public:is:test-1:a/rg1::volume:wrong-vol\"}",
+			verify: func(t *testing.T, volume *models.Volume, err error) {
+				if assert.NotNil(t, volume) {
+					assert.NotEqual(t, "vol1", volume.ID)
+				}
+			},
 		},
 	}
 
 	for _, testcase := range testCases {
 		t.Run(testcase.name, func(t *testing.T) {
-			template := &models.Volume{
-				ID:   "volume-id",
-				Tags: []string{"tag1:val1", "tag2:val2"},
-				ETag: "etag",
-			}
-
 			mux, client, teardown := test.SetupServer(t)
-			test.SetupMuxResponse(t, mux, vpcvolume.Version+"/volumes/volume-id", http.MethodPatch, nil, testcase.status, testcase.content, nil)
+			emptyString := ""
+			test.SetupMuxResponse(t, mux, vpcvolume.Version+"/volumes/volume-id", http.MethodGet, &emptyString, testcase.status, testcase.content, nil)
 
 			defer teardown()
 
@@ -79,12 +84,19 @@ func TestVPCUpdateVolume(t *testing.T) {
 
 			volumeService := vpcvolume.New(client)
 
-			err := volumeService.UpdateVolume(template, logger)
+			volume, _, err := volumeService.GetVolumeEtag("volume-id", logger)
+			logger.Info("Volume details", zap.Reflect("volume", volume))
 
 			if testcase.expectErr != "" && assert.Error(t, err) {
 				assert.Equal(t, testcase.expectErr, err.Error())
+				assert.Nil(t, volume)
 			} else {
 				assert.NoError(t, err)
+				assert.NotNil(t, volume)
+			}
+
+			if testcase.verify != nil {
+				testcase.verify(t, volume, err)
 			}
 		})
 	}
