@@ -18,7 +18,6 @@
 package ibmcloudprovider
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -27,40 +26,7 @@ import (
 
 	"github.com/IBM/secret-utils-lib/pkg/k8s_utils"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
-
-func GetTestLogger(t *testing.T) (logger *zap.Logger, teardown func()) {
-	atom := zap.NewAtomicLevel()
-	atom.SetLevel(zap.DebugLevel)
-
-	encoderCfg := zap.NewProductionEncoderConfig()
-	encoderCfg.TimeKey = "timestamp"
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-
-	buf := &bytes.Buffer{}
-
-	logger = zap.New(
-		zapcore.NewCore(
-			zapcore.NewJSONEncoder(encoderCfg),
-			zapcore.AddSync(buf),
-			atom,
-		),
-		zap.AddCaller(),
-	)
-
-	teardown = func() {
-		err := logger.Sync()
-		assert.Nil(t, err)
-
-		if t.Failed() {
-			t.Log(buf)
-		}
-	}
-
-	return
-}
 
 func TestNewIBMCloudStorageProvider(t *testing.T) {
 	// Creating test logger
