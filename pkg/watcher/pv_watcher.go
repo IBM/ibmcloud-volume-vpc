@@ -209,7 +209,8 @@ func (pvw *PVWatcher) updateVolume(oldobj, obj interface{}) {
 				return
 			}
 
-			volume := pvw.getVolume(newpv, ctxLogger)
+			volume := pvw.getVolumeFromPV(newpv, ctxLogger)
+			// Updating metadata for the volume
 			ctxLogger.Info("Updating metadata for the volume", zap.Reflect("volume", volume))
 			err := iksVpc.UpdateVolume(volume)
 			if err != nil {
@@ -258,7 +259,7 @@ func (pvw *PVWatcher) getTags(pv *v1.PersistentVolume, ctxLogger *zap.Logger) (s
 	return volAttributes[VolumeCRN], tags
 }
 
-func (pvw *PVWatcher) getVolume(pv *v1.PersistentVolume, ctxLogger *zap.Logger) provider.Volume {
+func (pvw *PVWatcher) getVolumeFromPV(pv *v1.PersistentVolume, ctxLogger *zap.Logger) provider.Volume {
 	ctxLogger.Debug("Entry getVolume()", zap.Reflect("pv", pv))
 	crn, tags := pvw.getTags(pv, ctxLogger)
 	volume := provider.Volume{
