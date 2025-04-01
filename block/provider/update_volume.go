@@ -26,7 +26,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// UpdateVolume PATCH to /volumes
+// UpdateVolume PATCH to /volumes.
 func (vpcs *VPCSession) UpdateVolume(volumeRequest provider.Volume) error {
 	var existVolume *models.Volume
 	var err error
