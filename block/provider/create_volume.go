@@ -34,7 +34,7 @@ const (
 	minSize       = 10
 )
 
-// CreateVolume Get the volume by using ID
+// CreateVolume Get the volume by using ID.
 func (vpcs *VPCSession) CreateVolume(volumeRequest provider.Volume) (volumeResponse *provider.Volume, err error) {
 	vpcs.Logger.Debug("Entry of CreateVolume method...")
 	defer vpcs.Logger.Debug("Exit from CreateVolume method...")
