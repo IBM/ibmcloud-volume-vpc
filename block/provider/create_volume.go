@@ -52,6 +52,7 @@ func (vpcs *VPCSession) CreateVolume(volumeRequest provider.Volume) (volumeRespo
 		Name:          *volumeRequest.Name,
 		Capacity:      int64(*volumeRequest.Capacity),
 		Iops:          iops,
+		Bandwidth:     int32(volumeRequest.Bandwidth),
 		UserTags:      volumeRequest.VPCVolume.Tags,
 		ResourceGroup: &resourceGroup,
 		Profile: &models.Profile{
@@ -139,6 +140,38 @@ func validateVolumeRequest(volumeRequest *provider.Volume, clusterVolumeLabel st
 	if *volumeRequest.Capacity < minSize && volumeRequest.VPCVolume.Profile.Name != sdpProfile {
 		return resourceGroup, iops, userError.GetUserError("VolumeCapacityInvalid", nil, *volumeRequest.Capacity)
 	}
+	// //remove
+	// if volumeRequest.VPCVolume.Profile.Name == sdpProfile {
+	// 	if 1 <= *volumeRequest.Capacity && *volumeRequest.Capacity <= 20 {
+	// 		if iops != 3000 {
+	// 			return resourceGroup, iops, userError.GetUserError("IopsNotInRange", nil, nil)
+	// 		}
+	// 	} else if 21 <= *volumeRequest.Capacity && *volumeRequest.Capacity <= 50 {
+	// 		if iops != 3000 {
+	// 			return resourceGroup, iops, userError.GetUserError("IopsNotInRange", nil, nil)
+	// 		}
+	// 	} else if 51 <= *volumeRequest.Capacity && *volumeRequest.Capacity <= 80 {
+	// 		if iops != 3000 {
+	// 			return resourceGroup, iops, userError.GetUserError("IopsNotInRange", nil, nil)
+	// 		}
+	// 	} else if 81 <= *volumeRequest.Capacity && *volumeRequest.Capacity <= 100 {
+	// 		if iops != 3000 {
+	// 			return resourceGroup, iops, userError.GetUserError("IopsNotInRange", nil, nil)
+	// 		}
+	// 	} else if 101 <= *volumeRequest.Capacity && *volumeRequest.Capacity <= 130 {
+	// 		if iops != 3000 {
+	// 			return resourceGroup, iops, userError.GetUserError("IopsNotInRange", nil, nil)
+	// 		}
+	// 	} else if 131 <= *volumeRequest.Capacity && *volumeRequest.Capacity <= 150 {
+	// 		if iops != 3000 {
+	// 			return resourceGroup, iops, userError.GetUserError("IopsNotInRange", nil, nil)
+	// 		}
+	// 	} else if 151 <= *volumeRequest.Capacity && *volumeRequest.Capacity <= 32000 {
+	// 		if iops != 3000 {
+	// 			return resourceGroup, iops, userError.GetUserError("IopsNotInRange", nil, nil)
+	// 		}
+	// 	}
+	// }
 
 	// IOPS not modifiable if profile is not custom or sdp
 	if (volumeRequest.VPCVolume.Profile.Name != customProfile && volumeRequest.VPCVolume.Profile.Name != sdpProfile) && iops > 0 {
