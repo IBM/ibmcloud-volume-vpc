@@ -381,6 +381,7 @@ func main() {
 			zone := "us-south-1"
 			volSize := 0
 			Iops := "0"
+			Bandwidth := 0
 			snapshotID := ""
 
 			volume.Az = zone
@@ -388,7 +389,7 @@ func main() {
 			volume.VPCVolume.ResourceGroup = &provider.ResourceGroup{}
 
 			profile := "general-purpose"
-			fmt.Printf("\nPlease enter profile name supported profiles are [general-purpose, custom, 10iops-tier, 5iops-tier]: ")
+			fmt.Printf("\nPlease enter profile name supported profiles are [general-purpose, sdp, custom, 10iops-tier, 5iops-tier]: ")
 			_, _ = fmt.Scanf("%s", &profile)
 			volume.VPCVolume.Profile = &provider.Profile{Name: profile}
 
@@ -403,6 +404,12 @@ func main() {
 			fmt.Printf("\nPlease enter iops (Only custom profiles require iops): ")
 			_, _ = fmt.Scanf("%s", &Iops)
 			volume.Iops = &Iops
+
+			if volume.VPCVolume.Profile.Name == "sdp" {
+				fmt.Printf("\nPlease enter bandwidth : ")
+				_, _ = fmt.Scanf("%s", &Bandwidth)
+				volume.Bandwidth = int32(Bandwidth)
+			}
 
 			fmt.Printf("\nPlease enter resource group info type : 1- for ID and 2- for Name: ")
 			_, _ = fmt.Scanf("%d", &resiurceGType)
