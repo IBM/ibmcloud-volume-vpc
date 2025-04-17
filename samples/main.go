@@ -408,7 +408,7 @@ func main() {
 			if volume.VPCVolume.Profile.Name == "sdp" {
 				fmt.Printf("\nPlease enter bandwidth : ")
 				_, _ = fmt.Scanf("%s", &Bandwidth)
-				volume.Bandwidth = Bandwidth
+				volume.Bandwidth = int32(Bandwidth)
 			}
 
 			fmt.Printf("\nPlease enter resource group info type : 1- for ID and 2- for Name: ")

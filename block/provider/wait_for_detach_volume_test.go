@@ -173,7 +173,7 @@ func TestWaitForDetachVolumeForInvalidSession(t *testing.T) {
 	assert.NotNil(t, uc)
 	assert.NotNil(t, sc)
 	assert.Nil(t, err)
-	expectedError := "{Code:InvalidServiceSession, Type:RetrivalFailed, Description:The Service Session was not found due to error while generating IAM token., BackendError:IAM token exchange request failed, RC:500}"
+	expectedError := "{Code:InvalidServiceSession, Description:The Service Session was not found due to error while generating IAM token..IAM token exchange request failed, RC:500}"
 	volumeAttachRequest := provider.VolumeAttachmentRequest{
 		VolumeID: "vol-1",
 	}
