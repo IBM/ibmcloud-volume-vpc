@@ -18,6 +18,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
@@ -120,7 +121,7 @@ func main() {
 
 	valid := true
 	for valid {
-		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- Create volume \n 5- Snapshot details\n  6- Create volume from snapshot\n 7- Delete volume \n 8- Delete Snapshot \n 9- Authorize volume \n 10- Create VPC Volume \n 11- Attach VPC volume \n 12- Detach VPC volume \n 13- Get volume by name \n 14- List volumes \n 15- Expand volume \n 16- Get volume Attachment \n 17- Get snapshot by name \n Your choice?:")
+		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- [Classic]Create volume \n 5- Snapshot details \n 6- Create volume from snapshot\n 7- Delete volume \n 8- Delete Snapshot \n 9- [Classic]Authorize volume \n 10- [VPC]Create VPC Volume \n 11- [VPC]Attach VPC volume \n 12- Detach VPC volume \n 13- Get volume by name \n 14- List volumes \n 15- Expand volume \n 16- [VPC]Get volume Attachment \n 17- Get snapshot by name \n Your choice?:")
 
 		var choiceN int
 		var volumeID string
@@ -381,7 +382,6 @@ func main() {
 			zone := "us-south-1"
 			volSize := 0
 			Iops := "0"
-			Bandwidth := 0
 			snapshotID := ""
 
 			volume.Az = zone
@@ -401,14 +401,23 @@ func main() {
 			_, _ = fmt.Scanf("%d", &volSize)
 			volume.Capacity = &volSize
 
-			fmt.Printf("\nPlease enter iops (Only custom profiles require iops): ")
+			fmt.Printf("\nPlease enter iops (Only custom and sdp profiles require iops): ")
 			_, _ = fmt.Scanf("%s", &Iops)
 			volume.Iops = &Iops
 
 			if volume.VPCVolume.Profile.Name == "sdp" {
-				fmt.Printf("\nPlease enter bandwidth : ")
-				_, _ = fmt.Scanf("%s", &Bandwidth)
-				volume.Bandwidth = int32(Bandwidth)
+				var bandwidth int32
+				reader := bufio.NewReader(os.Stdin)
+				fmt.Print("Bandwidth is an optional parameter, do you want to enter the value(y/n): ")
+				yes_or_no, _, err := reader.ReadRune()
+				if err != nil {
+					fmt.Println("Failed to get user choice for bandwidth option:", err)
+				}
+				if yes_or_no == 'y' || yes_or_no == 'Y' {
+					fmt.Printf("\nPlease enter bandwidth: ")
+					_, _ = fmt.Scanf("%d", &bandwidth)
+					volume.Bandwidth = bandwidth
+				}
 			}
 
 			fmt.Printf("\nPlease enter resource group info type : 1- for ID and 2- for Name: ")
