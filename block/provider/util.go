@@ -29,22 +29,22 @@ import (
 )
 
 // maxRetryAttempt ...
-var maxRetryAttempt = 1 //10
+var maxRetryAttempt = 10
 
 // minRetryAttempt ...
-var minRetryAttempt = 1 //3
+var minRetryAttempt = 3
 
 // maxRetryGap ...
 var maxRetryGap = 60
 
 // minVPCRetryGap ...
-var minVPCRetryGap = 1 //3
+var minVPCRetryGap = 3
 
 // minVPCRetryGapAttempt ...
-var minVPCRetryGapAttempt = 1 //3
+var minVPCRetryGapAttempt = 3
 
 // maxRetryAttempt ...
-var maxVPCRetryAttempt = 1 //46
+var maxVPCRetryAttempt = 46
 
 // ConstantRetryGap ...
 const (
