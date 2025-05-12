@@ -71,8 +71,8 @@ func TestGetVolume(t *testing.T) {
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
-			expectErr: "Trace Code:, testerr Please check ",
+			content:   "{\"errors\":[{\"message\":\"testerr\",\"Code\":\"volume_not_found\"}], \"trace\":\"2af63776-4df7-4970-b52d-4e25676ec0e4\"}",
+			expectErr: "Trace Code:2af63776-4df7-4970-b52d-4e25676ec0e4, Code:volume_not_found, Description:testerr, RC:404 Not Found",
 		}, {
 			name:    "Verify that the volume is parsed correctly",
 			status:  http.StatusOK,
@@ -147,8 +147,8 @@ func TestGetVolumeByName(t *testing.T) {
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
-			expectErr: "Trace Code:, testerr Please check ",
+			content:   "{\"errors\":[{\"message\":\"testerr\",\"Code\":\"volume_not_found\"}], \"trace\":\"2af63776-4df7-4970-b52d-4e25676ec0e4\"}",
+			expectErr: "Trace Code:2af63776-4df7-4970-b52d-4e25676ec0e4, Code:volume_not_found, Description:testerr, RC:404 Not Found",
 		}, {
 			name:    "Verify that the volume name is parsed correctly",
 			status:  http.StatusOK,
@@ -161,7 +161,7 @@ func TestGetVolumeByName(t *testing.T) {
 		}, {
 			name:      "Verify that the volume is empty if the volumes are empty",
 			status:    http.StatusOK,
-			expectErr: "Trace Code:, testerr Please check ",
+			content: "{\"volumes\":[{\"id\":\"vol2\",\"name\":\"vol2\",\"size\":10,\"iops\":3000,\"status\":\"pending\",\"zone\":{\"name\":\"test-1\",\"href\":\"https://us-south.iaas.cloud.ibm.com/v1/regions/us-south/zones/test-1\"},\"crn\":\"crn:v1:bluemix:public:is:test-1:a/rg1::volume:vol2\"}]}",
 		},
 	}
 
