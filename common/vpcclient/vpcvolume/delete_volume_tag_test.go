@@ -50,8 +50,8 @@ func TestDeleteVolumeTag(t *testing.T) {
 		}, {
 			name:      "Verify that a 404 is returned to the caller",
 			status:    http.StatusNotFound,
-			content:   "{\"errors\":[{\"message\":\"testerr\"}]}",
-			expectErr: "Trace Code:, testerr Please check ",
+			content:   "{\"errors\":[{\"message\":\"testerr\",\"Code\":\"volume_not_found\"}], \"trace\":\"2af63776-4df7-4970-b52d-4e25676ec0e4\"}",
+			expectErr: "Trace Code:2af63776-4df7-4970-b52d-4e25676ec0e4, Code:volume_not_found, Description:testerr, RC:404 Not Found",
 		}, {
 			name:    "Verify that the volume is parsed correctly",
 			status:  http.StatusOK,
