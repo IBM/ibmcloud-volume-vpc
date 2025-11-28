@@ -5,13 +5,18 @@ ARCH = $(shell uname -m)
 LINT_VERSION="1.60.1"
 
 .PHONY: all
-all: deps dofmt vet test
+all: deps fmt vet test
 
 .PHONY: deps
 deps:
+	echo "Installing dependencies ..."
 	go mod download
-	go get github.com/pierrre/gotestcover
-	go install github.com/pierrre/gotestcover
+
+	@if ! command -v gotestcover >/dev/null; then \
+		echo "Installing gotestcover ..."; \
+		go install github.com/pierrre/gotestcover@latest; \
+	fi
+
 	@if ! which golangci-lint >/dev/null || [[ "$$(golangci-lint --version)" != *${LINT_VERSION}* ]]; then \
 		curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v${LINT_VERSION}; \
 	fi
@@ -28,8 +33,8 @@ dofmt:
 lint:
 	golangci-lint run
 
-.PHONY: makefmt
-makefmt:
+.PHONY: fmt
+fmt:
 	gofmt -l -w ${GOFILES}
 
 .PHONY: build
