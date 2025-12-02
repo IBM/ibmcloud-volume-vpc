@@ -46,11 +46,11 @@ jobs:
         env:
           GOPATH: ${{ runner.temp }}/go
 
-#      - name: Run formatting check
-#        run: make fmt
-#
-#      - name: Run static analysis
-#        run: make vet
+      - name: Run formatting check
+        run: make fmt
+
+      - name: Run static analysis
+        run: make vet
 
       - name: Run tests
         run: make test
