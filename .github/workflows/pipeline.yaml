@@ -54,7 +54,6 @@ jobs:
 
       - name: Run tests
         run: make test
-#        timeout-minutes: 5
 
       - name: Generate coverage
         run: make coverage && touch "Passing" || touch "Failed"
