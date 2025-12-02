@@ -11,11 +11,8 @@ all: deps fmt vet test
 deps:
 	echo "Installing dependencies ..."
 	go mod download
-
-	@if ! command -v gotestcover >/dev/null; then \
-		echo "Installing gotestcover ..."; \
-		go install github.com/pierrre/gotestcover@latest; \
-	fi
+	go get github.com/pierrre/gotestcover
+	go install github.com/pierrre/gotestcover
 
 	@if ! which golangci-lint >/dev/null || [[ "$$(golangci-lint --version)" != *${LINT_VERSION}* ]]; then \
 		curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v${LINT_VERSION}; \
