@@ -48,7 +48,21 @@ build:
 
 .PHONY: test
 test:
-	$(GOPATH)/bin/gotestcover -v -coverprofile=cover.out ${GOPACKAGES} -timeout 90m
+	@echo "Running per-package tests with merged coverage..."
+	@rm -f cover.out
+	@for pkg in ${GOPACKAGES}; do \
+		echo "=== Testing $$pkg ==="; \
+		if echo "$$pkg" | grep -q "block/provider"; then \
+			echo "Running $$pkg without coverpkg to avoid hang"; \
+			go test -v $$pkg -coverprofile=tmp.out -timeout 20m || exit 1; \
+		else \
+			go test -v $$pkg -coverpkg=./... -coverprofile=tmp.out -timeout 60m || exit 1; \
+		fi; \
+		if [ -f tmp.out ]; then \
+			tail -n +2 tmp.out >> cover.out; \
+			rm tmp.out; \
+		fi; \
+	done
 
 .PHONY: coverage
 coverage:
