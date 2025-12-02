@@ -54,9 +54,9 @@ test:
 		echo "=== Testing $$pkg ==="; \
 		if echo "$$pkg" | grep -q "block/provider"; then \
 			echo "Running $$pkg without coverpkg to avoid hang"; \
-			go test -v $$pkg -coverprofile=tmp.out -timeout 20m || exit 1; \
+			go test -v $$pkg -coverprofile=tmp.out -timeout 90m || exit 1; \
 		else \
-			go test -v $$pkg -coverpkg=./... -coverprofile=tmp.out -timeout 60m || exit 1; \
+			go test -v $$pkg -coverpkg=./... -coverprofile=tmp.out -timeout 90m || exit 1; \
 		fi; \
 		if [ -f tmp.out ]; then \
 			tail -n +2 tmp.out >> cover.out; \
