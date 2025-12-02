@@ -20,8 +20,6 @@ deps:
 		go install github.com/pierrre/gotestcover@latest; \
 	fi
 
-	ls $(go env GOPATH)/bin | grep gotestcover
-
 	@if ! command -v $(LINT_BIN) >/dev/null || ! golangci-lint --version 2>/dev/null | grep -q "$(LINT_VERSION)"; then \
 		echo "Installing golangci-lint $(LINT_VERSION) ..."; \
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
