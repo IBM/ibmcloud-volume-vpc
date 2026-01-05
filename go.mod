@@ -1,10 +1,10 @@
 module github.com/IBM/ibmcloud-volume-vpc
 
-go 1.23.10
+go 1.25.3
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.2.16
+	github.com/IBM/ibmcloud-volume-interface v1.2.18
 	github.com/IBM/secret-common-lib v1.1.14
 	github.com/IBM/secret-utils-lib v1.1.15
 	github.com/fatih/structs v1.1.0
@@ -15,9 +15,9 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.38.0
-	k8s.io/api v0.32.8
-	k8s.io/apimachinery v0.32.8
-	k8s.io/client-go v0.32.8
+	k8s.io/api v0.32.10
+	k8s.io/apimachinery v0.32.10
+	k8s.io/client-go v0.32.10
 )
 
 require (

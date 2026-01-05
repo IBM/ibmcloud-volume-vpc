@@ -56,7 +56,11 @@ test:
 			echo "Running $$pkg without coverpkg to avoid hang"; \
 			go test -v $$pkg -coverprofile=tmp.out -timeout 90m || exit 1; \
 		else \
-			go test -v $$pkg -coverpkg=./... -coverprofile=tmp.out -timeout 90m || exit 1; \
+			if go tool covdata >/dev/null 2>&1; then \
+				go test -v $$pkg -coverpkg=./... -coverprofile=tmp.out -timeout 90m || exit 1; \
+			else \
+				go test -v $$pkg -coverprofile=tmp.out -timeout 90m || exit 1; \
+			fi; \
 		fi; \
 		if [ -f tmp.out ]; then \
 			tail -n +2 tmp.out >> cover.out; \
@@ -67,7 +71,11 @@ test:
 .PHONY: coverage
 coverage:
 	go tool cover -html=cover.out -o=cover.html
-	./scripts/calculateCoverage.sh
+	@if [ -f cover.html ]; then \
+		./scripts/calculateCoverage.sh; \
+	else \
+		echo "cover.html not found, skipping coverage calculation"; \
+	fi
 
 .PHONY: vet
 vet:

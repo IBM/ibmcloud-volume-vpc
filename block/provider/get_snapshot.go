@@ -25,7 +25,7 @@ import (
 )
 
 // GetSnapshot get snapshot
-func (vpcs *VPCSession) GetSnapshot(snapshotID string) (*provider.Snapshot, error) {
+func (vpcs *VPCSession) GetSnapshot(snapshotID string, _ ...string) (*provider.Snapshot, error) {
 	vpcs.Logger.Info("Entry GetSnapshot", zap.Reflect("SnapshotID", snapshotID))
 	defer vpcs.Logger.Info("Exit GetSnapshot", zap.Reflect("SnapshotID", snapshotID))
 
@@ -42,26 +42,28 @@ func (vpcs *VPCSession) GetSnapshot(snapshotID string) (*provider.Snapshot, erro
 		return nil, userError.GetUserError("SnapshotIDNotFound", err, snapshotID)
 	}
 
-	vpcs.Logger.Info("Successfully retrieved snpashot details from VPC backend", zap.Reflect("snapshotDetails", snapshot))
+	vpcs.Logger.Info("Successfully retrieved snapshot details from VPC backend",
+		zap.Reflect("snapshotDetails", snapshot))
+
 	snapshotResponse := FromProviderToLibSnapshot(snapshot, vpcs.Logger)
 	vpcs.Logger.Info("SnapshotResponse", zap.Reflect("snapshotResponse", snapshotResponse))
-	return snapshotResponse, err
+	return snapshotResponse, nil
 }
 
 // GetSnapshotByName ...
-func (vpcs *VPCSession) GetSnapshotByName(name string) (respSnap *provider.Snapshot, err error) {
+func (vpcs *VPCSession) GetSnapshotByName(name string, _ ...string) (*provider.Snapshot, error) {
 	vpcs.Logger.Debug("Entry of GetSnapshotByName method...")
 	defer vpcs.Logger.Debug("Exit from GetSnapshotByName method...")
 
 	vpcs.Logger.Info("Basic validation for snapshot Name...", zap.Reflect("SnapshotName", name))
 	if len(name) <= 0 {
-		err = userError.GetUserError("InvalidSnapshotName", nil, name)
-		return
+		return nil, userError.GetUserError("InvalidSnapshotName", nil, name)
 	}
 
 	vpcs.Logger.Info("Getting snapshot details from VPC provider...", zap.Reflect("SnapshotName", name))
 
 	var snapshot *models.Snapshot
+	var err error
 	err = retry(vpcs.Logger, func() error {
 		snapshot, err = vpcs.Apiclient.SnapshotService().GetSnapshotByName(name, vpcs.Logger)
 		return err
@@ -71,8 +73,10 @@ func (vpcs *VPCSession) GetSnapshotByName(name string) (respSnap *provider.Snaps
 		return nil, userError.GetUserError("StorageFindFailedWithSnapshotName", err, snapshot)
 	}
 
-	vpcs.Logger.Info("Successfully retrieved snpashot details from VPC backend", zap.Reflect("snapshotDetails", snapshot))
+	vpcs.Logger.Info("Successfully retrieved snapshot details from VPC backend",
+		zap.Reflect("snapshotDetails", snapshot))
+
 	snapshotResponse := FromProviderToLibSnapshot(snapshot, vpcs.Logger)
 	vpcs.Logger.Info("SnapshotResponse", zap.Reflect("snapshotResponse", snapshotResponse))
-	return snapshotResponse, err
+	return snapshotResponse, nil
 }
