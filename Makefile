@@ -67,7 +67,7 @@ test:
 .PHONY: coverage
 coverage:
 	go tool cover -html=cover.out -o=cover.html
-	./scripts/calculateCoverage.sh;
+	./scripts/calculateCoverage.sh
 
 
 .PHONY: vet
