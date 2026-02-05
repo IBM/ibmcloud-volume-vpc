@@ -15,9 +15,9 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.38.0
-	k8s.io/api v0.32.8
-	k8s.io/apimachinery v0.32.8
-	k8s.io/client-go v0.32.8
+	k8s.io/api v0.32.10
+	k8s.io/apimachinery v0.32.10
+	k8s.io/client-go v0.32.10
 )
 
 require (
@@ -88,3 +88,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.2 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+replace github.com/IBM/ibmcloud-volume-interface => github.com/MahanteshR12/ibmcloud-volume-interface v0.0.0-20260205081135-71b1d01581c5
