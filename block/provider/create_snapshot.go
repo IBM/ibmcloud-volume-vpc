@@ -42,17 +42,10 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotMetadata p
 	}
 	var snapshotResult *models.Snapshot
 
-	// cluster's resource group
-	snapshotRG := vpcs.Config.VPCConfig.G2ResourceGroupID
-
-	// volumeSnapshotClass defined resource group
-	if rg, ok := snapshotClassParams["resourceGroupID"]; ok && rg != "" {
-		snapshotRG = rg
-
-		vpcs.Logger.Info("Using snapshot RG from VolumeSnapshotClass", zap.String("snapshotRG", snapshotRG))
+	snapshotRG, ok := snapshotClassParams[ResourceGroup]
+	if !ok || len(snapshotRG) == 0 {
+		return nil, userError.GetUserError("EmptyResourceGroup", nil)
 	}
-
-	vpcs.Logger.Info("Final snapshot RG selected", zap.String("snapshotRG", snapshotRG))
 
 	snapshotTemplate := &models.Snapshot{
 		Name: snapshotMetadata.Name,
