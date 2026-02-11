@@ -49,7 +49,6 @@ func (vpcs *VPCSession) CreateSnapshot(sourceVolumeID string, snapshotMetadata p
 	if rg, ok := snapshotClassParams["resourceGroupID"]; ok && rg != "" {
 		snapshotRG = rg
 
-		// TODO: add cluster validation condition
 		vpcs.Logger.Info("Using snapshot RG from VolumeSnapshotClass", zap.String("snapshotRG", snapshotRG))
 	}
 
