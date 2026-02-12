@@ -205,7 +205,7 @@ func TestCreateSnapshot(t *testing.T) {
 			} else {
 				snapshotService.CreateSnapshotReturns(testcase.baseSnapshot, nil)
 			}
-			snapshot, err := vpcs.CreateSnapshot(testcase.sourceVolumeID, *testcase.providerSnapshotParameters, nil)
+			snapshot, err := vpcs.CreateSnapshot(testcase.sourceVolumeID, *testcase.providerSnapshotParameters)
 			logger.Info("snapshot details", zap.Reflect("snapshot", snapshot))
 
 			if testcase.expectedErr != "" {

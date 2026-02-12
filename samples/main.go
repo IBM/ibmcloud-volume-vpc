@@ -178,14 +178,12 @@ func main() {
 			fmt.Printf("Please enter snapshot Name: ")
 			_, _ = fmt.Scanf("%s", &snapshotName)
 
-			snapshotClassParams := make(map[string]string)
-
-			snapshotMetadata := provider.SnapshotParameters{}
-			snapshotMetadata.Name = snapshotName
+			snapshotParams := provider.SnapshotParameters{}
+			snapshotParams.Name = snapshotName
 			tags := make(map[string]string)
 			tags["tag1"] = "snapshot-tag1"
-			snapshotMetadata.SnapshotTags = tags
-			snapshot, errr := sess.CreateSnapshot(volumeID, snapshotMetadata, snapshotClassParams)
+			snapshotParams.SnapshotTags = tags
+			snapshot, errr := sess.CreateSnapshot(volumeID, snapshotParams)
 			if errr == nil {
 				ctxLogger.Info("Successfully created snapshot on ================>", zap.Reflect("SourceVolumeID", volumeID))
 				ctxLogger.Info("Snapshot details: ", zap.Reflect("Snapshot", snapshot))
