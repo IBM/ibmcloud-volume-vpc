@@ -78,11 +78,12 @@ type SnapshotManager struct {
 		result1 *models.Snapshot
 		result2 error
 	}
-	GetSnapshotByNameStub        func(string, *zap.Logger) (*models.Snapshot, error)
+	GetSnapshotByNameStub        func(string, string, *zap.Logger) (*models.Snapshot, error)
 	getSnapshotByNameMutex       sync.RWMutex
 	getSnapshotByNameArgsForCall []struct {
 		arg1 string
-		arg2 *zap.Logger
+		arg2 string
+		arg3 *zap.Logger
 	}
 	getSnapshotByNameReturns struct {
 		result1 *models.Snapshot
@@ -461,19 +462,20 @@ func (fake *SnapshotManager) GetSnapshotReturnsOnCall(i int, result1 *models.Sna
 	}{result1, result2}
 }
 
-func (fake *SnapshotManager) GetSnapshotByName(arg1 string, arg2 *zap.Logger) (*models.Snapshot, error) {
+func (fake *SnapshotManager) GetSnapshotByName(arg1 string, arg2 string, arg3 *zap.Logger) (*models.Snapshot, error) {
 	fake.getSnapshotByNameMutex.Lock()
 	ret, specificReturn := fake.getSnapshotByNameReturnsOnCall[len(fake.getSnapshotByNameArgsForCall)]
 	fake.getSnapshotByNameArgsForCall = append(fake.getSnapshotByNameArgsForCall, struct {
 		arg1 string
-		arg2 *zap.Logger
-	}{arg1, arg2})
+		arg2 string
+		arg3 *zap.Logger
+	}{arg1, arg2, arg3})
 	stub := fake.GetSnapshotByNameStub
 	fakeReturns := fake.getSnapshotByNameReturns
 	fake.recordInvocation("GetSnapshotByName", []interface{}{arg1, arg2})
 	fake.getSnapshotByNameMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -487,17 +489,17 @@ func (fake *SnapshotManager) GetSnapshotByNameCallCount() int {
 	return len(fake.getSnapshotByNameArgsForCall)
 }
 
-func (fake *SnapshotManager) GetSnapshotByNameCalls(stub func(string, *zap.Logger) (*models.Snapshot, error)) {
+func (fake *SnapshotManager) GetSnapshotByNameCalls(stub func(string, string, *zap.Logger) (*models.Snapshot, error)) {
 	fake.getSnapshotByNameMutex.Lock()
 	defer fake.getSnapshotByNameMutex.Unlock()
 	fake.GetSnapshotByNameStub = stub
 }
 
-func (fake *SnapshotManager) GetSnapshotByNameArgsForCall(i int) (string, *zap.Logger) {
+func (fake *SnapshotManager) GetSnapshotByNameArgsForCall(i int) (string, string, *zap.Logger) {
 	fake.getSnapshotByNameMutex.RLock()
 	defer fake.getSnapshotByNameMutex.RUnlock()
 	argsForCall := fake.getSnapshotByNameArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *SnapshotManager) GetSnapshotByNameReturns(result1 *models.Snapshot, result2 error) {

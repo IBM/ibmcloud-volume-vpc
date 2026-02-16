@@ -544,7 +544,12 @@ func main() {
 			snapshotName := ""
 			fmt.Printf("Please enter snapshot Name to get the details: ")
 			_, _ = fmt.Scanf("%s", &snapshotName)
-			snapshotobj1, er11 := sess.GetSnapshotByName(snapshotName)
+
+			resourceGroup := ""
+			fmt.Printf("Please enter resourceGroupID to get the details: ")
+			_, _ = fmt.Scanf("%s", &resourceGroup)
+
+			snapshotobj1, er11 := sess.GetSnapshotByName(snapshotName, resourceGroup)
 			if er11 == nil {
 				ctxLogger.Info("Successfully got VPC snapshot details ================>", zap.Reflect("SnapshotDetail", snapshotobj1))
 			} else {
