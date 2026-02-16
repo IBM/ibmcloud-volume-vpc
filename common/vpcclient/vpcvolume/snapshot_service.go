@@ -24,6 +24,8 @@ import (
 )
 
 // SnapshotManager operations
+//
+//go:generate counterfeiter -o fakes/snapshot.go --fake-name SnapshotManager . SnapshotManager
 type SnapshotManager interface {
 	// Create the snapshot on the volume
 	CreateSnapshot(snapshotTemplate *models.Snapshot, ctxLogger *zap.Logger) (*models.Snapshot, error)

@@ -472,7 +472,7 @@ func (fake *SnapshotManager) GetSnapshotByName(arg1 string, arg2 string, arg3 *z
 	}{arg1, arg2, arg3})
 	stub := fake.GetSnapshotByNameStub
 	fakeReturns := fake.getSnapshotByNameReturns
-	fake.recordInvocation("GetSnapshotByName", []interface{}{arg1, arg2})
+	fake.recordInvocation("GetSnapshotByName", []interface{}{arg1, arg2, arg3})
 	fake.getSnapshotByNameMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3)
@@ -728,24 +728,6 @@ func (fake *SnapshotManager) SetSnapshotTagReturnsOnCall(i int, result1 error) {
 func (fake *SnapshotManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.checkSnapshotTagMutex.RLock()
-	defer fake.checkSnapshotTagMutex.RUnlock()
-	fake.createSnapshotMutex.RLock()
-	defer fake.createSnapshotMutex.RUnlock()
-	fake.deleteSnapshotMutex.RLock()
-	defer fake.deleteSnapshotMutex.RUnlock()
-	fake.deleteSnapshotTagMutex.RLock()
-	defer fake.deleteSnapshotTagMutex.RUnlock()
-	fake.getSnapshotMutex.RLock()
-	defer fake.getSnapshotMutex.RUnlock()
-	fake.getSnapshotByNameMutex.RLock()
-	defer fake.getSnapshotByNameMutex.RUnlock()
-	fake.listSnapshotTagsMutex.RLock()
-	defer fake.listSnapshotTagsMutex.RUnlock()
-	fake.listSnapshotsMutex.RLock()
-	defer fake.listSnapshotsMutex.RUnlock()
-	fake.setSnapshotTagMutex.RLock()
-	defer fake.setSnapshotTagMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
