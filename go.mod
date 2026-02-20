@@ -4,7 +4,7 @@ go 1.23.10
 
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v0.6.7
-	github.com/IBM/ibmcloud-volume-interface v1.2.18
+	github.com/IBM/ibmcloud-volume-interface v1.2.19
 	github.com/IBM/secret-common-lib v1.1.14
 	github.com/IBM/secret-utils-lib v1.1.15
 	github.com/fatih/structs v1.1.0
@@ -88,5 +88,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.2 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
-
-replace github.com/IBM/ibmcloud-volume-interface => github.com/MahanteshR12/ibmcloud-volume-interface v0.0.0-20260219092732-50b8d42eb592
