@@ -177,12 +177,13 @@ func main() {
 			_, _ = fmt.Scanf("%s", &volumeID)
 			fmt.Printf("Please enter snapshot Name: ")
 			_, _ = fmt.Scanf("%s", &snapshotName)
-			snapshotRequest := provider.SnapshotParameters{}
-			snapshotRequest.Name = snapshotName
+
+			snapshotParams := provider.SnapshotParameters{}
+			snapshotParams.Name = snapshotName
 			tags := make(map[string]string)
 			tags["tag1"] = "snapshot-tag1"
-			snapshotRequest.SnapshotTags = tags
-			snapshot, errr := sess.CreateSnapshot(volumeID, snapshotRequest)
+			snapshotParams.SnapshotTags = tags
+			snapshot, errr := sess.CreateSnapshot(volumeID, snapshotParams)
 			if errr == nil {
 				ctxLogger.Info("Successfully created snapshot on ================>", zap.Reflect("SourceVolumeID", volumeID))
 				ctxLogger.Info("Snapshot details: ", zap.Reflect("Snapshot", snapshot))
@@ -543,7 +544,12 @@ func main() {
 			snapshotName := ""
 			fmt.Printf("Please enter snapshot Name to get the details: ")
 			_, _ = fmt.Scanf("%s", &snapshotName)
-			snapshotobj1, er11 := sess.GetSnapshotByName(snapshotName)
+
+			resourceGroup := ""
+			fmt.Printf("Please enter resourceGroupID to get the details: ")
+			_, _ = fmt.Scanf("%s", &resourceGroup)
+
+			snapshotobj1, er11 := sess.GetSnapshotByName(snapshotName, resourceGroup)
 			if er11 == nil {
 				ctxLogger.Info("Successfully got VPC snapshot details ================>", zap.Reflect("SnapshotDetail", snapshotobj1))
 			} else {
