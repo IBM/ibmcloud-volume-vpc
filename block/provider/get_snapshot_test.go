@@ -202,7 +202,7 @@ func TestGetSnapshotByName(t *testing.T) {
 			} else {
 				snapshotService.GetSnapshotByNameReturns(testcase.baseSnapshot, nil)
 			}
-			snapshot, err := vpcs.GetSnapshotByName(testcase.snapshotName)
+			snapshot, err := vpcs.GetSnapshotByName(testcase.snapshotName, "adsaasas")
 			logger.Info("Snapshot details", zap.Reflect("volume", snapshot))
 
 			if testcase.expectedErr != "" {

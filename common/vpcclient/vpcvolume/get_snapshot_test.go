@@ -151,7 +151,7 @@ func TestGetSnapshotByName(t *testing.T) {
 			logger.Info("Test case being executed", zap.Reflect("testcase", testcase.name))
 
 			snapshotService := vpcvolume.NewSnapshotManager(client)
-			snapshot, err := snapshotService.GetSnapshotByName("snap1", logger)
+			snapshot, err := snapshotService.GetSnapshotByName("snap1", "rg1", logger)
 			logger.Info("Snapshot details", zap.Reflect("snapshot", snapshot))
 
 			if testcase.verify != nil {
