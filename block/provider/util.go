@@ -29,26 +29,26 @@ import (
 )
 
 // maxRetryAttempt ...
-var maxRetryAttempt = 10
+var maxRetryAttempt = 0
 
 // minRetryAttempt ...
-var minRetryAttempt = 3
+var minRetryAttempt = 0
 
 // maxRetryGap ...
-var maxRetryGap = 60
+var maxRetryGap = 0
 
 // minVPCRetryGap ...
-var minVPCRetryGap = 3
+var minVPCRetryGap = 0
 
 // minVPCRetryGapAttempt ...
-var minVPCRetryGapAttempt = 3
+var minVPCRetryGapAttempt = 0
 
 // maxRetryAttempt ...
-var maxVPCRetryAttempt = 46
+var maxVPCRetryAttempt = 0
 
 // ConstantRetryGap ...
 const (
-	ConstantRetryGap        = 10 // seconds
+	ConstantRetryGap        = 0 // seconds
 	ConstMaxVPCRetryAttempt = 46
 	ConstMinVPCRetryGap     = 3 //seconds
 	SnapshotIDNotFound      = "snapshot_id_not_found"
