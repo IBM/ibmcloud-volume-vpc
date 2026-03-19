@@ -10,7 +10,7 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.2
-	github.com/golang/glog v1.2.1
+	github.com/golang/glog v1.2.4
 	github.com/onsi/gomega v1.35.1
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
