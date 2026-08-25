@@ -8,7 +8,6 @@ linters:
     - misspell
     - unconvert
     - unused
-    - gosimple
     - govet
     - staticcheck
   settings:
@@ -30,6 +29,18 @@ linters:
     goconst:
       min-len: 2
       min-occurrences: 2
+    staticcheck:
+      checks:
+        - all
+        - -ST1000
+        - -ST1003
+        - -ST1016
+        - -ST1020
+        - -ST1021
+        - -ST1022
+        - -QF1003
+        - -QF1004
+        - -QF1008
 
 formatters:
   enable:

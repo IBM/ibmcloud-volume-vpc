@@ -98,6 +98,7 @@ func TestClient(t *testing.T) {
 				ct := r.Header.Get("content-type")
 				assert.True(t, strings.HasPrefix(ct, "multipart/form-data"))
 
+				// #nosec G120 -- the test body is a fixed in-memory fixture.
 				err := r.ParseMultipartForm(2 << 10)
 				assert.NoError(t, err)
 
