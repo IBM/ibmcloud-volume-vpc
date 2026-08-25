@@ -88,4 +88,4 @@ require (
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
-replace github.com/IBM/ibmcloud-volume-interface => github.com/MahanteshR12/ibmcloud-volume-interface v0.0.0-20260624115602-bed31e736533
+replace github.com/IBM/ibmcloud-volume-interface => github.com/MahanteshR12/ibmcloud-volume-interface v0.0.0-20260825064340-7e1224006f15
