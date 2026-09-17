@@ -2,7 +2,7 @@
 GOPACKAGES=$(shell go list ./... | grep -v /vendor/ | grep -v /samples)
 GOFILES=$(shell find . -type f -name '*.go' -not -path "./vendor/*")
 ARCH = $(shell uname -m)
-LINT_VERSION="1.60.1"
+LINT_VERSION="1.64.8"
 
 GOPATH := $(shell go env GOPATH)
 # Use system golangci-lint if available, otherwise use GOPATH version
