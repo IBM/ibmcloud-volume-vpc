@@ -98,7 +98,7 @@ func TestClient(t *testing.T) {
 				ct := r.Header.Get("content-type")
 				assert.True(t, strings.HasPrefix(ct, "multipart/form-data"))
 
-				err := r.ParseMultipartForm(2 << 10)
+				err := r.ParseMultipartForm(2 << 10) //nolint:gosec // G120: test handler with bounded input
 				assert.NoError(t, err)
 
 				file, header, err := r.FormFile("file")
