@@ -27,17 +27,19 @@ issues:
     - EXC01
     - EXC02
 
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
 linters:
   # enable or disable analyzers by name
   enable:
-    - gofmt
     - gosec
     - whitespace
     - misspell
     - unconvert
-    - goimports
     - unused
-    - gosimple
     - govet
     - staticcheck
   disable-all: true
