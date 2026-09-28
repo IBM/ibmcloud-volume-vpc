@@ -2,6 +2,8 @@ module github.com/IBM/ibmcloud-volume-vpc
 
 go 1.26.3
 
+replace github.com/IBM/ibmcloud-volume-interface => /tmp/ibmcloud-volume-interface-local
+
 require (
 	github.com/IBM-Cloud/ibm-cloud-cli-sdk v1.10.5
 	github.com/IBM/ibmcloud-volume-interface v1.2.21
