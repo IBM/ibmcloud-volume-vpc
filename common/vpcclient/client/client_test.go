@@ -99,7 +99,7 @@ func TestClient(t *testing.T) {
 				assert.True(t, strings.HasPrefix(ct, "multipart/form-data"))
 
 				// #nosec G120 -- the test body is a fixed in-memory fixture.
-				err := r.ParseMultipartForm(2 << 10)
+				err := r.ParseMultipartForm(2 << 10) //nolint:gosec // G120: test handler with bounded input
 				assert.NoError(t, err)
 
 				file, header, err := r.FormFile("file")
