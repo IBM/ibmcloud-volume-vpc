@@ -91,6 +91,11 @@ func TestCreateGroupSnapshotCreatesConsistencyGroupAndListsMembers(t *testing.T)
 			Href:           "group-snapshot-href",
 			LifecycleState: snapshotReadyState,
 			CreatedAt:      &now,
+			// Match the VPC create response: member references precede full details.
+			Snapshots: []models.SnapshotReference{
+				{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
+				{ID: "snapshot-id-2", CRN: "snapshot-crn-2"},
+			},
 		},
 	}
 	snapshotService := &serviceFakes.SnapshotManager{}
@@ -206,12 +211,17 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 	testCases := []struct {
 		name            string
 		groupState      string
+		groupMembers    []models.SnapshotReference
 		snapshotDetails []*models.Snapshot
 		expectedReady   bool
 	}{
 		{
 			name:       "stable group with all stable members",
 			groupState: snapshotReadyState,
+			groupMembers: []models.SnapshotReference{
+				{ID: "snapshot-id-1"},
+				{ID: "snapshot-id-2"},
+			},
 			snapshotDetails: []*models.Snapshot{
 				{ID: "snapshot-id-1", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-1"}},
 				{ID: "snapshot-id-2", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-2"}},
@@ -221,6 +231,10 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 		{
 			name:       "stable group with a pending member",
 			groupState: snapshotReadyState,
+			groupMembers: []models.SnapshotReference{
+				{ID: "snapshot-id-1"},
+				{ID: "snapshot-id-2"},
+			},
 			snapshotDetails: []*models.Snapshot{
 				{ID: "snapshot-id-1", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-1"}},
 				{ID: "snapshot-id-2", LifecycleState: "pending", SourceVolume: &models.SourceVolume{ID: "volume-id-2"}},
@@ -230,14 +244,20 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 		{
 			name:       "pending group with stable members",
 			groupState: "pending",
+			groupMembers: []models.SnapshotReference{
+				{ID: "snapshot-id-1"},
+			},
 			snapshotDetails: []*models.Snapshot{
 				{ID: "snapshot-id-1", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-1"}},
 			},
 			expectedReady: false,
 		},
 		{
-			name:            "stable group without full member details",
-			groupState:      snapshotReadyState,
+			name:       "stable group without full member details",
+			groupState: snapshotReadyState,
+			groupMembers: []models.SnapshotReference{
+				{ID: "snapshot-id-1"},
+			},
 			snapshotDetails: nil,
 			expectedReady:   false,
 		},
@@ -248,9 +268,7 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 			group := &models.SnapshotConsistencyGroup{
 				ID:             "group-snapshot-id",
 				LifecycleState: tc.groupState,
-				Snapshots: []models.SnapshotReference{
-					{ID: "snapshot-id-1"},
-				},
+				Snapshots:      tc.groupMembers,
 			}
 
 			result := FromProviderToLibGroupSnapshot(group, tc.snapshotDetails, logger)
@@ -259,4 +277,110 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 			assert.Equal(t, tc.expectedReady, result.ReadyToUse)
 		})
 	}
+}
+
+// Partial member details must keep the group not ready until all members are available.
+func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+
+	group := &models.SnapshotConsistencyGroup{
+		ID:             "group-snapshot-id",
+		LifecycleState: snapshotReadyState,
+		Snapshots: []models.SnapshotReference{
+			{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
+			{ID: "snapshot-id-2", CRN: "snapshot-crn-2"},
+		},
+	}
+	// Only one of the two members has full details available.
+	snapshotDetails := []*models.Snapshot{
+		{
+			ID:             "snapshot-id-1",
+			CRN:            "snapshot-crn-1",
+			LifecycleState: snapshotReadyState,
+			SourceVolume:   &models.SourceVolume{ID: "volume-id-1"},
+		},
+	}
+
+	result := FromProviderToLibGroupSnapshot(group, snapshotDetails, logger)
+
+	require.NotNil(t, result)
+	require.Len(t, result.Snapshots, 2)
+	assert.Equal(t, "volume-id-1", result.Snapshots[0].VolumeID)
+	assert.Equal(t, "snapshot-crn-1", result.Snapshots[0].SnapshotCRN)
+	assert.True(t, result.Snapshots[0].ReadyToUse)
+	assert.Equal(t, "snapshot-id-2", result.Snapshots[1].SnapshotID)
+	assert.Empty(t, result.Snapshots[1].VolumeID)
+	assert.Equal(t, "snapshot-crn-2", result.Snapshots[1].SnapshotCRN)
+	assert.False(t, result.Snapshots[1].ReadyToUse)
+	assert.False(t, result.ReadyToUse)
+
+	// A later poll supplies the missing details and makes the same group ready.
+	snapshotDetails = append(snapshotDetails, &models.Snapshot{
+		ID:             "snapshot-id-2",
+		CRN:            "snapshot-crn-2",
+		LifecycleState: snapshotReadyState,
+		SourceVolume:   &models.SourceVolume{ID: "volume-id-2"},
+	})
+	result = FromProviderToLibGroupSnapshot(group, snapshotDetails, logger)
+	require.NotNil(t, result)
+	require.Len(t, result.Snapshots, 2)
+	assert.Equal(t, "volume-id-2", result.Snapshots[1].VolumeID)
+	assert.True(t, result.Snapshots[1].ReadyToUse)
+	assert.True(t, result.ReadyToUse)
+}
+
+// Missing source-volume details must not panic or produce a ready snapshot.
+func TestFromProviderToLibSnapshotNilSourceVolume(t *testing.T) {
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+
+	for _, tc := range []struct {
+		name         string
+		sourceVolume *models.SourceVolume
+	}{
+		{name: "nil source volume"},
+		{name: "empty source volume ID", sourceVolume: &models.SourceVolume{}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			result := FromProviderToLibSnapshot(&models.Snapshot{
+				ID:             "snapshot-id-1",
+				CRN:            "snapshot-crn-1",
+				LifecycleState: snapshotReadyState,
+				SourceVolume:   tc.sourceVolume,
+			}, logger)
+
+			require.NotNil(t, result)
+			assert.Empty(t, result.VolumeID)
+			assert.False(t, result.ReadyToUse)
+		})
+	}
+}
+
+// Deleting an already-missing group must return its backend error after one attempt.
+func TestGroupNotFoundSkipsRetry(t *testing.T) {
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+
+	// Allow an unwanted retry to be detected without leaking settings to other tests.
+	previousAttempts, previousGap := maxRetryAttempt, maxRetryGap
+	t.Cleanup(func() {
+		SetRetryParameters(previousAttempts, previousGap)
+	})
+	SetRetryParameters(2, 1)
+
+	notFoundErr := &models.Error{
+		Errors: []models.ErrorItem{
+			{Code: models.ErrorCode("snapshot_consistency_groups_not_found")},
+		},
+	}
+
+	attempts := 0
+	err := retry(logger, func() error {
+		attempts++
+		return notFoundErr
+	})
+
+	assert.Equal(t, 1, attempts, "retry must stop after the first attempt for a skip-listed error code")
+	assert.Same(t, notFoundErr, err)
 }
