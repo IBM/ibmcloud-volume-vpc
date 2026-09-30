@@ -10,6 +10,16 @@ import (
 )
 
 type RegionalAPI struct {
+	BMSVolumeAttachServiceStub        func() instances.VolumeAttachManager
+	bMSVolumeAttachServiceMutex       sync.RWMutex
+	bMSVolumeAttachServiceArgsForCall []struct {
+	}
+	bMSVolumeAttachServiceReturns struct {
+		result1 instances.VolumeAttachManager
+	}
+	bMSVolumeAttachServiceReturnsOnCall map[int]struct {
+		result1 instances.VolumeAttachManager
+	}
 	IKSVolumeAttachServiceStub        func() instances.VolumeAttachManager
 	iKSVolumeAttachServiceMutex       sync.RWMutex
 	iKSVolumeAttachServiceArgsForCall []struct {
@@ -63,6 +73,59 @@ type RegionalAPI struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *RegionalAPI) BMSVolumeAttachService() instances.VolumeAttachManager {
+	fake.bMSVolumeAttachServiceMutex.Lock()
+	ret, specificReturn := fake.bMSVolumeAttachServiceReturnsOnCall[len(fake.bMSVolumeAttachServiceArgsForCall)]
+	fake.bMSVolumeAttachServiceArgsForCall = append(fake.bMSVolumeAttachServiceArgsForCall, struct {
+	}{})
+	stub := fake.BMSVolumeAttachServiceStub
+	fakeReturns := fake.bMSVolumeAttachServiceReturns
+	fake.recordInvocation("BMSVolumeAttachService", []interface{}{})
+	fake.bMSVolumeAttachServiceMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *RegionalAPI) BMSVolumeAttachServiceCallCount() int {
+	fake.bMSVolumeAttachServiceMutex.RLock()
+	defer fake.bMSVolumeAttachServiceMutex.RUnlock()
+	return len(fake.bMSVolumeAttachServiceArgsForCall)
+}
+
+func (fake *RegionalAPI) BMSVolumeAttachServiceCalls(stub func() instances.VolumeAttachManager) {
+	fake.bMSVolumeAttachServiceMutex.Lock()
+	defer fake.bMSVolumeAttachServiceMutex.Unlock()
+	fake.BMSVolumeAttachServiceStub = stub
+}
+
+func (fake *RegionalAPI) BMSVolumeAttachServiceReturns(result1 instances.VolumeAttachManager) {
+	fake.bMSVolumeAttachServiceMutex.Lock()
+	defer fake.bMSVolumeAttachServiceMutex.Unlock()
+	fake.BMSVolumeAttachServiceStub = nil
+	fake.bMSVolumeAttachServiceReturns = struct {
+		result1 instances.VolumeAttachManager
+	}{result1}
+}
+
+func (fake *RegionalAPI) BMSVolumeAttachServiceReturnsOnCall(i int, result1 instances.VolumeAttachManager) {
+	fake.bMSVolumeAttachServiceMutex.Lock()
+	defer fake.bMSVolumeAttachServiceMutex.Unlock()
+	fake.BMSVolumeAttachServiceStub = nil
+	if fake.bMSVolumeAttachServiceReturnsOnCall == nil {
+		fake.bMSVolumeAttachServiceReturnsOnCall = make(map[int]struct {
+			result1 instances.VolumeAttachManager
+		})
+	}
+	fake.bMSVolumeAttachServiceReturnsOnCall[i] = struct {
+		result1 instances.VolumeAttachManager
+	}{result1}
 }
 
 func (fake *RegionalAPI) IKSVolumeAttachService() instances.VolumeAttachManager {
@@ -341,6 +404,8 @@ func (fake *RegionalAPI) VolumeServiceReturnsOnCall(i int, result1 vpcvolume.Vol
 func (fake *RegionalAPI) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.bMSVolumeAttachServiceMutex.RLock()
+	defer fake.bMSVolumeAttachServiceMutex.RUnlock()
 	fake.iKSVolumeAttachServiceMutex.RLock()
 	defer fake.iKSVolumeAttachServiceMutex.RUnlock()
 	fake.loginMutex.RLock()
