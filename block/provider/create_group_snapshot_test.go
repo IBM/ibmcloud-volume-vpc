@@ -23,6 +23,7 @@ import (
 
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	providerError "github.com/IBM/ibmcloud-volume-interface/lib/utils"
+	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	serviceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
@@ -30,21 +31,27 @@ import (
 	"go.uber.org/zap"
 )
 
+func init() {
+	userError.MessagesEn = userError.InitMessages()
+}
+
 type fakeSnapshotConsistencyGroupManager struct {
+	createCalls, deleteCalls, getCalls, getByNameCalls int
+
 	createRequest *models.SnapshotConsistencyGroupRequest
-	createResult  *models.SnapshotConsistencyGroup
+	createResult  *models.SnapshotConsistencyGroupResponse
 	createErr     error
 
 	deleteGroupID string
 	deleteErr     error
 
 	getGroupID string
-	getResult  *models.SnapshotConsistencyGroup
+	getResult  *models.SnapshotConsistencyGroupResponse
 	getErr     error
 
 	getByNameName            string
 	getByNameResourceGroupID string
-	getByNameResult          *models.SnapshotConsistencyGroup
+	getByNameResult          *models.SnapshotConsistencyGroupResponse
 	getByNameErr             error
 
 	listFilters *models.ListSnapshotConsistencyGroupFilters
@@ -52,22 +59,26 @@ type fakeSnapshotConsistencyGroupManager struct {
 	listErr     error
 }
 
-func (fake *fakeSnapshotConsistencyGroupManager) CreateSnapshotConsistencyGroup(req *models.SnapshotConsistencyGroupRequest, logger *zap.Logger) (*models.SnapshotConsistencyGroup, error) {
+func (fake *fakeSnapshotConsistencyGroupManager) CreateSnapshotConsistencyGroup(req *models.SnapshotConsistencyGroupRequest, logger *zap.Logger) (*models.SnapshotConsistencyGroupResponse, error) {
+	fake.createCalls++
 	fake.createRequest = req
 	return fake.createResult, fake.createErr
 }
 
 func (fake *fakeSnapshotConsistencyGroupManager) DeleteSnapshotConsistencyGroup(groupID string, logger *zap.Logger) error {
+	fake.deleteCalls++
 	fake.deleteGroupID = groupID
 	return fake.deleteErr
 }
 
-func (fake *fakeSnapshotConsistencyGroupManager) GetSnapshotConsistencyGroup(groupID string, logger *zap.Logger) (*models.SnapshotConsistencyGroup, error) {
+func (fake *fakeSnapshotConsistencyGroupManager) GetSnapshotConsistencyGroup(groupID string, logger *zap.Logger) (*models.SnapshotConsistencyGroupResponse, error) {
+	fake.getCalls++
 	fake.getGroupID = groupID
 	return fake.getResult, fake.getErr
 }
 
-func (fake *fakeSnapshotConsistencyGroupManager) GetSnapshotConsistencyGroupByName(name, resourceGroupID string, logger *zap.Logger) (*models.SnapshotConsistencyGroup, error) {
+func (fake *fakeSnapshotConsistencyGroupManager) GetSnapshotConsistencyGroupByName(name, resourceGroupID string, logger *zap.Logger) (*models.SnapshotConsistencyGroupResponse, error) {
+	fake.getByNameCalls++
 	fake.getByNameName = name
 	fake.getByNameResourceGroupID = resourceGroupID
 	return fake.getByNameResult, fake.getByNameErr
@@ -76,6 +87,27 @@ func (fake *fakeSnapshotConsistencyGroupManager) GetSnapshotConsistencyGroupByNa
 func (fake *fakeSnapshotConsistencyGroupManager) ListSnapshotConsistencyGroups(limit int, start string, filters *models.ListSnapshotConsistencyGroupFilters, logger *zap.Logger) (*models.SnapshotConsistencyGroupList, error) {
 	fake.listFilters = filters
 	return fake.listResult, fake.listErr
+}
+
+// limitRetries caps the provider retry loop for one test and restores the previous
+// values afterwards. Without it, a retryable backend error sleeps 10s between attempts.
+func limitRetries(t *testing.T, attempts int) {
+	t.Helper()
+	previousAttempts, previousGap := maxRetryAttempt, maxRetryGap
+	t.Cleanup(func() { SetRetryParameters(previousAttempts, previousGap) })
+	SetRetryParameters(attempts, 1)
+}
+
+// requireProviderError asserts that err is a provider Message with the given reason code,
+// a description containing wantDescription, and a backend error containing wantBackend.
+func requireProviderError(t *testing.T, err error, wantCode, wantDescription, wantBackend string) {
+	t.Helper()
+	require.Error(t, err)
+	var userMsg providerError.Message
+	require.ErrorAs(t, err, &userMsg)
+	assert.Equal(t, wantCode, userMsg.Code)
+	assert.Contains(t, userMsg.Description, wantDescription)
+	assert.Contains(t, userMsg.BackendError, wantBackend)
 }
 
 func TestCreateGroupSnapshotCreatesConsistencyGroupAndListsMembers(t *testing.T) {
@@ -87,7 +119,7 @@ func TestCreateGroupSnapshotCreatesConsistencyGroupAndListsMembers(t *testing.T)
 
 	now := time.Now()
 	groupService := &fakeSnapshotConsistencyGroupManager{
-		createResult: &models.SnapshotConsistencyGroup{
+		createResult: &models.SnapshotConsistencyGroupResponse{
 			ID:             "group-snapshot-id",
 			CRN:            "group-snapshot-crn",
 			Href:           "group-snapshot-href",
@@ -145,102 +177,47 @@ func TestCreateGroupSnapshotCreatesConsistencyGroupAndListsMembers(t *testing.T)
 	assert.Equal(t, "group-snapshot-id", filters.SnapshotConsistencyGroupID)
 }
 
-func TestDeleteGroupSnapshotDeletesConsistencyGroupByID(t *testing.T) {
-	logger, teardown := GetTestLogger(t)
-	defer teardown()
-
-	vpcs, uc, _, err := GetTestOpenSession(t, logger)
-	require.NoError(t, err)
-
-	groupService := &fakeSnapshotConsistencyGroupManager{}
-	uc.SnapshotConsistencyGroupServiceReturns(groupService)
-
-	err = vpcs.DeleteGroupSnapshot("group-snapshot-id", []string{"snapshot-id-1", "snapshot-id-2"})
-
-	require.NoError(t, err)
-	assert.Equal(t, "group-snapshot-id", groupService.deleteGroupID)
-}
-
-func TestGetGroupSnapshotGetsConsistencyGroupAndListsMembers(t *testing.T) {
-	logger, teardown := GetTestLogger(t)
-	defer teardown()
-
-	vpcs, uc, _, err := GetTestOpenSession(t, logger)
-	require.NoError(t, err)
-
-	groupService := &fakeSnapshotConsistencyGroupManager{
-		getResult: &models.SnapshotConsistencyGroup{
-			ID:             "group-snapshot-id",
-			CRN:            "group-snapshot-crn",
-			LifecycleState: snapshotReadyState,
-			Snapshots: []models.SnapshotReference{
-				{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
-			},
+// groupSnapshotOperations are the three provider calls that end in getGroupSnapshotWithMembers.
+// Tests of the shared member lookup run every case through each of them.
+var groupSnapshotOperations = []struct {
+	name string
+	call func(*VPCSession) (*provider.GroupSnapshot, error)
+}{
+	{
+		name: "create",
+		call: func(session *VPCSession) (*provider.GroupSnapshot, error) {
+			return session.CreateGroupSnapshot([]string{"volume-id-1", "volume-id-2"}, provider.GroupSnapshotParameters{
+				Name: "group-snapshot-name", ResourceGroup: "resource-group-id",
+			})
 		},
-	}
-	snapshotService := &serviceFakes.SnapshotManager{}
-	snapshotService.ListSnapshotsReturns(&models.SnapshotList{
-		Snapshots: []*models.Snapshot{
-			{
-				ID:              "snapshot-id-1",
-				CRN:             "snapshot-crn-1",
-				MinimumCapacity: 10,
-				LifecycleState:  snapshotReadyState,
-				SourceVolume:    &models.SourceVolume{ID: "volume-id-1"},
-			},
+	},
+	{
+		name: "get by ID",
+		call: func(session *VPCSession) (*provider.GroupSnapshot, error) {
+			return session.GetGroupSnapshot("group-snapshot-id")
 		},
-	}, nil)
-	uc.SnapshotConsistencyGroupServiceReturns(groupService)
-	uc.SnapshotServiceReturns(snapshotService)
-
-	groupSnapshot, err := vpcs.GetGroupSnapshot("group-snapshot-id")
-
-	require.NoError(t, err)
-	require.NotNil(t, groupSnapshot)
-	assert.Equal(t, "group-snapshot-id", groupService.getGroupID)
-	assert.Equal(t, "group-snapshot-id", groupSnapshot.GroupSnapshotID)
-	assert.True(t, groupSnapshot.ReadyToUse)
-	require.Len(t, groupSnapshot.Snapshots, 1)
-	assert.Equal(t, "volume-id-1", groupSnapshot.Snapshots[0].VolumeID)
-	_, _, filters, _ := snapshotService.ListSnapshotsArgsForCall(0)
-	assert.Equal(t, "group-snapshot-id", filters.SnapshotConsistencyGroupID)
+	},
+	{
+		name: "get by name",
+		call: func(session *VPCSession) (*provider.GroupSnapshot, error) {
+			return session.GetGroupSnapshotByName("group-snapshot-name", "resource-group-id")
+		},
+	},
 }
 
 func TestGroupSnapshotMemberLookup(t *testing.T) {
-	operations := []struct {
-		name string
-		call func(*VPCSession) (*provider.GroupSnapshot, error)
-	}{
-		{
-			name: "create",
-			call: func(session *VPCSession) (*provider.GroupSnapshot, error) {
-				return session.CreateGroupSnapshot([]string{"volume-id-1", "volume-id-2"}, provider.GroupSnapshotParameters{
-					Name: "group-snapshot-name", ResourceGroup: "resource-group-id",
-				})
-			},
-		},
-		{
-			name: "get by ID",
-			call: func(session *VPCSession) (*provider.GroupSnapshot, error) {
-				return session.GetGroupSnapshot("group-snapshot-id")
-			},
-		},
-		{
-			name: "get by name",
-			call: func(session *VPCSession) (*provider.GroupSnapshot, error) {
-				return session.GetGroupSnapshotByName("group-snapshot-name", "resource-group-id")
-			},
-		},
-	}
+	operations := groupSnapshotOperations
 	fullMemberDetails := &models.SnapshotList{Snapshots: []*models.Snapshot{
 		{ID: "snapshot-id-1", CRN: "snapshot-crn-1", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-1"}},
 		{ID: "snapshot-id-2", CRN: "snapshot-crn-2", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-2"}},
 	}}
 	memberLookups := []struct {
-		name      string
-		result    *models.SnapshotList
-		err       error
-		wantReady bool
+		name           string
+		result         *models.SnapshotList
+		err            error
+		wantReady      bool
+		wantIncomplete bool
+		wantNilPage    bool
 	}{
 		{
 			name:      "full details",
@@ -278,9 +255,24 @@ func TestGroupSnapshotMemberLookup(t *testing.T) {
 			}},
 		},
 		{name: "transport error", err: errors.New("snapshot endpoint connection reset")},
-		{name: "no details returned"},
-		{name: "empty details returned", result: &models.SnapshotList{}},
-		{name: "partial details returned", result: &models.SnapshotList{Snapshots: fullMemberDetails.Snapshots[:1]}},
+		// A nil page is a bad backend response, not incomplete details, so it is a lookup failure.
+		{name: "nil page returned", wantNilPage: true},
+		{name: "empty details returned", result: &models.SnapshotList{}, wantIncomplete: true},
+		{name: "partial details returned", result: &models.SnapshotList{Snapshots: fullMemberDetails.Snapshots[:1]}, wantIncomplete: true},
+		{
+			name: "source volume missing from full details", wantIncomplete: true,
+			result: &models.SnapshotList{Snapshots: []*models.Snapshot{
+				{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
+				fullMemberDetails.Snapshots[1],
+			}},
+		},
+		{
+			name: "complete details but snapshots are not ready",
+			result: &models.SnapshotList{Snapshots: []*models.Snapshot{
+				{ID: "snapshot-id-1", CRN: "snapshot-crn-1", LifecycleState: "pending", SourceVolume: &models.SourceVolume{ID: "volume-id-1"}},
+				fullMemberDetails.Snapshots[1],
+			}},
+		},
 	}
 
 	for _, operation := range operations {
@@ -291,7 +283,7 @@ func TestGroupSnapshotMemberLookup(t *testing.T) {
 				session, client, _, err := GetTestOpenSession(t, logger)
 				require.NoError(t, err)
 
-				group := &models.SnapshotConsistencyGroup{
+				group := &models.SnapshotConsistencyGroupResponse{
 					ID: "group-snapshot-id", LifecycleState: snapshotReadyState,
 					Snapshots: []models.SnapshotReference{
 						{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
@@ -311,13 +303,20 @@ func TestGroupSnapshotMemberLookup(t *testing.T) {
 				require.Equal(t, 1, snapshotService.ListSnapshotsCallCount())
 				_, _, filters, _ := snapshotService.ListSnapshotsArgsForCall(0)
 				assert.Equal(t, group.ID, filters.SnapshotConsistencyGroupID)
-				if lookup.err != nil {
+				if lookup.err != nil || lookup.wantIncomplete || lookup.wantNilPage {
 					require.Error(t, err)
 					assert.Nil(t, response)
 					var memberLookupError providerError.Message
 					require.ErrorAs(t, err, &memberLookupError)
-					assert.Equal(t, "GroupSnapshotMemberLookupFailed", memberLookupError.Code)
-					assert.Equal(t, lookup.err.Error(), memberLookupError.BackendError)
+					if lookup.wantIncomplete {
+						assert.Equal(t, "GroupSnapshotMemberDetailsUnavailable", memberLookupError.Code)
+					} else if lookup.wantNilPage {
+						assert.Equal(t, "GroupSnapshotMemberLookupFailed", memberLookupError.Code)
+						assert.Contains(t, memberLookupError.BackendError, "empty snapshot page")
+					} else {
+						assert.Equal(t, "GroupSnapshotMemberLookupFailed", memberLookupError.Code)
+						assert.Equal(t, lookup.err.Error(), memberLookupError.BackendError)
+					}
 					assert.Contains(t, memberLookupError.Description, group.ID)
 
 					// Once the backend recovers, the next request can read the same group successfully.
@@ -338,16 +337,8 @@ func TestGroupSnapshotMemberLookup(t *testing.T) {
 				require.Len(t, response.Snapshots, 2)
 				assert.Equal(t, "snapshot-id-1", response.Snapshots[0].SnapshotID)
 				assert.Equal(t, "snapshot-id-2", response.Snapshots[1].SnapshotID)
-				if lookup.wantReady {
-					assert.Equal(t, "volume-id-1", response.Snapshots[0].VolumeID)
-					assert.Equal(t, "volume-id-2", response.Snapshots[1].VolumeID)
-				} else if lookup.result == nil || len(lookup.result.Snapshots) == 0 {
-					assert.Empty(t, response.Snapshots[0].VolumeID)
-					assert.Empty(t, response.Snapshots[1].VolumeID)
-				} else {
-					assert.Equal(t, "volume-id-1", response.Snapshots[0].VolumeID)
-					assert.Empty(t, response.Snapshots[1].VolumeID)
-				}
+				assert.Equal(t, "volume-id-1", response.Snapshots[0].VolumeID)
+				assert.Equal(t, "volume-id-2", response.Snapshots[1].VolumeID)
 			})
 		}
 	}
@@ -414,7 +405,7 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			group := &models.SnapshotConsistencyGroup{
+			group := &models.SnapshotConsistencyGroupResponse{
 				ID:             "group-snapshot-id",
 				LifecycleState: tc.groupState,
 				Snapshots:      tc.groupMembers,
@@ -433,7 +424,7 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
-	group := &models.SnapshotConsistencyGroup{
+	group := &models.SnapshotConsistencyGroupResponse{
 		ID:             "group-snapshot-id",
 		LifecycleState: snapshotReadyState,
 		Snapshots: []models.SnapshotReference{
@@ -532,4 +523,31 @@ func TestGroupNotFoundSkipsRetry(t *testing.T) {
 
 	assert.Equal(t, 1, attempts, "retry must stop after the first attempt for a skip-listed error code")
 	assert.Same(t, notFoundErr, err)
+}
+
+// A backend create failure must be wrapped as FailedToCreateGroupSnapshot, and the
+// member lookup must not run because no group was created.
+func TestCreateGroupSnapshotWrapsBackendError(t *testing.T) {
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+
+	vpcs, uc, _, err := GetTestOpenSession(t, logger)
+	require.NoError(t, err)
+	limitRetries(t, 1) // after the session opens: opening it resets the retry settings
+
+	groupService := &fakeSnapshotConsistencyGroupManager{createErr: &models.Error{Errors: []models.ErrorItem{
+		{Code: models.ErrorCode("snapshots_source_volume_not_found"), Status: "404 Not Found"},
+	}}}
+	snapshotService := &serviceFakes.SnapshotManager{}
+	uc.SnapshotConsistencyGroupServiceReturns(groupService)
+	uc.SnapshotServiceReturns(snapshotService)
+
+	result, err := vpcs.CreateGroupSnapshot([]string{"volume-id-1"}, provider.GroupSnapshotParameters{
+		Name: "group-snapshot-name", ResourceGroup: "resource-group-id",
+	})
+
+	assert.Nil(t, result)
+	requireProviderError(t, err, "FailedToCreateGroupSnapshot", "", "snapshots_source_volume_not_found")
+	assert.Equal(t, 1, groupService.createCalls)
+	assert.Equal(t, 0, snapshotService.ListSnapshotsCallCount())
 }

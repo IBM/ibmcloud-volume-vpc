@@ -444,7 +444,7 @@ func FromProviderToLibSnapshot(vpcSnapshot *models.Snapshot, logger *zap.Logger)
 
 // FromProviderToLibGroupSnapshot converts a VPC consistency group to the generic model.
 // A group is ready only when it is stable and every full member snapshot is ready.
-func FromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroup, snapshotDetails []*models.Snapshot, logger *zap.Logger) (libGroupSnapshot *provider.GroupSnapshot) {
+func FromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupResponse, snapshotDetails []*models.Snapshot, logger *zap.Logger) (libGroupSnapshot *provider.GroupSnapshot) {
 	logger.Debug("Entry of FromProviderToLibGroupSnapshot method...")
 	defer logger.Debug("Exit from FromProviderToLibGroupSnapshot method...")
 
@@ -453,7 +453,7 @@ func FromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroup, s
 		return
 	}
 
-	logger.Debug("GroupSnapshot details of VPC client", zap.Reflect("models.SnapshotConsistencyGroup", vpcGroup))
+	logger.Debug("GroupSnapshot details of VPC client", zap.Reflect("models.SnapshotConsistencyGroupResponse", vpcGroup))
 
 	var createdTime time.Time
 	if vpcGroup.CreatedAt != nil {
@@ -478,14 +478,17 @@ func FromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroup, s
 
 	// Keep every referenced member. Missing details leave a not-ready placeholder
 	// with no source volume ID, so CSI can retry instead of accepting a partial group.
+	libGroupSnapshot.Snapshots = make([]*provider.Snapshot, 0, len(vpcGroup.Snapshots))
 	for _, ref := range vpcGroup.Snapshots {
-		member := &provider.Snapshot{
-			SnapshotID:  ref.ID,
-			SnapshotCRN: ref.CRN,
-			VPC:         provider.VPC{Href: ref.Href},
-		}
+		var member *provider.Snapshot
 		if snap := detailsByID[ref.ID]; snap != nil {
 			member = FromProviderToLibSnapshot(snap, logger)
+		} else {
+			member = &provider.Snapshot{
+				SnapshotID:  ref.ID,
+				SnapshotCRN: ref.CRN,
+				VPC:         provider.VPC{Href: ref.Href},
+			}
 		}
 		if !member.ReadyToUse {
 			libGroupSnapshot.ReadyToUse = false

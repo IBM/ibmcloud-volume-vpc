@@ -244,7 +244,7 @@ func TestListSnapshots(t *testing.T) {
 				assert.Nil(t, err)
 			},
 		}, {
-			testCaseName: "Unexpected format of 'Next' parameter in ListVolumes response",
+			testCaseName: "Unexpected format of 'Next' parameter in ListSnapshots response",
 			snapshotList: &models.SnapshotList{
 				First: &models.HReference{Href: "https://eu-gb.iaas.cloud.ibm.com/v1/volumes?start=16f293bf-test-4bff-816f-e199c0c65db5\u0026limit=50"},
 				Next:  &models.HReference{Href: "https://eu-gb.iaas.cloud.ibm.com/v1/volumes?invalid=16f293bf-test-4bff-816f-e199c0c65db5\u0026limit=50"},
@@ -267,9 +267,11 @@ func TestListSnapshots(t *testing.T) {
 			},
 			limit: 1,
 			verify: func(t *testing.T, next_token string, snapshots *provider.SnapshotList, err error) {
-				assert.NotNil(t, snapshots.Snapshots)
-				assert.Equal(t, next_token, snapshots.Next)
-				assert.Nil(t, err)
+				// Invalid pagination metadata must fail, not look like the last page.
+				assert.Nil(t, snapshots)
+				if assert.Error(t, err) {
+					assert.Contains(t, err.Error(), "has no start token")
+				}
 			},
 		}, {
 			testCaseName: "Invalid limit value",
@@ -328,4 +330,78 @@ func TestListSnapshots(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNextSnapshotStart(t *testing.T) {
+	testCases := []struct {
+		name      string
+		list      *models.SnapshotList
+		wantStart string
+		wantErr   string // empty means no error
+	}{
+		{name: "nil list is the last page", list: nil},
+		{name: "no Next is the last page", list: &models.SnapshotList{}},
+		{
+			name:      "plain token",
+			list:      &models.SnapshotList{Next: &models.HReference{Href: "https://eu-gb.iaas.cloud.ibm.com/v1/snapshots?start=3e898aa7-ac71&limit=1&zone.name=eu-gb-1"}},
+			wantStart: "3e898aa7-ac71",
+		},
+		{
+			name:      "start is not the first query parameter",
+			list:      &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?limit=1&start=abc"}},
+			wantStart: "abc",
+		},
+		{
+			name:      "encoded token is decoded",
+			list:      &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?start=ab%2Bc%3D%3D&limit=1"}},
+			wantStart: "ab+c==",
+		},
+		{name: "empty href", list: &models.SnapshotList{Next: &models.HReference{}}, wantErr: "has no start token"},
+		{name: "malformed URL", list: &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?start=%zz"}}, wantErr: "invalid query"},
+		{name: "URL with an invalid host", list: &models.SnapshotList{Next: &models.HReference{Href: "http://[::1"}}, wantErr: "not a valid URL"},
+		{name: "no start parameter", list: &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?limit=1"}}, wantErr: "has no start token"},
+		{name: "empty start value", list: &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?start=&limit=1"}}, wantErr: "has no start token"},
+		{name: "start only in the path is not a token", list: &models.SnapshotList{Next: &models.HReference{Href: "https://host/start=abc"}}, wantErr: "has no start token"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			start, err := nextSnapshotStart(tc.list)
+			if tc.wantErr != "" {
+				if assert.Error(t, err) {
+					assert.Contains(t, err.Error(), tc.wantErr)
+				}
+				assert.Empty(t, start)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantStart, start)
+		})
+	}
+}
+
+// Regular ListSnapshots must fetch exactly one page and hand the next token to the CSI caller.
+func TestListSnapshotsReturnsOnlyOnePage(t *testing.T) {
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+
+	vpcs, uc, _, err := GetTestOpenSession(t, logger)
+	assert.NoError(t, err)
+
+	snapshotService := &snapshotServiceFakes.SnapshotManager{}
+	snapshotService.ListSnapshotsReturns(&models.SnapshotList{
+		Next: &models.HReference{Href: "https://host/v1/snapshots?start=ab%2Bc%3D%3D&limit=1"},
+		Snapshots: []*models.Snapshot{
+			{ID: "snapshot-id-1", Name: "first", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "1234"}},
+		},
+	}, nil)
+	uc.SnapshotServiceReturns(snapshotService)
+
+	result, err := vpcs.ListSnapshots(1, "", nil)
+
+	assert.NoError(t, err)
+	if assert.NotNil(t, result) {
+		assert.Len(t, result.Snapshots, 1)
+		assert.Equal(t, "ab+c==", result.Next, "the caller receives the decoded token")
+	}
+	assert.Equal(t, 1, snapshotService.ListSnapshotsCallCount(), "the next page is left to the CSI caller")
 }
