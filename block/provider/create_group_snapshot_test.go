@@ -89,8 +89,8 @@ func (fake *fakeSnapshotConsistencyGroupManager) ListSnapshotConsistencyGroups(l
 	return fake.listResult, fake.listErr
 }
 
-// limitRetries caps the provider retry loop for one test and restores the previous
-// values afterwards. Without it, a retryable backend error sleeps 10s between attempts.
+// attempts sets the max num of tries, including the first call: 1 means no retries
+// Restore the previous retry settings when the test finishes.
 func limitRetries(t *testing.T, attempts int) {
 	t.Helper()
 	previousAttempts, previousGap := maxRetryAttempt, maxRetryGap
@@ -98,8 +98,7 @@ func limitRetries(t *testing.T, attempts int) {
 	SetRetryParameters(attempts, 1)
 }
 
-// requireProviderError asserts that err is a provider Message with the given reason code,
-// a description containing wantDescription, and a backend error containing wantBackend.
+// requireProviderError asserts that err is a provider msg with the reason code, description, and backend error.
 func requireProviderError(t *testing.T, err error, wantCode, wantDescription, wantBackend string) {
 	t.Helper()
 	require.Error(t, err)
@@ -177,8 +176,7 @@ func TestCreateGroupSnapshotCreatesConsistencyGroupAndListsMembers(t *testing.T)
 	assert.Equal(t, "group-snapshot-id", filters.SnapshotConsistencyGroupID)
 }
 
-// groupSnapshotOperations are the three provider calls that end in getGroupSnapshotWithMembers.
-// Tests of the shared member lookup run every case through each of them.
+// groupSnapshotOperations is helper used by Create, Get and GetByName to fetch member snapshot details.
 var groupSnapshotOperations = []struct {
 	name string
 	call func(*VPCSession) (*provider.GroupSnapshot, error)
@@ -205,12 +203,15 @@ var groupSnapshotOperations = []struct {
 	},
 }
 
+// Check how Create, Get and GetByName handle missing member details and backend errors
 func TestGroupSnapshotMemberLookup(t *testing.T) {
-	operations := groupSnapshotOperations
 	fullMemberDetails := &models.SnapshotList{Snapshots: []*models.Snapshot{
 		{ID: "snapshot-id-1", CRN: "snapshot-crn-1", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-1"}},
 		{ID: "snapshot-id-2", CRN: "snapshot-crn-2", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-2"}},
 	}}
+	backendError := func(code, status string) error {
+		return &models.Error{Trace: "member-lookup-trace", Errors: []models.ErrorItem{{Code: models.ErrorCode(code), Status: status}}}
+	}
 	memberLookups := []struct {
 		name           string
 		result         *models.SnapshotList
@@ -219,43 +220,14 @@ func TestGroupSnapshotMemberLookup(t *testing.T) {
 		wantIncomplete bool
 		wantNilPage    bool
 	}{
-		{
-			name:      "full details",
-			result:    fullMemberDetails,
-			wantReady: true,
-		},
-		{
-			name: "service unavailable",
-			err: &models.Error{Trace: "member-lookup-trace", Errors: []models.ErrorItem{
-				{Code: models.ErrorCode("snapshots_service_unavailable"), Status: "503 Service Unavailable"},
-			}},
-		},
-		{
-			name: "permission denied",
-			err: &models.Error{Trace: "member-lookup-trace", Errors: []models.ErrorItem{
-				{Code: models.ErrorCode("snapshots_not_authorized"), Status: "403 Forbidden"},
-			}},
-		},
-		{
-			name: "authentication failed",
-			err: &models.Error{Trace: "member-lookup-trace", Errors: []models.ErrorItem{
-				{Code: models.ErrorCodeTokenInvalid, Status: "401 Unauthorized"},
-			}},
-		},
-		{
-			name: "rate limited",
-			err: &models.Error{Trace: "member-lookup-trace", Errors: []models.ErrorItem{
-				{Code: models.ErrorCode("snapshots_too_many_requests"), Status: "429 Too Many Requests"},
-			}},
-		},
-		{
-			name: "internal backend error",
-			err: &models.Error{Trace: "member-lookup-trace", Errors: []models.ErrorItem{
-				{Code: models.ErrorCode("internal_error"), Status: "500 Internal Server Error"},
-			}},
-		},
+		{name: "full details", result: fullMemberDetails, wantReady: true},
+		{name: "service unavailable", err: backendError("snapshots_service_unavailable", "503 Service Unavailable")},
+		{name: "permission denied", err: backendError("snapshots_not_authorized", "403 Forbidden")},
+		{name: "authentication failed", err: backendError(string(models.ErrorCodeTokenInvalid), "401 Unauthorized")},
+		{name: "rate limited", err: backendError("snapshots_too_many_requests", "429 Too Many Requests")},
+		{name: "internal backend error", err: backendError("internal_error", "500 Internal Server Error")},
 		{name: "transport error", err: errors.New("snapshot endpoint connection reset")},
-		// A nil page is a bad backend response, not incomplete details, so it is a lookup failure.
+		// A nil response is a lookup failure, not a valid page with missing members
 		{name: "nil page returned", wantNilPage: true},
 		{name: "empty details returned", result: &models.SnapshotList{}, wantIncomplete: true},
 		{name: "partial details returned", result: &models.SnapshotList{Snapshots: fullMemberDetails.Snapshots[:1]}, wantIncomplete: true},
@@ -275,7 +247,7 @@ func TestGroupSnapshotMemberLookup(t *testing.T) {
 		},
 	}
 
-	for _, operation := range operations {
+	for _, operation := range groupSnapshotOperations {
 		for _, lookup := range memberLookups {
 			t.Run(operation.name+"/"+lookup.name, func(t *testing.T) {
 				logger, teardown := GetTestLogger(t)
@@ -299,27 +271,30 @@ func TestGroupSnapshotMemberLookup(t *testing.T) {
 
 				response, err := operation.call(session)
 
-				// Failures must leave this request after one member lookup, without an internal retry loop.
+				// These responses have no next page, so only one member-list call should happen.
+				// If the call fails, return the error without retrying it here.
 				require.Equal(t, 1, snapshotService.ListSnapshotsCallCount())
 				_, _, filters, _ := snapshotService.ListSnapshotsArgsForCall(0)
 				assert.Equal(t, group.ID, filters.SnapshotConsistencyGroupID)
+
 				if lookup.err != nil || lookup.wantIncomplete || lookup.wantNilPage {
 					require.Error(t, err)
 					assert.Nil(t, response)
 					var memberLookupError providerError.Message
 					require.ErrorAs(t, err, &memberLookupError)
-					if lookup.wantIncomplete {
+					switch {
+					case lookup.wantIncomplete:
 						assert.Equal(t, "GroupSnapshotMemberDetailsUnavailable", memberLookupError.Code)
-					} else if lookup.wantNilPage {
+					case lookup.wantNilPage:
 						assert.Equal(t, "GroupSnapshotMemberLookupFailed", memberLookupError.Code)
 						assert.Contains(t, memberLookupError.BackendError, "empty snapshot page")
-					} else {
+					default:
 						assert.Equal(t, "GroupSnapshotMemberLookupFailed", memberLookupError.Code)
 						assert.Equal(t, lookup.err.Error(), memberLookupError.BackendError)
 					}
 					assert.Contains(t, memberLookupError.Description, group.ID)
 
-					// Once the backend recovers, the next request can read the same group successfully.
+					// Simulate VPC returning full details on a later Get request. The same group should now be ready.
 					snapshotService.ListSnapshotsReturns(fullMemberDetails, nil)
 					response, err = session.GetGroupSnapshot(group.ID)
 					require.NoError(t, err)
@@ -419,7 +394,8 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 	}
 }
 
-// Partial member details must keep the group not ready until all members are available.
+// The group must stay not ready if any member's details are missing
+// Once both members have complete details and are ready, the group becomes ready
 func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
@@ -432,7 +408,8 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 			{ID: "snapshot-id-2", CRN: "snapshot-crn-2"},
 		},
 	}
-	// Only one of the two members has full details available.
+
+	// The group has two members, but VPC has returned full details for only one
 	snapshotDetails := []*models.Snapshot{
 		{
 			ID:             "snapshot-id-1",
@@ -455,7 +432,8 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 	assert.False(t, result.Snapshots[1].ReadyToUse)
 	assert.False(t, result.ReadyToUse)
 
-	// A later poll supplies the missing details and makes the same group ready.
+	// Simulate a later response with the second member's details
+	// Convert it again and check that both members and the group are ready
 	snapshotDetails = append(snapshotDetails, &models.Snapshot{
 		ID:             "snapshot-id-2",
 		CRN:            "snapshot-crn-2",
@@ -470,7 +448,7 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 	assert.True(t, result.ReadyToUse)
 }
 
-// Missing source-volume details must not panic or produce a ready snapshot.
+// Missing source-volume details must not panic or produce a ready snapshot
 func TestFromProviderToLibSnapshotNilSourceVolume(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
@@ -497,12 +475,11 @@ func TestFromProviderToLibSnapshotNilSourceVolume(t *testing.T) {
 	}
 }
 
-// Deleting an already-missing group must return its backend error after one attempt.
+// Deleting an already missing group must return its backend error after one attempt
 func TestGroupNotFoundSkipsRetry(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
-	// Allow an unwanted retry to be detected without leaking settings to other tests.
 	previousAttempts, previousGap := maxRetryAttempt, maxRetryGap
 	t.Cleanup(func() {
 		SetRetryParameters(previousAttempts, previousGap)
@@ -525,15 +502,14 @@ func TestGroupNotFoundSkipsRetry(t *testing.T) {
 	assert.Same(t, notFoundErr, err)
 }
 
-// A backend create failure must be wrapped as FailedToCreateGroupSnapshot, and the
-// member lookup must not run because no group was created.
+// If the create call fails, return FailedToCreateGroupSnapshot and don't try to fetch member snapshot details
 func TestCreateGroupSnapshotWrapsBackendError(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
 
 	vpcs, uc, _, err := GetTestOpenSession(t, logger)
 	require.NoError(t, err)
-	limitRetries(t, 1) // after the session opens: opening it resets the retry settings
+	limitRetries(t, 1)
 
 	groupService := &fakeSnapshotConsistencyGroupManager{createErr: &models.Error{Errors: []models.ErrorItem{
 		{Code: models.ErrorCode("snapshots_source_volume_not_found"), Status: "404 Not Found"},

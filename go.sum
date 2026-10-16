@@ -8,8 +8,8 @@ github.com/IBM/secret-common-lib v1.1.15 h1:r2oQE7UAjHiPHhUUWJmI1NYYmuTRHWENtFol
 github.com/IBM/secret-common-lib v1.1.15/go.mod h1:bJO2iazBFnfjj6jhfgy/T4FQQQE/aIxio1CrNZ83+0U=
 github.com/IBM/secret-utils-lib v1.1.16 h1:RIainy11ICJVWjgi9FWSvBsl8xOwhzLvTKBI8AWq7wI=
 github.com/IBM/secret-utils-lib v1.1.16/go.mod h1:lSoMdjyGd3MVWCsPRrr25KrVz4jsxBNtfkS9xvQYhoM=
-github.com/MahanteshR12/ibmcloud-volume-interface v0.0.0-20260928092856-a015a0bfeb5f h1:kZlqs2xOLNBZrEZETL3CNTfJByq/idW/iJTLGR4xwug=
-github.com/MahanteshR12/ibmcloud-volume-interface v0.0.0-20260928092856-a015a0bfeb5f/go.mod h1:PfpEN0ra0nmewiPQ6M/dn+Y9PA/W9gGSXfqZpp0X5ac=
+github.com/MahanteshR12/ibmcloud-volume-interface v0.0.0-20261016091854-284153f9a4d8 h1:4Ma/lvRuzXKjzmUVGbALAtRA+31CAhQJ50x3OmTeKd4=
+github.com/MahanteshR12/ibmcloud-volume-interface v0.0.0-20261016091854-284153f9a4d8/go.mod h1:PfpEN0ra0nmewiPQ6M/dn+Y9PA/W9gGSXfqZpp0X5ac=
 github.com/Masterminds/semver v1.5.0 h1:H65muMkzWKEuNDnfl9d70GUjFniHKHRbFPGBuZ3QEww=
 github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=

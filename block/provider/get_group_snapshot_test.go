@@ -31,7 +31,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// newGroupResponse returns a VPC consistency group that references two member snapshots.
+// Create a group response with two member snapshots for the tests.
 func newGroupResponse(lifecycleState string) *models.SnapshotConsistencyGroupResponse {
 	createdAt := time.Now()
 	return &models.SnapshotConsistencyGroupResponse{
@@ -46,7 +46,7 @@ func newGroupResponse(lifecycleState string) *models.SnapshotConsistencyGroupRes
 	}
 }
 
-// newMemberList returns full details for both members, with the second member in memberState.
+// Create member details with the second snapshot in the requested state.
 func newMemberList(secondMemberState string) *models.SnapshotList {
 	return &models.SnapshotList{Snapshots: []*models.Snapshot{
 		{ID: "snapshot-id-1", CRN: "snapshot-crn-1", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "volume-id-1"}},
@@ -68,10 +68,10 @@ func TestGetGroupSnapshot(t *testing.T) {
 		group      *models.SnapshotConsistencyGroupResponse
 		groupErr   error
 		members    *models.SnapshotList
-		maxRetries int // 0 uses the defaults; >0 keeps error cases fast
+		maxRetries int // 0 keeps the defaults; a positive value sets total attempts, including the first call.
 
-		wantErrCode     string // provider reason code; empty when no provider error is expected
-		wantErrText     string // plain error text for errors that are not provider messages
+		wantErrCode     string
+		wantErrText     string
 		wantBackendText string
 		wantReady       bool
 		wantVolumeIDs   []string
@@ -145,7 +145,7 @@ func TestGetGroupSnapshot(t *testing.T) {
 			vpcs, uc, _, err := GetTestOpenSession(t, logger)
 			require.NoError(t, err)
 
-			// Must run after the session opens: opening it resets the retry settings from config.
+			// Set this after opening the session, which loads the retry settings from config.
 			if tc.maxRetries > 0 {
 				limitRetries(t, tc.maxRetries)
 			}
@@ -203,9 +203,9 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 		group         *models.SnapshotConsistencyGroupResponse
 		groupErr      error
 		members       *models.SnapshotList
-		maxRetries    int // 0 uses the defaults; >0 keeps error cases fast
+		maxRetries    int // 0 keeps the defaults; a positive value sets total attempts, including the first call.
 
-		wantErrCode       string // provider reason code; empty when no error is expected
+		wantErrCode       string // Expected provider error code; empty means no error is expected.
 		wantBackendText   string
 		wantNilResult     bool
 		wantVolumeIDs     []string
@@ -275,7 +275,7 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 			vpcs, uc, _, err := GetTestOpenSession(t, logger)
 			require.NoError(t, err)
 
-			// Must run after the session opens: opening it resets the retry settings from config.
+			// Set this after opening the session, which loads the retry settings from config.
 			if tc.maxRetries > 0 {
 				limitRetries(t, tc.maxRetries)
 			}
@@ -316,7 +316,7 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 	}
 }
 
-// pagedMember returns full details for one group member.
+// Create the details for one member snapshot.
 func pagedMember(id string, sourceVolumeID string, state string) *models.Snapshot {
 	snapshot := &models.Snapshot{ID: id, CRN: "crn-" + id, LifecycleState: state}
 	if sourceVolumeID != "" {
@@ -325,15 +325,14 @@ func pagedMember(id string, sourceVolumeID string, state string) *models.Snapsho
 	return snapshot
 }
 
-// pageLink builds a "next" link as the VPC API returns it.
+// Create a next-page link with the given start token.
 func pageLink(start string) *models.HReference {
 	return &models.HReference{Href: "https://eu-gb.iaas.cloud.ibm.com/v1/snapshots?limit=100&start=" + start}
 }
 
-// TestGetGroupSnapshotMemberPagination checks that every page of member snapshots is read,
-// and that a problem on any page returns an error instead of a partial group.
+// Check that all member pages are fetched and a failed page returns an error.
 func TestGetGroupSnapshotMemberPagination(t *testing.T) {
-	// The group references members A and B, so a result with only A must never be accepted.
+	// The group has members A and B. Details for only A are not enough.
 	newGroup := func() *models.SnapshotConsistencyGroupResponse {
 		return &models.SnapshotConsistencyGroupResponse{
 			ID: "group-snapshot-id", LifecycleState: snapshotReadyState,
@@ -345,8 +344,8 @@ func TestGetGroupSnapshotMemberPagination(t *testing.T) {
 	}
 	memberA := pagedMember("snapshot-a", "volume-a", snapshotReadyState)
 	memberB := pagedMember("snapshot-b", "volume-b", snapshotReadyState)
-	// Both errors are retryable by retry(): internal_error is not skip-listed, and a plain error is not a *models.Error.
-	// (snapshots_service_unavailable is skip-listed, so it would not prove that no retry happens.)
+	// Use errors that the provider would normally retry to check that member lookup does not retry.
+	// Do not use snapshots_service_unavailable here, because the provider already skips retries for it.
 	backendErr := &models.Error{Trace: "page-2-trace", Errors: []models.ErrorItem{
 		{Code: models.ErrorCode("internal_error"), Status: "500 Internal Server Error"},
 	}}
@@ -358,12 +357,12 @@ func TestGetGroupSnapshotMemberPagination(t *testing.T) {
 	}
 	testCases := []struct {
 		name  string
-		pages map[string]page // keyed by the start token the driver asks for; "" is the first page
+		pages map[string]page // Responses for each requested start token; "" is the first page.
 
-		wantErrCode     string // empty means success
+		wantErrCode     string
 		wantBackendText string
 		wantErrText     string
-		wantStarts      []string // start tokens requested, in order
+		wantStarts      []string // Expected start tokens in the order they are requested.
 		wantVolumeIDs   []string
 		wantReady       bool
 	}{
@@ -525,8 +524,7 @@ func TestGetGroupSnapshotMemberPagination(t *testing.T) {
 
 			session, client, _, err := GetTestOpenSession(t, logger)
 			require.NoError(t, err)
-			// Several attempts are allowed on purpose: if member listing ever starts using the
-			// retry loop, a failed page is requested again and the checks below fail.
+			// Allow three attempts, then check that a failed member-list call still happens only once.
 			limitRetries(t, 3)
 
 			group := newGroup()
@@ -534,7 +532,7 @@ func TestGetGroupSnapshotMemberPagination(t *testing.T) {
 			snapshotService := &serviceFakes.SnapshotManager{}
 			calls := 0
 			snapshotService.ListSnapshotsCalls(func(limit int, start string, filters *models.LisSnapshotFilters, _ *zap.Logger) (*models.SnapshotList, error) {
-				// Ends runaway pagination with a clear failure instead of hanging the test run.
+				// Fail the test if pagination keeps requesting pages without stopping.
 				calls++
 				if calls > len(tc.pages)+1 {
 					return nil, errors.New("runaway pagination: more requests than pages")
@@ -547,7 +545,7 @@ func TestGetGroupSnapshotMemberPagination(t *testing.T) {
 
 			result, err := session.GetGroupSnapshot(group.ID)
 
-			// Every request must use the same limit and group filter; only the start token changes.
+			// Check that every page uses the same limit and group ID.
 			var gotStarts []string
 			for i := 0; i < snapshotService.ListSnapshotsCallCount(); i++ {
 				limit, start, filters, _ := snapshotService.ListSnapshotsArgsForCall(i)
@@ -556,7 +554,7 @@ func TestGetGroupSnapshotMemberPagination(t *testing.T) {
 				gotStarts = append(gotStarts, start)
 			}
 			assert.Equal(t, tc.wantStarts, gotStarts)
-			// No page may be requested twice, so a failed page is never retried inside the loop.
+			// Check that no page is requested more than once, even when it fails.
 			requested := map[string]int{}
 			for _, start := range gotStarts {
 				requested[start]++
@@ -580,8 +578,8 @@ func TestGetGroupSnapshotMemberPagination(t *testing.T) {
 	}
 }
 
-// The token is decoded from the next link and encoded once in the next HTTP request.
-// This uses the real SnapshotService over HTTP, so the helper, the loop and the client work together.
+// Check that the next-page token is decoded and sent without being encoded twice.
+// Use the real snapshot client with a test HTTP server.
 func TestGetGroupSnapshotEncodesNextPageTokenOnce(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
@@ -595,7 +593,7 @@ func TestGetGroupSnapshotEncodesNextPageTokenOnce(t *testing.T) {
 	mux.HandleFunc(vpcvolume.Version+"/snapshots", func(w http.ResponseWriter, r *http.Request) {
 		rawQueries = append(rawQueries, r.URL.RawQuery)
 		if r.URL.Query().Get("start") == "" {
-			// The token is URL-encoded inside the link, as the VPC API returns it.
+			// Return an encoded token in the next-page link, like the VPC API does.
 			_, _ = w.Write([]byte(`{"snapshots":[{"id":"snapshot-a","crn":"crn-snapshot-a","lifecycle_state":"stable","source_volume":{"id":"volume-a"}}],` +
 				`"next":{"href":"https://host/v1/snapshots?start=ab%2Bc%3D%3D&limit=100"}}`))
 			return
@@ -617,15 +615,14 @@ func TestGetGroupSnapshotEncodesNextPageTokenOnce(t *testing.T) {
 	assert.Contains(t, rawQueries[0], "snapshot_consistency_group.id=group-snapshot-id")
 	assert.Contains(t, rawQueries[0], "limit=100")
 	assert.NotContains(t, rawQueries[0], "start=")
-	// Same filter and limit on page 2, and the token is encoded once.
+	// Check that page 2 keeps the same filter and limit, and encodes the token only once.
 	assert.Contains(t, rawQueries[1], "snapshot_consistency_group.id=group-snapshot-id")
 	assert.Contains(t, rawQueries[1], "limit=100")
 	assert.Contains(t, rawQueries[1], "start=ab%2Bc%3D%3D")
 	assert.NotContains(t, rawQueries[1], "%252B", "token must not be double-encoded")
 }
 
-// Create, get by ID and get by name share getGroupSnapshotWithMembers, so each of them
-// must read every member page, not only the first one.
+// Check that Create, Get and GetByName fetch all pages of member snapshots.
 func TestGroupSnapshotMemberPaginationForEveryOperation(t *testing.T) {
 	for _, operation := range groupSnapshotOperations {
 		t.Run(operation.name, func(t *testing.T) {
@@ -676,8 +673,7 @@ func TestGroupSnapshotMemberPaginationForEveryOperation(t *testing.T) {
 	}
 }
 
-// An empty group ID would make the client drop the group filter and list every snapshot
-// in the account, so the provider must reject it before any snapshot is listed.
+// Check that an empty group ID is rejected before listing any snapshots.
 func TestGroupSnapshotWithoutIDIsRejectedBeforeListing(t *testing.T) {
 	for _, operation := range groupSnapshotOperations {
 		t.Run(operation.name, func(t *testing.T) {

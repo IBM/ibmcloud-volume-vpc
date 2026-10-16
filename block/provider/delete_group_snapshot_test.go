@@ -26,7 +26,7 @@ import (
 
 func TestDeleteGroupSnapshot(t *testing.T) {
 	type want struct {
-		errCode      string // empty means no error expected
+		errCode      string
 		descContain  string
 		backContain  string
 		backendCalls int
@@ -34,27 +34,18 @@ func TestDeleteGroupSnapshot(t *testing.T) {
 	testCases := []struct {
 		name       string
 		groupID    string
-		memberIDs  []string
 		deleteErr  error
-		maxRetries int // 0 means use defaults; >0 limits retries so tests stay fast
+		maxRetries int // 0 means use defaults; >0 sets the total attempts, including the first call.
 		want       want
 	}{
 		{
-			name:      "success: group ID forwarded to backend",
-			groupID:   "group-snapshot-id",
-			memberIDs: []string{"snapshot-id-1", "snapshot-id-2"},
-			want:      want{backendCalls: 1},
+			name:    "success: group ID forwarded to backend",
+			groupID: "group-snapshot-id",
+			want:    want{backendCalls: 1},
 		},
 		{
-			name:      "success: multiple member IDs accepted",
-			groupID:   "group-id",
-			memberIDs: []string{"snapshot-id-a", "snapshot-id-b", "snapshot-id-c"},
-			want:      want{backendCalls: 1},
-		},
-		{
-			name:      "backend error is wrapped as FailedToDeleteGroupSnapshot",
-			groupID:   "group-snapshot-id",
-			memberIDs: []string{"snapshot-id-1"},
+			name:    "backend error is wrapped as FailedToDeleteGroupSnapshot",
+			groupID: "group-snapshot-id",
 			deleteErr: &models.Error{Errors: []models.ErrorItem{
 				{Code: "internal_error", Status: "500 Internal Server Error"},
 			}},
@@ -67,9 +58,8 @@ func TestDeleteGroupSnapshot(t *testing.T) {
 			},
 		},
 		{
-			name:      "not-found error is not retried",
-			groupID:   "group-snapshot-id",
-			memberIDs: []string{"snapshot-id-1"},
+			name:    "not-found error is not retried",
+			groupID: "group-snapshot-id",
 			deleteErr: &models.Error{Errors: []models.ErrorItem{
 				{Code: models.ErrorCode("snapshot_consistency_groups_not_found")},
 			}},
@@ -98,7 +88,7 @@ func TestDeleteGroupSnapshot(t *testing.T) {
 			groupService := &fakeSnapshotConsistencyGroupManager{deleteErr: tc.deleteErr}
 			uc.SnapshotConsistencyGroupServiceReturns(groupService)
 
-			err = vpcs.DeleteGroupSnapshot(tc.groupID, tc.memberIDs)
+			err = vpcs.DeleteGroupSnapshot(tc.groupID)
 
 			assert.Equal(t, tc.want.backendCalls, groupService.deleteCalls)
 			if tc.want.errCode == "" {

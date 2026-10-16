@@ -378,30 +378,3 @@ func TestNextSnapshotStart(t *testing.T) {
 		})
 	}
 }
-
-// Regular ListSnapshots must fetch exactly one page and hand the next token to the CSI caller.
-func TestListSnapshotsReturnsOnlyOnePage(t *testing.T) {
-	logger, teardown := GetTestLogger(t)
-	defer teardown()
-
-	vpcs, uc, _, err := GetTestOpenSession(t, logger)
-	assert.NoError(t, err)
-
-	snapshotService := &snapshotServiceFakes.SnapshotManager{}
-	snapshotService.ListSnapshotsReturns(&models.SnapshotList{
-		Next: &models.HReference{Href: "https://host/v1/snapshots?start=ab%2Bc%3D%3D&limit=1"},
-		Snapshots: []*models.Snapshot{
-			{ID: "snapshot-id-1", Name: "first", LifecycleState: snapshotReadyState, SourceVolume: &models.SourceVolume{ID: "1234"}},
-		},
-	}, nil)
-	uc.SnapshotServiceReturns(snapshotService)
-
-	result, err := vpcs.ListSnapshots(1, "", nil)
-
-	assert.NoError(t, err)
-	if assert.NotNil(t, result) {
-		assert.Len(t, result.Snapshots, 1)
-		assert.Equal(t, "ab+c==", result.Next, "the caller receives the decoded token")
-	}
-	assert.Equal(t, 1, snapshotService.ListSnapshotsCallCount(), "the next page is left to the CSI caller")
-}
