@@ -39,6 +39,9 @@ type VolumeManager interface {
 	// ExpandVolume ...
 	ExpandVolume(volumeID string, volumeTemplate *models.Volume, ctxLogger *zap.Logger) (*models.Volume, error)
 
+	// ModifyVolume modifies the volume IOPS/bandwidth by volume ID
+	ModifyVolume(volumeID string, volumeTemplate *models.Volume, ctxLogger *zap.Logger) (*models.Volume, error)
+
 	// Delete the volume
 	DeleteVolume(volumeID string, ctxLogger *zap.Logger) error
 
