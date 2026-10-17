@@ -72,6 +72,13 @@ var messagesEn = map[string]util.Message{
 		RC:          500,
 		Action:      "Verify that the volume ID exists and attached to an instance. Run 'ibmcloud is volumes' to list available volumes in your account. If the ID is correct, check that expected capacity is valid and supported",
 	},
+	"FailedToModifyVolume": {
+		Code:        "FailedToModifyVolume",
+		Description: "The volume ID '%s' could not be modified.",
+		Type:        util.UpdateFailed,
+		RC:          500,
+		Action:      "Check the backend error for more details. Run 'ibmcloud is volume <VOLUME-ID>' to verify the current state of the volume.",
+	},
 	"FailedToUpdateVolume": {
 		Code:        "FailedToUpdateVolume",
 		Description: "The volume ID '%d' could not be updated",

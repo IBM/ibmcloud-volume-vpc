@@ -77,6 +77,22 @@ type VolumeService struct {
 		result1 *models.Volume
 		result2 error
 	}
+	ModifyVolumeStub        func(string, *models.Volume, *zap.Logger) (*models.Volume, error)
+	modifyVolumeMutex       sync.RWMutex
+	modifyVolumeArgsForCall []struct {
+		arg1 string
+		arg2 *models.Volume
+		arg3 *zap.Logger
+	}
+	modifyVolumeReturns struct {
+		result1 *models.Volume
+		result2 error
+	}
+	modifyVolumeReturnsOnCall map[int]struct {
+		result1 *models.Volume
+		result2 error
+	}
+
 	GetVolumeStub        func(string, *zap.Logger) (*models.Volume, error)
 	getVolumeMutex       sync.RWMutex
 	getVolumeArgsForCall []struct {
@@ -508,6 +524,71 @@ func (fake *VolumeService) ExpandVolumeReturnsOnCall(i int, result1 *models.Volu
 		})
 	}
 	fake.expandVolumeReturnsOnCall[i] = struct {
+		result1 *models.Volume
+		result2 error
+	}{result1, result2}
+}
+func (fake *VolumeService) ModifyVolume(arg1 string, arg2 *models.Volume, arg3 *zap.Logger) (*models.Volume, error) {
+	fake.modifyVolumeMutex.Lock()
+	ret, specificReturn := fake.modifyVolumeReturnsOnCall[len(fake.modifyVolumeArgsForCall)]
+	fake.modifyVolumeArgsForCall = append(fake.modifyVolumeArgsForCall, struct {
+		arg1 string
+		arg2 *models.Volume
+		arg3 *zap.Logger
+	}{arg1, arg2, arg3})
+	stub := fake.ModifyVolumeStub
+	fakeReturns := fake.modifyVolumeReturns
+	fake.recordInvocation("ModifyVolume", []interface{}{arg1, arg2, arg3})
+	fake.modifyVolumeMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *VolumeService) ModifyVolumeCallCount() int {
+	fake.modifyVolumeMutex.RLock()
+	defer fake.modifyVolumeMutex.RUnlock()
+	return len(fake.modifyVolumeArgsForCall)
+}
+
+func (fake *VolumeService) ModifyVolumeCalls(stub func(string, *models.Volume, *zap.Logger) (*models.Volume, error)) {
+	fake.modifyVolumeMutex.Lock()
+	defer fake.modifyVolumeMutex.Unlock()
+	fake.ModifyVolumeStub = stub
+}
+
+func (fake *VolumeService) ModifyVolumeArgsForCall(i int) (string, *models.Volume, *zap.Logger) {
+	fake.modifyVolumeMutex.RLock()
+	defer fake.modifyVolumeMutex.RUnlock()
+	argsForCall := fake.modifyVolumeArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *VolumeService) ModifyVolumeReturns(result1 *models.Volume, result2 error) {
+	fake.modifyVolumeMutex.Lock()
+	defer fake.modifyVolumeMutex.Unlock()
+	fake.ModifyVolumeStub = nil
+	fake.modifyVolumeReturns = struct {
+		result1 *models.Volume
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *VolumeService) ModifyVolumeReturnsOnCall(i int, result1 *models.Volume, result2 error) {
+	fake.modifyVolumeMutex.Lock()
+	defer fake.modifyVolumeMutex.Unlock()
+	fake.ModifyVolumeStub = nil
+	if fake.modifyVolumeReturnsOnCall == nil {
+		fake.modifyVolumeReturnsOnCall = make(map[int]struct {
+			result1 *models.Volume
+			result2 error
+		})
+	}
+	fake.modifyVolumeReturnsOnCall[i] = struct {
 		result1 *models.Volume
 		result2 error
 	}{result1, result2}
@@ -1045,6 +1126,8 @@ func (fake *VolumeService) Invocations() map[string][][]interface{} {
 	defer fake.deleteVolumeTagMutex.RUnlock()
 	fake.expandVolumeMutex.RLock()
 	defer fake.expandVolumeMutex.RUnlock()
+	fake.modifyVolumeMutex.RLock()
+	defer fake.modifyVolumeMutex.RUnlock()
 	fake.getVolumeMutex.RLock()
 	defer fake.getVolumeMutex.RUnlock()
 	fake.getVolumeByNameMutex.RLock()
