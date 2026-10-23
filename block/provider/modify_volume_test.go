@@ -59,35 +59,35 @@ func TestModifyVolume(t *testing.T) {
 		},
 		{
 			testCaseName:     "successful IOPS modify",
-			request:          provider.ModifyVolumeRequest{VolumeID: "vol-id", Iops: 5000},
+			request:          provider.ModifyVolumeRequest{VolumeID: "vol-id", VolumePerformance: provider.VolumePerformance{Iops: 5000}},
 			modifyVolumeResp: &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Iops: 5000},
 			getVolumeResp:    &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Iops: 5000},
 			expectedIops:     5000,
 		},
 		{
 			testCaseName:      "successful bandwidth modify",
-			request:           provider.ModifyVolumeRequest{VolumeID: "vol-id", Bandwidth: 1000},
+			request:           provider.ModifyVolumeRequest{VolumeID: "vol-id", VolumePerformance: provider.VolumePerformance{Bandwidth: 1000}},
 			modifyVolumeResp:  &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Bandwidth: 1000},
 			getVolumeResp:     &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Bandwidth: 1000},
 			expectedBandwidth: 1000,
 		},
 		{
 			testCaseName:       "ModifyVolume client error returns FailedToModifyVolume",
-			request:            provider.ModifyVolumeRequest{VolumeID: "vol-id", Iops: 5000},
+			request:            provider.ModifyVolumeRequest{VolumeID: "vol-id", VolumePerformance: provider.VolumePerformance{Iops: 5000}},
 			modifyVolumeErr:    errors.New("backend failure"),
 			expectErr:          true,
 			expectedReasonCode: "FailedToModifyVolume",
 		},
 		{
 			testCaseName:       "ModifyVolume returns empty volume ID returns FailedToModifyVolume",
-			request:            provider.ModifyVolumeRequest{VolumeID: "vol-id", Iops: 5000},
+			request:            provider.ModifyVolumeRequest{VolumeID: "vol-id", VolumePerformance: provider.VolumePerformance{Iops: 5000}},
 			modifyVolumeResp:   &models.Volume{},
 			expectErr:          true,
 			expectedReasonCode: "FailedToModifyVolume",
 		},
 		{
 			testCaseName:       "volume stuck in non-available state returns VolumeNotInValidState",
-			request:            provider.ModifyVolumeRequest{VolumeID: "vol-id", Iops: 5000},
+			request:            provider.ModifyVolumeRequest{VolumeID: "vol-id", VolumePerformance: provider.VolumePerformance{Iops: 5000}},
 			modifyVolumeResp:   &models.Volume{ID: "vol-id", Status: models.StatusType("pending"), Iops: 5000},
 			getVolumeResp:      &models.Volume{ID: "vol-id", Status: models.StatusType("pending")},
 			expectErr:          true,
@@ -124,8 +124,8 @@ func TestModifyVolume(t *testing.T) {
 			} else {
 				assert.Nil(t, err)
 				if assert.NotNil(t, resp) {
-					assert.Equal(t, testcase.expectedIops, resp.Iops)
-					assert.Equal(t, testcase.expectedBandwidth, resp.Bandwidth)
+					assert.Equal(t, testcase.expectedIops, resp.VolumePerformance.Iops)
+					assert.Equal(t, testcase.expectedBandwidth, resp.VolumePerformance.Bandwidth)
 				}
 			}
 		})
