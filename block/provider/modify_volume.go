@@ -80,7 +80,9 @@ func (vpcs *VPCSession) ModifyVolume(modifyVolumeRequest provider.ModifyVolumeRe
 
 	vpcs.Logger.Info("Volume got valid (available) state", zap.Reflect("VolumeDetails", volume))
 	return &provider.ModifyVolumeResponse{
-		Iops:      volume.Iops,
-		Bandwidth: volume.Bandwidth,
+		VolumePerformance: provider.VolumePerformance{
+			Iops:      volume.Iops,
+			Bandwidth: volume.Bandwidth,
+		},
 	}, nil
 }
