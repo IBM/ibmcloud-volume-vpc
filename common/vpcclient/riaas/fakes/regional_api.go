@@ -31,6 +31,16 @@ type RegionalAPI struct {
 	loginReturnsOnCall map[int]struct {
 		result1 error
 	}
+	SnapshotConsistencyGroupServiceStub        func() vpcvolume.SnapshotConsistencyGroupManager
+	snapshotConsistencyGroupServiceMutex       sync.RWMutex
+	snapshotConsistencyGroupServiceArgsForCall []struct {
+	}
+	snapshotConsistencyGroupServiceReturns struct {
+		result1 vpcvolume.SnapshotConsistencyGroupManager
+	}
+	snapshotConsistencyGroupServiceReturnsOnCall map[int]struct {
+		result1 vpcvolume.SnapshotConsistencyGroupManager
+	}
 	SnapshotServiceStub        func() vpcvolume.SnapshotManager
 	snapshotServiceMutex       sync.RWMutex
 	snapshotServiceArgsForCall []struct {
@@ -176,6 +186,59 @@ func (fake *RegionalAPI) LoginReturnsOnCall(i int, result1 error) {
 	}
 	fake.loginReturnsOnCall[i] = struct {
 		result1 error
+	}{result1}
+}
+
+func (fake *RegionalAPI) SnapshotConsistencyGroupService() vpcvolume.SnapshotConsistencyGroupManager {
+	fake.snapshotConsistencyGroupServiceMutex.Lock()
+	ret, specificReturn := fake.snapshotConsistencyGroupServiceReturnsOnCall[len(fake.snapshotConsistencyGroupServiceArgsForCall)]
+	fake.snapshotConsistencyGroupServiceArgsForCall = append(fake.snapshotConsistencyGroupServiceArgsForCall, struct {
+	}{})
+	stub := fake.SnapshotConsistencyGroupServiceStub
+	fakeReturns := fake.snapshotConsistencyGroupServiceReturns
+	fake.recordInvocation("SnapshotConsistencyGroupService", []interface{}{})
+	fake.snapshotConsistencyGroupServiceMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *RegionalAPI) SnapshotConsistencyGroupServiceCallCount() int {
+	fake.snapshotConsistencyGroupServiceMutex.RLock()
+	defer fake.snapshotConsistencyGroupServiceMutex.RUnlock()
+	return len(fake.snapshotConsistencyGroupServiceArgsForCall)
+}
+
+func (fake *RegionalAPI) SnapshotConsistencyGroupServiceCalls(stub func() vpcvolume.SnapshotConsistencyGroupManager) {
+	fake.snapshotConsistencyGroupServiceMutex.Lock()
+	defer fake.snapshotConsistencyGroupServiceMutex.Unlock()
+	fake.SnapshotConsistencyGroupServiceStub = stub
+}
+
+func (fake *RegionalAPI) SnapshotConsistencyGroupServiceReturns(result1 vpcvolume.SnapshotConsistencyGroupManager) {
+	fake.snapshotConsistencyGroupServiceMutex.Lock()
+	defer fake.snapshotConsistencyGroupServiceMutex.Unlock()
+	fake.SnapshotConsistencyGroupServiceStub = nil
+	fake.snapshotConsistencyGroupServiceReturns = struct {
+		result1 vpcvolume.SnapshotConsistencyGroupManager
+	}{result1}
+}
+
+func (fake *RegionalAPI) SnapshotConsistencyGroupServiceReturnsOnCall(i int, result1 vpcvolume.SnapshotConsistencyGroupManager) {
+	fake.snapshotConsistencyGroupServiceMutex.Lock()
+	defer fake.snapshotConsistencyGroupServiceMutex.Unlock()
+	fake.SnapshotConsistencyGroupServiceStub = nil
+	if fake.snapshotConsistencyGroupServiceReturnsOnCall == nil {
+		fake.snapshotConsistencyGroupServiceReturnsOnCall = make(map[int]struct {
+			result1 vpcvolume.SnapshotConsistencyGroupManager
+		})
+	}
+	fake.snapshotConsistencyGroupServiceReturnsOnCall[i] = struct {
+		result1 vpcvolume.SnapshotConsistencyGroupManager
 	}{result1}
 }
 
@@ -345,6 +408,8 @@ func (fake *RegionalAPI) Invocations() map[string][][]interface{} {
 	defer fake.iKSVolumeAttachServiceMutex.RUnlock()
 	fake.loginMutex.RLock()
 	defer fake.loginMutex.RUnlock()
+	fake.snapshotConsistencyGroupServiceMutex.RLock()
+	defer fake.snapshotConsistencyGroupServiceMutex.RUnlock()
 	fake.snapshotServiceMutex.RLock()
 	defer fake.snapshotServiceMutex.RUnlock()
 	fake.volumeAttachServiceMutex.RLock()
