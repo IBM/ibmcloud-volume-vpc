@@ -126,7 +126,7 @@ func TestCreateSnapshot(t *testing.T) {
 				SnapshotSize:         100,
 				SnapshotCreationTime: timeNow,
 				ReadyToUse:           false,
-				VPC:                  provider.VPC{Href: "href"},
+				ResourceReference:    provider.ResourceReference{Href: "href"},
 			},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.NotNil(t, snapshotResponse)
@@ -152,7 +152,7 @@ func TestCreateSnapshot(t *testing.T) {
 				SnapshotSize:         100,
 				SnapshotCreationTime: timeNow,
 				ReadyToUse:           false,
-				VPC:                  provider.VPC{Href: "href"},
+				ResourceReference:    provider.ResourceReference{Href: "href"},
 			},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.NotNil(t, snapshotResponse)
@@ -179,7 +179,7 @@ func TestCreateSnapshot(t *testing.T) {
 				SnapshotSize:         100,
 				SnapshotCreationTime: timeNow,
 				ReadyToUse:           true,
-				VPC:                  provider.VPC{Href: "href"},
+				ResourceReference:    provider.ResourceReference{Href: "href"},
 			},
 			verify: func(t *testing.T, snapshotResponse *provider.Snapshot, err error) {
 				assert.NotNil(t, snapshotResponse)
