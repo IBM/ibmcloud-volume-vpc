@@ -39,6 +39,20 @@ type VolumeAttachService struct {
 		result1 *http.Response
 		result2 error
 	}
+	GetBMSServerStub        func(string, *zap.Logger) (*models.BMSServerResponse, error)
+	getBMSServerMutex       sync.RWMutex
+	getBMSServerArgsForCall []struct {
+		arg1 string
+		arg2 *zap.Logger
+	}
+	getBMSServerReturns struct {
+		result1 *models.BMSServerResponse
+		result2 error
+	}
+	getBMSServerReturnsOnCall map[int]struct {
+		result1 *models.BMSServerResponse
+		result2 error
+	}
 	GetVolumeAttachmentStub        func(*models.VolumeAttachment, *zap.Logger) (*models.VolumeAttachment, error)
 	getVolumeAttachmentMutex       sync.RWMutex
 	getVolumeAttachmentArgsForCall []struct {
@@ -66,6 +80,19 @@ type VolumeAttachService struct {
 	listVolumeAttachmentsReturnsOnCall map[int]struct {
 		result1 *models.VolumeAttachmentList
 		result2 error
+	}
+	RotateEncryptedSecretStub        func(string, string, *zap.Logger) error
+	rotateEncryptedSecretMutex       sync.RWMutex
+	rotateEncryptedSecretArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 *zap.Logger
+	}
+	rotateEncryptedSecretReturns struct {
+		result1 error
+	}
+	rotateEncryptedSecretReturnsOnCall map[int]struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -201,6 +228,71 @@ func (fake *VolumeAttachService) DetachVolumeReturnsOnCall(i int, result1 *http.
 	}{result1, result2}
 }
 
+func (fake *VolumeAttachService) GetBMSServer(arg1 string, arg2 *zap.Logger) (*models.BMSServerResponse, error) {
+	fake.getBMSServerMutex.Lock()
+	ret, specificReturn := fake.getBMSServerReturnsOnCall[len(fake.getBMSServerArgsForCall)]
+	fake.getBMSServerArgsForCall = append(fake.getBMSServerArgsForCall, struct {
+		arg1 string
+		arg2 *zap.Logger
+	}{arg1, arg2})
+	stub := fake.GetBMSServerStub
+	fakeReturns := fake.getBMSServerReturns
+	fake.recordInvocation("GetBMSServer", []interface{}{arg1, arg2})
+	fake.getBMSServerMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *VolumeAttachService) GetBMSServerCallCount() int {
+	fake.getBMSServerMutex.RLock()
+	defer fake.getBMSServerMutex.RUnlock()
+	return len(fake.getBMSServerArgsForCall)
+}
+
+func (fake *VolumeAttachService) GetBMSServerCalls(stub func(string, *zap.Logger) (*models.BMSServerResponse, error)) {
+	fake.getBMSServerMutex.Lock()
+	defer fake.getBMSServerMutex.Unlock()
+	fake.GetBMSServerStub = stub
+}
+
+func (fake *VolumeAttachService) GetBMSServerArgsForCall(i int) (string, *zap.Logger) {
+	fake.getBMSServerMutex.RLock()
+	defer fake.getBMSServerMutex.RUnlock()
+	argsForCall := fake.getBMSServerArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *VolumeAttachService) GetBMSServerReturns(result1 *models.BMSServerResponse, result2 error) {
+	fake.getBMSServerMutex.Lock()
+	defer fake.getBMSServerMutex.Unlock()
+	fake.GetBMSServerStub = nil
+	fake.getBMSServerReturns = struct {
+		result1 *models.BMSServerResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *VolumeAttachService) GetBMSServerReturnsOnCall(i int, result1 *models.BMSServerResponse, result2 error) {
+	fake.getBMSServerMutex.Lock()
+	defer fake.getBMSServerMutex.Unlock()
+	fake.GetBMSServerStub = nil
+	if fake.getBMSServerReturnsOnCall == nil {
+		fake.getBMSServerReturnsOnCall = make(map[int]struct {
+			result1 *models.BMSServerResponse
+			result2 error
+		})
+	}
+	fake.getBMSServerReturnsOnCall[i] = struct {
+		result1 *models.BMSServerResponse
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *VolumeAttachService) GetVolumeAttachment(arg1 *models.VolumeAttachment, arg2 *zap.Logger) (*models.VolumeAttachment, error) {
 	fake.getVolumeAttachmentMutex.Lock()
 	ret, specificReturn := fake.getVolumeAttachmentReturnsOnCall[len(fake.getVolumeAttachmentArgsForCall)]
@@ -331,6 +423,69 @@ func (fake *VolumeAttachService) ListVolumeAttachmentsReturnsOnCall(i int, resul
 	}{result1, result2}
 }
 
+func (fake *VolumeAttachService) RotateEncryptedSecret(arg1 string, arg2 string, arg3 *zap.Logger) error {
+	fake.rotateEncryptedSecretMutex.Lock()
+	ret, specificReturn := fake.rotateEncryptedSecretReturnsOnCall[len(fake.rotateEncryptedSecretArgsForCall)]
+	fake.rotateEncryptedSecretArgsForCall = append(fake.rotateEncryptedSecretArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 *zap.Logger
+	}{arg1, arg2, arg3})
+	stub := fake.RotateEncryptedSecretStub
+	fakeReturns := fake.rotateEncryptedSecretReturns
+	fake.recordInvocation("RotateEncryptedSecret", []interface{}{arg1, arg2, arg3})
+	fake.rotateEncryptedSecretMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *VolumeAttachService) RotateEncryptedSecretCallCount() int {
+	fake.rotateEncryptedSecretMutex.RLock()
+	defer fake.rotateEncryptedSecretMutex.RUnlock()
+	return len(fake.rotateEncryptedSecretArgsForCall)
+}
+
+func (fake *VolumeAttachService) RotateEncryptedSecretCalls(stub func(string, string, *zap.Logger) error) {
+	fake.rotateEncryptedSecretMutex.Lock()
+	defer fake.rotateEncryptedSecretMutex.Unlock()
+	fake.RotateEncryptedSecretStub = stub
+}
+
+func (fake *VolumeAttachService) RotateEncryptedSecretArgsForCall(i int) (string, string, *zap.Logger) {
+	fake.rotateEncryptedSecretMutex.RLock()
+	defer fake.rotateEncryptedSecretMutex.RUnlock()
+	argsForCall := fake.rotateEncryptedSecretArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *VolumeAttachService) RotateEncryptedSecretReturns(result1 error) {
+	fake.rotateEncryptedSecretMutex.Lock()
+	defer fake.rotateEncryptedSecretMutex.Unlock()
+	fake.RotateEncryptedSecretStub = nil
+	fake.rotateEncryptedSecretReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *VolumeAttachService) RotateEncryptedSecretReturnsOnCall(i int, result1 error) {
+	fake.rotateEncryptedSecretMutex.Lock()
+	defer fake.rotateEncryptedSecretMutex.Unlock()
+	fake.RotateEncryptedSecretStub = nil
+	if fake.rotateEncryptedSecretReturnsOnCall == nil {
+		fake.rotateEncryptedSecretReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.rotateEncryptedSecretReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *VolumeAttachService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -338,10 +493,14 @@ func (fake *VolumeAttachService) Invocations() map[string][][]interface{} {
 	defer fake.attachVolumeMutex.RUnlock()
 	fake.detachVolumeMutex.RLock()
 	defer fake.detachVolumeMutex.RUnlock()
+	fake.getBMSServerMutex.RLock()
+	defer fake.getBMSServerMutex.RUnlock()
 	fake.getVolumeAttachmentMutex.RLock()
 	defer fake.getVolumeAttachmentMutex.RUnlock()
 	fake.listVolumeAttachmentsMutex.RLock()
 	defer fake.listVolumeAttachmentsMutex.RUnlock()
+	fake.rotateEncryptedSecretMutex.RLock()
+	defer fake.rotateEncryptedSecretMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
