@@ -402,6 +402,7 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 
 	group := &models.SnapshotConsistencyGroupResponse{
 		ID:             "group-snapshot-id",
+		CRN:            "group-snapshot-crn",
 		LifecycleState: snapshotReadyState,
 		Snapshots: []models.SnapshotReference{
 			{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
@@ -423,6 +424,10 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 
 	require.NotNil(t, result)
 	require.Len(t, result.Snapshots, 2)
+	for _, member := range result.Snapshots {
+		assert.Equal(t, group.ID, member.GroupSnapshotID)
+		assert.Equal(t, group.CRN, member.GroupSnapshotCRN)
+	}
 	assert.Equal(t, "volume-id-1", result.Snapshots[0].VolumeID)
 	assert.Equal(t, "snapshot-crn-1", result.Snapshots[0].SnapshotCRN)
 	assert.True(t, result.Snapshots[0].ReadyToUse)
@@ -443,6 +448,10 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 	result = FromProviderToLibGroupSnapshot(group, snapshotDetails, logger)
 	require.NotNil(t, result)
 	require.Len(t, result.Snapshots, 2)
+	for _, member := range result.Snapshots {
+		assert.Equal(t, group.ID, member.GroupSnapshotID)
+		assert.Equal(t, group.CRN, member.GroupSnapshotCRN)
+	}
 	assert.Equal(t, "volume-id-2", result.Snapshots[1].VolumeID)
 	assert.True(t, result.Snapshots[1].ReadyToUse)
 	assert.True(t, result.ReadyToUse)

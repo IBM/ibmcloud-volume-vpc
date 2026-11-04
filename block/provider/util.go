@@ -440,6 +440,7 @@ func FromProviderToLibSnapshot(vpcSnapshot *models.Snapshot, logger *zap.Logger)
 	// Keep group membership when a snapshot is fetched on its own.
 	if vpcSnapshot.SnapshotConsistencyGroup != nil {
 		libSnapshot.GroupSnapshotID = vpcSnapshot.SnapshotConsistencyGroup.ID
+		libSnapshot.GroupSnapshotCRN = vpcSnapshot.SnapshotConsistencyGroup.CRN
 	}
 	libSnapshot.ReadyToUse = libSnapshot.VolumeID != "" && vpcSnapshot.LifecycleState == snapshotReadyState
 	return
@@ -491,6 +492,9 @@ func FromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupRes
 				ResourceReference: provider.ResourceReference{Href: ref.Href},
 			}
 		}
+		// The enclosing group supplies membership even when member details omit it.
+		member.GroupSnapshotID = vpcGroup.ID
+		member.GroupSnapshotCRN = vpcGroup.CRN
 		if !member.ReadyToUse {
 			libGroupSnapshot.ReadyToUse = false
 		}

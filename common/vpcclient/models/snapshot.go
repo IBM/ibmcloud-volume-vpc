@@ -64,7 +64,8 @@ type Snapshot struct {
 
 // SnapshotConsistencyGroupReference identifies the group that created a snapshot.
 type SnapshotConsistencyGroupReference struct {
-	ID string `json:"id"`
+	ID  string `json:"id"`
+	CRN string `json:"crn,omitempty"`
 }
 
 // OperatingSystem ...
