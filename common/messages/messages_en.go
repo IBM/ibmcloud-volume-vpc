@@ -107,6 +107,13 @@ var messagesEn = map[string]util.Message{
 		RC:          500,
 		Action:      "Review the backend error and verify that the snapshot consistency group ID exists and is accessible.",
 	},
+	"InvalidGroupSnapshotResponse": {
+		Code:        "InvalidGroupSnapshotResponse",
+		Description: "VPC returned an invalid snapshot consistency group response: %s.",
+		Type:        util.RetrivalFailed,
+		RC:          500,
+		Action:      "Retry the same request. If the error persists, contact support with the VPC response details.",
+	},
 	"GroupSnapshotNameLookupFailed": {
 		Code:        "GroupSnapshotNameLookupFailed",
 		Description: "Failed to retrieve the snapshot consistency group named '%s'.",

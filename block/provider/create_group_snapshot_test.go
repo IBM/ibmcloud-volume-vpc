@@ -48,6 +48,7 @@ type fakeSnapshotConsistencyGroupManager struct {
 	getGroupID string
 	getResult  *models.SnapshotConsistencyGroupResponse
 	getErr     error
+	getStub    func(string, *zap.Logger) (*models.SnapshotConsistencyGroupResponse, error)
 
 	getByNameName            string
 	getByNameResourceGroupID string
@@ -74,6 +75,9 @@ func (fake *fakeSnapshotConsistencyGroupManager) DeleteSnapshotConsistencyGroup(
 func (fake *fakeSnapshotConsistencyGroupManager) GetSnapshotConsistencyGroup(groupID string, logger *zap.Logger) (*models.SnapshotConsistencyGroupResponse, error) {
 	fake.getCalls++
 	fake.getGroupID = groupID
+	if fake.getStub != nil {
+		return fake.getStub(groupID, logger)
+	}
 	return fake.getResult, fake.getErr
 }
 
@@ -137,6 +141,7 @@ func TestCreateGroupSnapshotCreatesConsistencyGroupAndListsMembers(t *testing.T)
 			{
 				ID:              "snapshot-id-1",
 				CRN:             "snapshot-crn-1",
+				Href:            "snapshot-href-1",
 				MinimumCapacity: 10,
 				LifecycleState:  snapshotReadyState,
 				SourceVolume:    &models.SourceVolume{ID: "volume-id-1"},
@@ -162,9 +167,11 @@ func TestCreateGroupSnapshotCreatesConsistencyGroupAndListsMembers(t *testing.T)
 	require.NotNil(t, groupSnapshot)
 	assert.Equal(t, "group-snapshot-id", groupSnapshot.GroupSnapshotID)
 	assert.Equal(t, "group-snapshot-crn", groupSnapshot.GroupSnapshotCRN)
+	assert.Equal(t, "group-snapshot-href", groupSnapshot.GroupSnapshotMetadata.Href)
 	assert.True(t, groupSnapshot.ReadyToUse)
 	assert.Len(t, groupSnapshot.Snapshots, 2)
 	assert.Equal(t, "snapshot-id-1", groupSnapshot.Snapshots[0].SnapshotID)
+	assert.Equal(t, "snapshot-href-1", groupSnapshot.Snapshots[0].VPC.Href)
 	assert.Equal(t, "volume-id-1", groupSnapshot.Snapshots[0].VolumeID)
 	assert.Equal(t, "group-snapshot-name", groupService.createRequest.Name)
 	assert.Equal(t, "resource-group-id", groupService.createRequest.ResourceGroup.ID)
@@ -403,10 +410,11 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 	group := &models.SnapshotConsistencyGroupResponse{
 		ID:             "group-snapshot-id",
 		CRN:            "group-snapshot-crn",
+		Href:           "group-snapshot-href",
 		LifecycleState: snapshotReadyState,
 		Snapshots: []models.SnapshotReference{
 			{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
-			{ID: "snapshot-id-2", CRN: "snapshot-crn-2"},
+			{ID: "snapshot-id-2", CRN: "snapshot-crn-2", Href: "snapshot-href-2"},
 		},
 	}
 
@@ -434,6 +442,8 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 	assert.Equal(t, "snapshot-id-2", result.Snapshots[1].SnapshotID)
 	assert.Empty(t, result.Snapshots[1].VolumeID)
 	assert.Equal(t, "snapshot-crn-2", result.Snapshots[1].SnapshotCRN)
+	assert.Equal(t, "snapshot-href-2", result.Snapshots[1].VPC.Href)
+	assert.Equal(t, "group-snapshot-href", result.GroupSnapshotMetadata.Href)
 	assert.False(t, result.Snapshots[1].ReadyToUse)
 	assert.False(t, result.ReadyToUse)
 

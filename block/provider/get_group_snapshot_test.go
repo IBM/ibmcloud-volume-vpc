@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	providerError "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/test"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
@@ -114,6 +115,7 @@ func TestGetGroupSnapshot(t *testing.T) {
 			groupErr:        internalErr,
 			maxRetries:      1,
 			wantErrCode:     "GroupSnapshotRetrievalFailed",
+			wantErrText:     "group-snapshot-id",
 			wantBackendText: "internal_error",
 			wantGroupCalls:  1,
 			wantListCalls:   0,
@@ -124,6 +126,7 @@ func TestGetGroupSnapshot(t *testing.T) {
 			groupErr:        notFoundErr,
 			maxRetries:      3,
 			wantErrCode:     "GroupSnapshotRetrievalFailed",
+			wantErrText:     "group-snapshot-id",
 			wantBackendText: "snapshot_consistency_groups_not_found",
 			wantGroupCalls:  1,
 			wantListCalls:   0,
@@ -131,7 +134,8 @@ func TestGetGroupSnapshot(t *testing.T) {
 		{
 			name:           "empty backend response fails before listing members",
 			groupID:        "group-snapshot-id",
-			wantErrText:    "empty snapshot consistency group response",
+			wantErrCode:    "InvalidGroupSnapshotResponse",
+			wantErrText:    "the response is empty",
 			wantGroupCalls: 1,
 			wantListCalls:  0,
 		},
@@ -165,11 +169,7 @@ func TestGetGroupSnapshot(t *testing.T) {
 			switch {
 			case tc.wantErrCode != "":
 				assert.Nil(t, result)
-				requireProviderError(t, err, tc.wantErrCode, tc.groupID, tc.wantBackendText)
-			case tc.wantErrText != "":
-				assert.Nil(t, result)
-				require.Error(t, err)
-				assert.Contains(t, err.Error(), tc.wantErrText)
+				requireProviderError(t, err, tc.wantErrCode, tc.wantErrText, tc.wantBackendText)
 			default:
 				require.NoError(t, err)
 				require.NotNil(t, result)
@@ -673,28 +673,53 @@ func TestGroupSnapshotMemberPaginationForEveryOperation(t *testing.T) {
 	}
 }
 
-// Check that an empty group ID is rejected before listing any snapshots.
-func TestGroupSnapshotWithoutIDIsRejectedBeforeListing(t *testing.T) {
-	for _, operation := range groupSnapshotOperations {
-		t.Run(operation.name, func(t *testing.T) {
-			logger, teardown := GetTestLogger(t)
-			defer teardown()
-			session, client, _, err := GetTestOpenSession(t, logger)
-			require.NoError(t, err)
+// Invalid group responses must fail before any member snapshots are listed.
+func TestGroupSnapshotInvalidResponse(t *testing.T) {
+	testCases := []struct {
+		name       string
+		group      *models.SnapshotConsistencyGroupResponse
+		wantReason string
+	}{
+		{name: "empty response", wantReason: "the response is empty"},
+		{
+			name:       "missing group ID",
+			group:      &models.SnapshotConsistencyGroupResponse{LifecycleState: snapshotReadyState},
+			wantReason: "the group ID is missing",
+		},
+	}
+	for _, tc := range testCases {
+		for _, operation := range groupSnapshotOperations {
+			t.Run(tc.name+"/"+operation.name, func(t *testing.T) {
+				logger, teardown := GetTestLogger(t)
+				defer teardown()
+				session, client, _, err := GetTestOpenSession(t, logger)
+				require.NoError(t, err)
 
-			group := &models.SnapshotConsistencyGroupResponse{LifecycleState: snapshotReadyState}
-			client.SnapshotConsistencyGroupServiceReturns(&fakeSnapshotConsistencyGroupManager{
-				createResult: group, getResult: group, getByNameResult: group,
+				groupService := &fakeSnapshotConsistencyGroupManager{
+					createResult: tc.group, getResult: tc.group, getByNameResult: tc.group,
+				}
+				client.SnapshotConsistencyGroupServiceReturns(groupService)
+				snapshotService := &serviceFakes.SnapshotManager{}
+				client.SnapshotServiceReturns(snapshotService)
+
+				result, err := operation.call(session)
+
+				assert.Nil(t, result)
+				assert.Equal(t, 1, groupService.createCalls+groupService.getCalls+groupService.getByNameCalls)
+				assert.Zero(t, snapshotService.ListSnapshotsCallCount())
+				// A name lookup uses nil to mean no matching group.
+				if tc.group == nil && operation.name == "get by name" {
+					require.NoError(t, err)
+					return
+				}
+
+				requireProviderError(t, err, "InvalidGroupSnapshotResponse", tc.wantReason, "")
+				var responseError providerError.Message
+				require.ErrorAs(t, err, &responseError)
+				assert.Equal(t, 500, responseError.RC)
+				assert.Equal(t, providerError.RetrivalFailed, responseError.Type)
+				assert.NotEqual(t, providerError.EntityNotFound, responseError.Type)
 			})
-			snapshotService := &serviceFakes.SnapshotManager{}
-			client.SnapshotServiceReturns(snapshotService)
-
-			result, err := operation.call(session)
-
-			require.Error(t, err)
-			assert.Contains(t, err.Error(), "without an ID")
-			assert.Nil(t, result)
-			assert.Equal(t, 0, snapshotService.ListSnapshotsCallCount(), "no snapshot may be listed without a group ID")
-		})
+		}
 	}
 }

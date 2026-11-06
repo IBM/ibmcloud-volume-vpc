@@ -84,12 +84,12 @@ func (vpcs *VPCSession) GetGroupSnapshotByName(name string, resourceGroupID stri
 // If any member's source volumeID is missing, return an error so CSI sidecar can retry.
 func (vpcs *VPCSession) getGroupSnapshotWithMembers(group *models.SnapshotConsistencyGroupResponse) (*provider.GroupSnapshot, error) {
 	if group == nil {
-		return nil, errors.New("VPC returned an empty snapshot consistency group response")
+		return nil, userError.GetUserError("InvalidGroupSnapshotResponse", nil, "the response is empty")
 	}
 
 	// Reject an empty groupID
 	if group.ID == "" {
-		return nil, errors.New("VPC returned a snapshot consistency group without an ID")
+		return nil, userError.GetUserError("InvalidGroupSnapshotResponse", nil, "the group ID is missing")
 	}
 	snapshotDetails, err := vpcs.listGroupMemberSnapshots(group.ID)
 	if err != nil {
