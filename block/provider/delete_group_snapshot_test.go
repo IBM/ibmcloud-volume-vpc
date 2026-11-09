@@ -67,12 +67,13 @@ func TestDeleteGroupSnapshot(t *testing.T) {
 			name:    "not-found error is not retried",
 			groupID: "group-snapshot-id",
 			deleteErr: &models.Error{Errors: []models.ErrorItem{
-				{Code: models.ErrorCode("snapshot_consistency_groups_not_found")},
+				{Code: SnapshotConsistencyGroupNotFound},
 			}},
 			maxRetries: 3,
 			want: want{
 				errCode:      "FailedToDeleteGroupSnapshot",
 				descContain:  "group-snapshot-id",
+				backContain:  SnapshotConsistencyGroupNotFound,
 				backendCalls: 1,
 			},
 		},
@@ -94,7 +95,7 @@ func TestDeleteGroupSnapshot(t *testing.T) {
 			groupService := &fakeSnapshotConsistencyGroupManager{
 				deleteErr: tc.deleteErr,
 				getErr: &models.Error{Errors: []models.ErrorItem{
-					{Code: "snapshot_consistency_groups_not_found"},
+					{Code: SnapshotConsistencyGroupNotFound},
 				}},
 			}
 			uc.SnapshotConsistencyGroupServiceReturns(groupService)
@@ -128,7 +129,7 @@ func TestDeleteGroupSnapshotWaitsForDeletion(t *testing.T) {
 	deletingGroup := &models.SnapshotConsistencyGroupResponse{
 		ID: "group-snapshot-id", LifecycleState: "deleting",
 	}
-	notFound := backendError("snapshot_consistency_groups_not_found")
+	notFound := backendError(SnapshotConsistencyGroupNotFound)
 	testCases := []struct {
 		name         string
 		polls        []pollResult

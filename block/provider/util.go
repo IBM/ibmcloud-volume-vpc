@@ -48,11 +48,12 @@ var maxVPCRetryAttempt = 46
 
 // ConstantRetryGap ...
 const (
-	ConstantRetryGap        = 10 // seconds
-	ConstMaxVPCRetryAttempt = 46
-	ConstMinVPCRetryGap     = 3 //seconds
-	SnapshotIDNotFound      = "snapshot_id_not_found"
-	SnapshotNotFound        = "snapshots_not_found"
+	ConstantRetryGap                 = 10 // seconds
+	ConstMaxVPCRetryAttempt          = 46
+	ConstMinVPCRetryGap              = 3 //seconds
+	SnapshotIDNotFound               = "snapshot_id_not_found"
+	SnapshotNotFound                 = "snapshots_not_found"
+	SnapshotConsistencyGroupNotFound = "snapshot_consistency_groups_not_found"
 )
 
 var volumeIDPartsCount = 5
@@ -73,7 +74,7 @@ var skipErrorCodes = map[string]bool{
 	SnapshotNotFound:                               true,
 	"snapshots_not_authorized":                     true,
 	SnapshotIDNotFound:                             true,
-	"snapshot_consistency_groups_not_found":        true,
+	SnapshotConsistencyGroupNotFound:               true,
 	"snapshots_source_volume_not_found":            true,
 	"snapshots_source_volume_not_attached":         true,
 	"volume_capacity_maximum":                      true,
@@ -446,19 +447,16 @@ func FromProviderToLibSnapshot(vpcSnapshot *models.Snapshot, logger *zap.Logger)
 	return
 }
 
-// fromProviderToLibGroupSnapshot checks the members before converting a validated VPC group.
-func fromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupResponse, snapshotDetails []*models.Snapshot, logger *zap.Logger) (*provider.GroupSnapshot, error) {
-	detailsByID := make(map[string]*models.Snapshot, len(snapshotDetails))
-	for _, snap := range snapshotDetails {
-		if snap != nil {
-			detailsByID[snap.ID] = snap
-		}
+// fromProviderToLibGroupSnapshot uses the member details returned with the VPC group.
+func fromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupResponse, logger *zap.Logger) (*provider.GroupSnapshot, error) {
+	if vpcGroup == nil {
+		return nil, userError.GetUserError("InvalidGroupSnapshotResponse", nil, "the response is empty")
 	}
-	for _, ref := range vpcGroup.Snapshots {
-		snap := detailsByID[ref.ID]
-		if snap == nil || snap.SourceVolume == nil || snap.SourceVolume.ID == "" {
-			return nil, userError.GetUserError("GroupSnapshotMemberDetailsUnavailable", nil, vpcGroup.ID)
-		}
+	if vpcGroup.ID == "" {
+		return nil, userError.GetUserError("InvalidGroupSnapshotResponse", nil, "the group ID is missing")
+	}
+	if len(vpcGroup.Snapshots) == 0 {
+		return nil, userError.GetUserError("GroupSnapshotMemberDetailsUnavailable", nil, vpcGroup.ID)
 	}
 
 	logger.Debug("GroupSnapshot details of VPC client", zap.Reflect("models.SnapshotConsistencyGroupResponse", vpcGroup))
@@ -477,9 +475,13 @@ func fromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupRes
 		Snapshots:                 make([]*provider.Snapshot, 0, len(vpcGroup.Snapshots)),
 	}
 
-	for _, ref := range vpcGroup.Snapshots {
-		member := FromProviderToLibSnapshot(detailsByID[ref.ID], logger)
-		// The enclosing group supplies membership even when member details omit it.
+	for _, snap := range vpcGroup.Snapshots {
+		if snap == nil {
+			libGroupSnapshot.ReadyToUse = false
+			continue
+		}
+		// VPC may return only a reference for a member. Keep the fields it provides.
+		member := FromProviderToLibSnapshot(snap, logger)
 		member.GroupSnapshotID = vpcGroup.ID
 		member.GroupSnapshotCRN = vpcGroup.CRN
 		if !member.ReadyToUse {

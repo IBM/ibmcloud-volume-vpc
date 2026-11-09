@@ -44,7 +44,7 @@ func (vpcs *VPCSession) DeleteGroupSnapshot(groupSnapshotID string) error {
 		return userError.GetUserError("FailedToDeleteGroupSnapshot", err, groupSnapshotID)
 	}
 
-	vpcs.Logger.Info("Successfully deleted the snapshot consistency group")
+	vpcs.Logger.Info("Successfully deleted the volume group snapshot")
 	return nil
 }
 
@@ -61,7 +61,7 @@ func (vpcs *VPCSession) waitForGroupSnapshotDeletion(groupID string) error {
 		}
 
 		if apiErr, ok := errors.AsType[*models.Error](err); ok && apiErr != nil {
-			if len(apiErr.Errors) > 0 && string(apiErr.Errors[0].Code) == "snapshot_consistency_groups_not_found" {
+			if len(apiErr.Errors) > 0 && apiErr.Errors[0].Code == SnapshotConsistencyGroupNotFound {
 				deleted = true
 				return nil, true
 			}
