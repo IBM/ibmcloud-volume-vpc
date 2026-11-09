@@ -446,15 +446,19 @@ func FromProviderToLibSnapshot(vpcSnapshot *models.Snapshot, logger *zap.Logger)
 	return
 }
 
-// FromProviderToLibGroupSnapshot converts	 VPC group details to the shared provider model.
-// The group is ready only when it is stable and all member snapshots are ready.
-func FromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupResponse, snapshotDetails []*models.Snapshot, logger *zap.Logger) (libGroupSnapshot *provider.GroupSnapshot) {
-	logger.Debug("Entry of FromProviderToLibGroupSnapshot method...")
-	defer logger.Debug("Exit from FromProviderToLibGroupSnapshot method...")
-
-	if vpcGroup == nil {
-		logger.Info("GroupSnapshot details are empty")
-		return
+// fromProviderToLibGroupSnapshot checks the members before converting a validated VPC group.
+func fromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupResponse, snapshotDetails []*models.Snapshot, logger *zap.Logger) (*provider.GroupSnapshot, error) {
+	detailsByID := make(map[string]*models.Snapshot, len(snapshotDetails))
+	for _, snap := range snapshotDetails {
+		if snap != nil {
+			detailsByID[snap.ID] = snap
+		}
+	}
+	for _, ref := range vpcGroup.Snapshots {
+		snap := detailsByID[ref.ID]
+		if snap == nil || snap.SourceVolume == nil || snap.SourceVolume.ID == "" {
+			return nil, userError.GetUserError("GroupSnapshotMemberDetailsUnavailable", nil, vpcGroup.ID)
+		}
 	}
 
 	logger.Debug("GroupSnapshot details of VPC client", zap.Reflect("models.SnapshotConsistencyGroupResponse", vpcGroup))
@@ -464,34 +468,17 @@ func FromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupRes
 		createdTime = *vpcGroup.CreatedAt
 	}
 
-	libGroupSnapshot = &provider.GroupSnapshot{
+	libGroupSnapshot := &provider.GroupSnapshot{
 		GroupSnapshotID:           vpcGroup.ID,
 		GroupSnapshotCRN:          vpcGroup.CRN,
 		GroupSnapshotCreationTime: createdTime,
 		GroupSnapshotMetadata:     provider.GroupSnapshotMetadata{Href: vpcGroup.Href},
-		ReadyToUse:                vpcGroup.LifecycleState == snapshotReadyState && len(vpcGroup.Snapshots) > 0,
+		ReadyToUse:                vpcGroup.LifecycleState == snapshotReadyState,
+		Snapshots:                 make([]*provider.Snapshot, 0, len(vpcGroup.Snapshots)),
 	}
 
-	detailsByID := make(map[string]*models.Snapshot, len(snapshotDetails))
-	for _, snap := range snapshotDetails {
-		if snap != nil {
-			detailsByID[snap.ID] = snap
-		}
-	}
-
-	// Keep all members. Members with missing details stay not ready and have no source volume ID.
-	libGroupSnapshot.Snapshots = make([]*provider.Snapshot, 0, len(vpcGroup.Snapshots))
 	for _, ref := range vpcGroup.Snapshots {
-		var member *provider.Snapshot
-		if snap := detailsByID[ref.ID]; snap != nil {
-			member = FromProviderToLibSnapshot(snap, logger)
-		} else {
-			member = &provider.Snapshot{
-				SnapshotID:  ref.ID,
-				SnapshotCRN: ref.CRN,
-				VPC:         provider.VPC{Href: ref.Href},
-			}
-		}
+		member := FromProviderToLibSnapshot(detailsByID[ref.ID], logger)
 		// The enclosing group supplies membership even when member details omit it.
 		member.GroupSnapshotID = vpcGroup.ID
 		member.GroupSnapshotCRN = vpcGroup.CRN
@@ -500,7 +487,7 @@ func FromProviderToLibGroupSnapshot(vpcGroup *models.SnapshotConsistencyGroupRes
 		}
 		libGroupSnapshot.Snapshots = append(libGroupSnapshot.Snapshots, member)
 	}
-	return
+	return libGroupSnapshot, nil
 }
 
 // IsValidVolumeIDFormat validating(gc has 5 parts and NG has 6 parts)

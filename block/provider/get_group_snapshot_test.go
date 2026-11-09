@@ -139,6 +139,14 @@ func TestGetGroupSnapshot(t *testing.T) {
 			wantGroupCalls: 1,
 			wantListCalls:  0,
 		},
+		{
+			name:           "group without member references skips snapshot listing",
+			groupID:        "group-snapshot-id",
+			group:          &models.SnapshotConsistencyGroupResponse{ID: "group-snapshot-id", LifecycleState: snapshotReadyState},
+			wantErrCode:    "GroupSnapshotMemberDetailsUnavailable",
+			wantErrText:    "group-snapshot-id",
+			wantGroupCalls: 1,
+		},
 	}
 
 	for _, tc := range testCases {

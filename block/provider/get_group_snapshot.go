@@ -87,9 +87,12 @@ func (vpcs *VPCSession) getGroupSnapshotWithMembers(group *models.SnapshotConsis
 		return nil, userError.GetUserError("InvalidGroupSnapshotResponse", nil, "the response is empty")
 	}
 
-	// Reject an empty groupID
+	// An empty group ID would leave the snapshot list unfiltered.
 	if group.ID == "" {
 		return nil, userError.GetUserError("InvalidGroupSnapshotResponse", nil, "the group ID is missing")
+	}
+	if len(group.Snapshots) == 0 {
+		return nil, userError.GetUserError("GroupSnapshotMemberDetailsUnavailable", nil, group.ID)
 	}
 	snapshotDetails, err := vpcs.listGroupMemberSnapshots(group.ID)
 	if err != nil {
@@ -98,17 +101,7 @@ func (vpcs *VPCSession) getGroupSnapshotWithMembers(group *models.SnapshotConsis
 		return nil, userError.GetUserError("GroupSnapshotMemberLookupFailed", err, group.ID)
 	}
 
-	// Check if any member snapshot is missing its source volumeID.
-	response := FromProviderToLibGroupSnapshot(group, snapshotDetails, vpcs.Logger)
-	if len(response.Snapshots) == 0 {
-		return nil, userError.GetUserError("GroupSnapshotMemberDetailsUnavailable", nil, group.ID)
-	}
-	for _, member := range response.Snapshots {
-		if member == nil || member.VolumeID == "" {
-			return nil, userError.GetUserError("GroupSnapshotMemberDetailsUnavailable", nil, group.ID)
-		}
-	}
-	return response, nil
+	return fromProviderToLibGroupSnapshot(group, snapshotDetails, vpcs.Logger)
 }
 
 // listGroupMemberSnapshots reads every page of the group's member snapshots.
@@ -130,7 +123,7 @@ func (vpcs *VPCSession) listGroupMemberSnapshots(groupID string) ([]*models.Snap
 
 		members = append(members, page.Snapshots...)
 
-		start, err = nextSnapshotStart(page)
+		start, err = nextSnapshotStart(page.Next)
 		if err != nil {
 			return nil, err
 		}

@@ -34,21 +34,21 @@ const startSnapshotIDNotFoundMsg = "start parameter is not valid"
 
 // nextSnapshotStart reads the next page's start token. No next link means the last page.
 // Return an error if the link is invalid or its token is missing.
-func nextSnapshotStart(list *models.SnapshotList) (string, error) {
-	if list == nil || list.Next == nil {
+func nextSnapshotStart(next *models.HReference) (string, error) {
+	if next == nil {
 		return "", nil
 	}
-	nextURL, err := url.Parse(list.Next.Href)
+	nextURL, err := url.Parse(next.Href)
 	if err != nil {
-		return "", fmt.Errorf("snapshot next page link %q is not a valid URL: %w", list.Next.Href, err)
+		return "", fmt.Errorf("snapshot next page link %q is not a valid URL: %w", next.Href, err)
 	}
 	query, err := url.ParseQuery(nextURL.RawQuery)
 	if err != nil {
-		return "", fmt.Errorf("snapshot next page link %q has an invalid query: %w", list.Next.Href, err)
+		return "", fmt.Errorf("snapshot next page link %q has an invalid query: %w", next.Href, err)
 	}
 	start := query.Get("start")
 	if start == "" {
-		return "", fmt.Errorf("snapshot next page link %q has no start token", list.Next.Href)
+		return "", fmt.Errorf("snapshot next page link %q has no start token", next.Href)
 	}
 	return start, nil
 }
@@ -94,7 +94,7 @@ func (vpcs *VPCSession) ListSnapshots(limit int, start string, filters map[strin
 
 	var respSnapshotList = &provider.SnapshotList{}
 	if snapshots != nil {
-		next, nextErr := nextSnapshotStart(snapshots)
+		next, nextErr := nextSnapshotStart(snapshots.Next)
 		if nextErr != nil {
 			vpcs.Logger.Error("Invalid pagination metadata in snapshot list", zap.Error(nextErr))
 			return nil, userError.GetUserError("ListSnapshotsFailed", nextErr)

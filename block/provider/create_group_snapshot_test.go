@@ -246,6 +246,13 @@ func TestGroupSnapshotMemberLookup(t *testing.T) {
 			}},
 		},
 		{
+			name: "empty source volume ID", wantIncomplete: true,
+			result: &models.SnapshotList{Snapshots: []*models.Snapshot{
+				{ID: "snapshot-id-1", CRN: "snapshot-crn-1", SourceVolume: &models.SourceVolume{}},
+				fullMemberDetails.Snapshots[1],
+			}},
+		},
+		{
 			name: "complete details but snapshots are not ready",
 			result: &models.SnapshotList{Snapshots: []*models.Snapshot{
 				{ID: "snapshot-id-1", CRN: "snapshot-crn-1", LifecycleState: "pending", SourceVolume: &models.SourceVolume{ID: "volume-id-1"}},
@@ -374,15 +381,6 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 			},
 			expectedReady: false,
 		},
-		{
-			name:       "stable group without full member details",
-			groupState: snapshotReadyState,
-			groupMembers: []models.SnapshotReference{
-				{ID: "snapshot-id-1"},
-			},
-			snapshotDetails: nil,
-			expectedReady:   false,
-		},
 	}
 
 	for _, tc := range testCases {
@@ -393,16 +391,16 @@ func TestFromProviderToLibGroupSnapshotReadiness(t *testing.T) {
 				Snapshots:      tc.groupMembers,
 			}
 
-			result := FromProviderToLibGroupSnapshot(group, tc.snapshotDetails, logger)
+			result, err := fromProviderToLibGroupSnapshot(group, tc.snapshotDetails, logger)
 
+			require.NoError(t, err)
 			require.NotNil(t, result)
 			assert.Equal(t, tc.expectedReady, result.ReadyToUse)
 		})
 	}
 }
 
-// The group must stay not ready if any member's details are missing
-// Once both members have complete details and are ready, the group becomes ready
+// Reject partial member details, then convert the group when all details are available.
 func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
@@ -414,7 +412,7 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 		LifecycleState: snapshotReadyState,
 		Snapshots: []models.SnapshotReference{
 			{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
-			{ID: "snapshot-id-2", CRN: "snapshot-crn-2", Href: "snapshot-href-2"},
+			{ID: "snapshot-id-2", CRN: "snapshot-crn-2"},
 		},
 	}
 
@@ -428,34 +426,21 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 		},
 	}
 
-	result := FromProviderToLibGroupSnapshot(group, snapshotDetails, logger)
-
-	require.NotNil(t, result)
-	require.Len(t, result.Snapshots, 2)
-	for _, member := range result.Snapshots {
-		assert.Equal(t, group.ID, member.GroupSnapshotID)
-		assert.Equal(t, group.CRN, member.GroupSnapshotCRN)
-	}
-	assert.Equal(t, "volume-id-1", result.Snapshots[0].VolumeID)
-	assert.Equal(t, "snapshot-crn-1", result.Snapshots[0].SnapshotCRN)
-	assert.True(t, result.Snapshots[0].ReadyToUse)
-	assert.Equal(t, "snapshot-id-2", result.Snapshots[1].SnapshotID)
-	assert.Empty(t, result.Snapshots[1].VolumeID)
-	assert.Equal(t, "snapshot-crn-2", result.Snapshots[1].SnapshotCRN)
-	assert.Equal(t, "snapshot-href-2", result.Snapshots[1].VPC.Href)
-	assert.Equal(t, "group-snapshot-href", result.GroupSnapshotMetadata.Href)
-	assert.False(t, result.Snapshots[1].ReadyToUse)
-	assert.False(t, result.ReadyToUse)
+	result, err := fromProviderToLibGroupSnapshot(group, snapshotDetails, logger)
+	require.Nil(t, result)
+	requireProviderError(t, err, "GroupSnapshotMemberDetailsUnavailable", group.ID, "")
 
 	// Simulate a later response with the second member's details
 	// Convert it again and check that both members and the group are ready
 	snapshotDetails = append(snapshotDetails, &models.Snapshot{
 		ID:             "snapshot-id-2",
 		CRN:            "snapshot-crn-2",
+		Href:           "snapshot-href-2",
 		LifecycleState: snapshotReadyState,
 		SourceVolume:   &models.SourceVolume{ID: "volume-id-2"},
 	})
-	result = FromProviderToLibGroupSnapshot(group, snapshotDetails, logger)
+	result, err = fromProviderToLibGroupSnapshot(group, snapshotDetails, logger)
+	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Len(t, result.Snapshots, 2)
 	for _, member := range result.Snapshots {
@@ -463,6 +448,8 @@ func TestFromProviderToLibGroupSnapshotPartialMembers(t *testing.T) {
 		assert.Equal(t, group.CRN, member.GroupSnapshotCRN)
 	}
 	assert.Equal(t, "volume-id-2", result.Snapshots[1].VolumeID)
+	assert.Equal(t, "snapshot-href-2", result.Snapshots[1].VPC.Href)
+	assert.Equal(t, "group-snapshot-href", result.GroupSnapshotMetadata.Href)
 	assert.True(t, result.Snapshots[1].ReadyToUse)
 	assert.True(t, result.ReadyToUse)
 }

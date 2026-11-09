@@ -335,37 +335,36 @@ func TestListSnapshots(t *testing.T) {
 func TestNextSnapshotStart(t *testing.T) {
 	testCases := []struct {
 		name      string
-		list      *models.SnapshotList
+		next      *models.HReference
 		wantStart string
 		wantErr   string // empty means no error
 	}{
-		{name: "nil list is the last page", list: nil},
-		{name: "no Next is the last page", list: &models.SnapshotList{}},
+		{name: "no Next is the last page"},
 		{
 			name:      "plain token",
-			list:      &models.SnapshotList{Next: &models.HReference{Href: "https://eu-gb.iaas.cloud.ibm.com/v1/snapshots?start=3e898aa7-ac71&limit=1&zone.name=eu-gb-1"}},
+			next:      &models.HReference{Href: "https://eu-gb.iaas.cloud.ibm.com/v1/snapshots?start=3e898aa7-ac71&limit=1&zone.name=eu-gb-1"},
 			wantStart: "3e898aa7-ac71",
 		},
 		{
 			name:      "start is not the first query parameter",
-			list:      &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?limit=1&start=abc"}},
+			next:      &models.HReference{Href: "https://host/v1/snapshots?limit=1&start=abc"},
 			wantStart: "abc",
 		},
 		{
 			name:      "encoded token is decoded",
-			list:      &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?start=ab%2Bc%3D%3D&limit=1"}},
+			next:      &models.HReference{Href: "https://host/v1/snapshots?start=ab%2Bc%3D%3D&limit=1"},
 			wantStart: "ab+c==",
 		},
-		{name: "empty href", list: &models.SnapshotList{Next: &models.HReference{}}, wantErr: "has no start token"},
-		{name: "malformed URL", list: &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?start=%zz"}}, wantErr: "invalid query"},
-		{name: "URL with an invalid host", list: &models.SnapshotList{Next: &models.HReference{Href: "http://[::1"}}, wantErr: "not a valid URL"},
-		{name: "no start parameter", list: &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?limit=1"}}, wantErr: "has no start token"},
-		{name: "empty start value", list: &models.SnapshotList{Next: &models.HReference{Href: "https://host/v1/snapshots?start=&limit=1"}}, wantErr: "has no start token"},
-		{name: "start only in the path is not a token", list: &models.SnapshotList{Next: &models.HReference{Href: "https://host/start=abc"}}, wantErr: "has no start token"},
+		{name: "empty href", next: &models.HReference{}, wantErr: "has no start token"},
+		{name: "malformed URL", next: &models.HReference{Href: "https://host/v1/snapshots?start=%zz"}, wantErr: "invalid query"},
+		{name: "URL with an invalid host", next: &models.HReference{Href: "http://[::1"}, wantErr: "not a valid URL"},
+		{name: "no start parameter", next: &models.HReference{Href: "https://host/v1/snapshots?limit=1"}, wantErr: "has no start token"},
+		{name: "empty start value", next: &models.HReference{Href: "https://host/v1/snapshots?start=&limit=1"}, wantErr: "has no start token"},
+		{name: "start only in the path is not a token", next: &models.HReference{Href: "https://host/start=abc"}, wantErr: "has no start token"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			start, err := nextSnapshotStart(tc.list)
+			start, err := nextSnapshotStart(tc.next)
 			if tc.wantErr != "" {
 				if assert.Error(t, err) {
 					assert.Contains(t, err.Error(), tc.wantErr)
