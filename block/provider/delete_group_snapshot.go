@@ -73,7 +73,7 @@ func (vpcs *VPCSession) waitForGroupSnapshotDeletion(groupID string) error {
 		return fmt.Errorf("could not confirm deletion of volume group snapshot %q: %w", groupID, err)
 	}
 	if !deleted {
-		return fmt.Errorf("volume group snapshot %q still exists after %d deletion checks", groupID, vpcs.APIRetry.maxRetryAttempt)
+		return fmt.Errorf("volume group snapshot %q still exists after %d retry attempts", groupID, vpcs.APIRetry.maxRetryAttempt)
 	}
 	return nil
 }
