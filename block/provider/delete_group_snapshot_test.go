@@ -166,7 +166,7 @@ func TestDeleteGroupSnapshotWaitsForDeletion(t *testing.T) {
 			polls:        []pollResult{{group: deletingGroup}},
 			attempts:     3,
 			wantGetCalls: 3,
-			wantError:    "still exists after 3 deletion checks",
+			wantError:    "still exists after 3 retry attempts",
 			wantDelay:    30 * time.Second,
 		},
 		{
@@ -176,7 +176,7 @@ func TestDeleteGroupSnapshotWaitsForDeletion(t *testing.T) {
 			}}},
 			attempts:     1,
 			wantGetCalls: 1,
-			wantError:    "still exists after 1 deletion checks",
+			wantError:    "still exists after 1 retry attempts",
 		},
 		{
 			name:         "permission failure is not deletion success",
@@ -232,7 +232,7 @@ func TestDeleteGroupSnapshotWaitsForDeletion(t *testing.T) {
 			polls:        []pollResult{{}},
 			attempts:     1,
 			wantGetCalls: 1,
-			wantError:    "still exists after 1 deletion checks",
+			wantError:    "still exists after 1 retry attempts",
 		},
 	}
 

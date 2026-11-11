@@ -23,6 +23,7 @@ import (
 	providerError "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	userError "github.com/IBM/ibmcloud-volume-vpc/common/messages"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	serviceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -117,9 +118,13 @@ func TestCreateGroupSnapshotReturnsGroupAndMembers(t *testing.T) {
 	vpcs, uc, _, err := GetTestOpenSession(t, logger)
 	require.NoError(t, err)
 
-	group := newGroupResponse(snapshotReadyState, snapshotReadyState)
+	group := newGroupResponse(snapshotReadyState)
+	members := newMemberList(snapshotReadyState)
 	groupService := &fakeSnapshotConsistencyGroupManager{createResult: group}
 	uc.SnapshotConsistencyGroupServiceReturns(groupService)
+	snapshotService := &serviceFakes.SnapshotManager{}
+	snapshotService.ListSnapshotsReturns(members, nil)
+	uc.SnapshotServiceReturns(snapshotService)
 
 	groupSnapshot, err := vpcs.CreateGroupSnapshot([]string{"volume-id-1", "volume-id-2"}, provider.GroupSnapshotParameters{
 		Name:          "group-snapshot-name",
@@ -137,7 +142,7 @@ func TestCreateGroupSnapshotReturnsGroupAndMembers(t *testing.T) {
 	assert.Equal(t, &provider.Snapshot{
 		SnapshotID:           "snapshot-id-1",
 		SnapshotCRN:          "snapshot-crn-1",
-		SnapshotCreationTime: *group.Snapshots[0].CreatedAt,
+		SnapshotCreationTime: *members.Snapshots[0].CreatedAt,
 		SnapshotSize:         10 * GiB,
 		VPC:                  provider.VPC{Href: "snapshot-href-1"},
 		VolumeID:             "volume-id-1",
@@ -154,7 +159,7 @@ func TestCreateGroupSnapshotReturnsGroupAndMembers(t *testing.T) {
 	require.Len(t, groupService.createRequest.Snapshots, 2)
 	assert.Equal(t, "volume-id-1", groupService.createRequest.Snapshots[0].SourceVolume.ID)
 	assert.Equal(t, "volume-id-2", groupService.createRequest.Snapshots[1].SourceVolume.ID)
-	assert.Zero(t, uc.SnapshotServiceCallCount())
+	assert.Equal(t, 1, snapshotService.ListSnapshotsCallCount())
 }
 
 // Run shared response checks through Create, Get, and GetByName.
@@ -184,7 +189,7 @@ var groupSnapshotOperations = []struct {
 	},
 }
 
-// Missing source-volume details must not panic or produce a ready snapshot
+// Ordinary snapshot readiness depends on the lifecycle state, not the source volume.
 func TestFromProviderToLibSnapshotNilSourceVolume(t *testing.T) {
 	logger, teardown := GetTestLogger(t)
 	defer teardown()
@@ -206,7 +211,7 @@ func TestFromProviderToLibSnapshotNilSourceVolume(t *testing.T) {
 
 			require.NotNil(t, result)
 			assert.Empty(t, result.VolumeID)
-			assert.False(t, result.ReadyToUse)
+			assert.True(t, result.ReadyToUse)
 		})
 	}
 }

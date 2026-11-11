@@ -34,13 +34,10 @@ const groupResponseWithMember = `{
 	"id": "group-snapshot-id",
 	"crn": "group-snapshot-crn",
 	"lifecycle_state": "stable",
+	"created_at": "2026-01-02T03:04:05Z",
 	"snapshots": [{
 		"id": "snapshot-id-1",
-		"crn": "snapshot-crn-1",
-		"source_volume": {"id": "volume-id-1"},
-		"created_at": "2026-01-02T03:04:05Z",
-		"minimum_capacity": 10,
-		"lifecycle_state": "stable"
+		"crn": "snapshot-crn-1"
 	}]
 }`
 
@@ -53,12 +50,11 @@ func assertGroupMember(t *testing.T, group *models.SnapshotConsistencyGroupRespo
 	require.NotNil(t, member)
 	assert.Equal(t, "snapshot-id-1", member.ID)
 	assert.Equal(t, "snapshot-crn-1", member.CRN)
-	require.NotNil(t, member.SourceVolume)
-	assert.Equal(t, "volume-id-1", member.SourceVolume.ID)
-	require.NotNil(t, member.CreatedAt)
-	assert.Equal(t, time.Date(2026, time.January, 2, 3, 4, 5, 0, time.UTC), *member.CreatedAt)
-	assert.EqualValues(t, 10, member.MinimumCapacity)
-	assert.Equal(t, "stable", member.LifecycleState)
+	assert.Nil(t, member.SourceVolume)
+	assert.Nil(t, member.CreatedAt)
+	assert.Empty(t, member.LifecycleState)
+	require.NotNil(t, group.CreatedAt)
+	assert.Equal(t, time.Date(2026, time.January, 2, 3, 4, 5, 0, time.UTC), *group.CreatedAt)
 }
 
 func TestCreateSnapshotConsistencyGroup(t *testing.T) {

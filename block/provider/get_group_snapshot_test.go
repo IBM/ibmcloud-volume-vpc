@@ -17,18 +17,24 @@
 package provider
 
 import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
-	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	providerError "github.com/IBM/ibmcloud-volume-interface/lib/utils"
 	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/models"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/riaas/test"
+	"github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume"
+	serviceFakes "github.com/IBM/ibmcloud-volume-vpc/common/vpcclient/vpcvolume/fakes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// Create a group response with two member snapshots for the tests.
-func newGroupResponse(lifecycleState, secondMemberState string) *models.SnapshotConsistencyGroupResponse {
+// The group API returns references, not the full snapshot details.
+func newGroupResponse(lifecycleState string) *models.SnapshotConsistencyGroupResponse {
 	createdAt := time.Date(2026, time.January, 2, 3, 4, 5, 0, time.UTC)
 	return &models.SnapshotConsistencyGroupResponse{
 		ID:             "group-snapshot-id",
@@ -36,6 +42,16 @@ func newGroupResponse(lifecycleState, secondMemberState string) *models.Snapshot
 		Href:           "group-snapshot-href",
 		LifecycleState: lifecycleState,
 		CreatedAt:      &createdAt,
+		Snapshots: []*models.Snapshot{
+			{ID: "snapshot-id-1", CRN: "snapshot-crn-1"},
+			{ID: "snapshot-id-2", CRN: "snapshot-crn-2"},
+		},
+	}
+}
+
+func newMemberList(secondMemberState string) *models.SnapshotList {
+	createdAt := time.Date(2026, time.January, 2, 3, 4, 6, 0, time.UTC)
+	return &models.SnapshotList{
 		Snapshots: []*models.Snapshot{
 			{
 				ID:              "snapshot-id-1",
@@ -70,6 +86,7 @@ func TestGetGroupSnapshot(t *testing.T) {
 		name       string
 		groupID    string
 		group      *models.SnapshotConsistencyGroupResponse
+		members    *models.SnapshotList
 		groupErr   error
 		maxRetries int // 0 keeps the defaults; a positive value sets total attempts, including the first call.
 
@@ -83,7 +100,8 @@ func TestGetGroupSnapshot(t *testing.T) {
 		{
 			name:           "stable group with ready members",
 			groupID:        "group-snapshot-id",
-			group:          newGroupResponse(snapshotReadyState, snapshotReadyState),
+			group:          newGroupResponse(snapshotReadyState),
+			members:        newMemberList(snapshotReadyState),
 			wantReady:      true,
 			wantVolumeIDs:  []string{"volume-id-1", "volume-id-2"},
 			wantGroupCalls: 1,
@@ -91,7 +109,17 @@ func TestGetGroupSnapshot(t *testing.T) {
 		{
 			name:           "pending member makes the group not ready",
 			groupID:        "group-snapshot-id",
-			group:          newGroupResponse(snapshotReadyState, "pending"),
+			group:          newGroupResponse(snapshotReadyState),
+			members:        newMemberList("pending"),
+			wantReady:      false,
+			wantVolumeIDs:  []string{"volume-id-1", "volume-id-2"},
+			wantGroupCalls: 1,
+		},
+		{
+			name:           "member without a lifecycle state makes the group not ready",
+			groupID:        "group-snapshot-id",
+			group:          newGroupResponse(snapshotReadyState),
+			members:        newMemberList(""),
 			wantReady:      false,
 			wantVolumeIDs:  []string{"volume-id-1", "volume-id-2"},
 			wantGroupCalls: 1,
@@ -99,7 +127,8 @@ func TestGetGroupSnapshot(t *testing.T) {
 		{
 			name:           "pending group is not ready even when members are ready",
 			groupID:        "group-snapshot-id",
-			group:          newGroupResponse("pending", snapshotReadyState),
+			group:          newGroupResponse("pending"),
+			members:        newMemberList(snapshotReadyState),
 			wantReady:      false,
 			wantVolumeIDs:  []string{"volume-id-1", "volume-id-2"},
 			wantGroupCalls: 1,
@@ -156,11 +185,18 @@ func TestGetGroupSnapshot(t *testing.T) {
 
 			groupService := &fakeSnapshotConsistencyGroupManager{getResult: tc.group, getErr: tc.groupErr}
 			uc.SnapshotConsistencyGroupServiceReturns(groupService)
+			snapshotService := &serviceFakes.SnapshotManager{}
+			snapshotService.ListSnapshotsReturns(tc.members, nil)
+			uc.SnapshotServiceReturns(snapshotService)
 
 			result, err := vpcs.GetGroupSnapshot(tc.groupID)
 
 			assert.Equal(t, tc.wantGroupCalls, groupService.getCalls)
-			assert.Zero(t, uc.SnapshotServiceCallCount())
+			if tc.members == nil {
+				assert.Zero(t, snapshotService.ListSnapshotsCallCount())
+			} else {
+				assert.Equal(t, 1, snapshotService.ListSnapshotsCallCount())
+			}
 			assert.Equal(t, tc.groupID, groupService.getGroupID)
 
 			switch {
@@ -177,7 +213,7 @@ func TestGetGroupSnapshot(t *testing.T) {
 				require.Len(t, result.Snapshots, len(tc.group.Snapshots))
 				for i, member := range result.Snapshots {
 					gotVolumeIDs = append(gotVolumeIDs, member.VolumeID)
-					assert.Equal(t, tc.group.Snapshots[i].LifecycleState == snapshotReadyState, member.ReadyToUse)
+					assert.Equal(t, tc.members.Snapshots[i].LifecycleState == snapshotReadyState, member.ReadyToUse)
 				}
 				assert.Equal(t, tc.wantVolumeIDs, gotVolumeIDs)
 			}
@@ -212,7 +248,7 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 			name:              "name and resource group are forwarded to the backend",
 			groupName:         "my-group",
 			resourceGroup:     "my-resource-group",
-			group:             newGroupResponse(snapshotReadyState, snapshotReadyState),
+			group:             newGroupResponse(snapshotReadyState),
 			wantVolumeIDs:     []string{"volume-id-1", "volume-id-2"},
 			wantByNameCalls:   1,
 			wantQueriedByName: "my-group",
@@ -271,11 +307,18 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 
 			groupService := &fakeSnapshotConsistencyGroupManager{getByNameResult: tc.group, getByNameErr: tc.groupErr}
 			uc.SnapshotConsistencyGroupServiceReturns(groupService)
+			snapshotService := &serviceFakes.SnapshotManager{}
+			snapshotService.ListSnapshotsReturns(newMemberList(snapshotReadyState), nil)
+			uc.SnapshotServiceReturns(snapshotService)
 
 			result, err := vpcs.GetGroupSnapshotByName(tc.groupName, tc.resourceGroup)
 
 			assert.Equal(t, tc.wantByNameCalls, groupService.getByNameCalls)
-			assert.Zero(t, uc.SnapshotServiceCallCount())
+			if tc.group == nil {
+				assert.Zero(t, snapshotService.ListSnapshotsCallCount())
+			} else {
+				assert.Equal(t, 1, snapshotService.ListSnapshotsCallCount())
+			}
 			if tc.wantByNameCalls > 0 {
 				assert.Equal(t, tc.wantQueriedByName, groupService.getByNameName)
 				assert.Equal(t, tc.resourceGroup, groupService.getByNameResourceGroupID)
@@ -302,112 +345,193 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 	}
 }
 
-func TestGroupSnapshotReturnsAvailableMemberDetails(t *testing.T) {
+func TestGroupSnapshotMemberPages(t *testing.T) {
+	group := newGroupResponse(snapshotReadyState)
+	members := newMemberList(snapshotReadyState).Snapshots
+	pageLink := func(query string) *models.HReference {
+		return &models.HReference{Href: "https://vpc.example/v1/snapshots?" + query}
+	}
+	firstPage := &models.SnapshotList{Snapshots: members[1:], Next: pageLink("start=page-2")}
+	lastPage := &models.SnapshotList{Snapshots: members[:1]}
+	forbidden := &models.Error{Errors: []models.ErrorItem{{Code: "snapshots_not_authorized", Status: "403 Forbidden"}}}
 	testCases := []struct {
-		name        string
-		changeGroup func(*models.SnapshotConsistencyGroupResponse)
-		wantMembers int
-		wantReady   bool
-		checkMember func(*testing.T, *provider.Snapshot)
+		name            string
+		pages           []*models.SnapshotList
+		tokens          []string
+		lastErr         error
+		wantCode        string
+		wantDetail      string
+		wantDescription string
 	}{
+		{name: "one page in reverse order", pages: []*models.SnapshotList{{Snapshots: []*models.Snapshot{members[1], {ID: "unrelated-snapshot"}, members[0]}}}, tokens: []string{""}},
+		{name: "two pages in reverse order", pages: []*models.SnapshotList{firstPage, lastPage}, tokens: []string{"", "page-2"}},
+		{name: "empty middle page still has a next page", pages: []*models.SnapshotList{firstPage, {Next: pageLink("start=page-3")}, lastPage}, tokens: []string{"", "page-2", "page-3"}},
+		{name: "second page permission failure", pages: []*models.SnapshotList{firstPage, nil}, tokens: []string{"", "page-2"}, lastErr: forbidden, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "403 Forbidden"},
+		{name: "second page connection failure", pages: []*models.SnapshotList{firstPage, nil}, tokens: []string{"", "page-2"}, lastErr: errors.New("connection reset"), wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "connection reset"},
 		{
-			name: "null member",
-			changeGroup: func(group *models.SnapshotConsistencyGroupResponse) {
-				group.Snapshots[1] = nil
-			},
-			wantMembers: 1,
+			name:            "nil second page",
+			pages:           []*models.SnapshotList{firstPage, nil},
+			tokens:          []string{"", "page-2"},
+			wantCode:        "InvalidGroupSnapshotResponse",
+			wantDescription: "empty member snapshot page",
 		},
-		{
-			name: "member reference without details",
-			changeGroup: func(group *models.SnapshotConsistencyGroupResponse) {
-				group.Snapshots[1] = &models.Snapshot{ID: "snapshot-id-2", CRN: "snapshot-crn-2"}
-			},
-			wantMembers: 2,
-			checkMember: func(t *testing.T, member *provider.Snapshot) {
-				assert.Equal(t, "snapshot-id-2", member.SnapshotID)
-				assert.Equal(t, "snapshot-crn-2", member.SnapshotCRN)
-				assert.Empty(t, member.VolumeID)
-				assert.True(t, member.SnapshotCreationTime.IsZero())
-				assert.Zero(t, member.SnapshotSize)
-				assert.False(t, member.ReadyToUse)
-			},
-		},
-		{
-			name: "missing source volume ID",
-			changeGroup: func(group *models.SnapshotConsistencyGroupResponse) {
-				group.Snapshots[1].SourceVolume.ID = ""
-			},
-			wantMembers: 2,
-			checkMember: func(t *testing.T, member *provider.Snapshot) {
-				assert.Empty(t, member.VolumeID)
-				assert.False(t, member.ReadyToUse)
-			},
-		},
-		{
-			name: "missing member CRN",
-			changeGroup: func(group *models.SnapshotConsistencyGroupResponse) {
-				group.Snapshots[1].CRN = ""
-			},
-			wantMembers: 2,
-			wantReady:   true,
-			checkMember: func(t *testing.T, member *provider.Snapshot) {
-				assert.Empty(t, member.SnapshotCRN)
-				assert.Equal(t, "snapshot-id-2", member.SnapshotID)
-			},
-		},
-		{
-			name: "missing member creation time",
-			changeGroup: func(group *models.SnapshotConsistencyGroupResponse) {
-				group.Snapshots[1].CreatedAt = nil
-			},
-			wantMembers: 2,
-			wantReady:   true,
-			checkMember: func(t *testing.T, member *provider.Snapshot) {
-				assert.True(t, member.SnapshotCreationTime.IsZero())
-			},
-		},
-		{
-			name: "missing member lifecycle state",
-			changeGroup: func(group *models.SnapshotConsistencyGroupResponse) {
-				group.Snapshots[1].LifecycleState = ""
-			},
-			wantMembers: 2,
-			checkMember: func(t *testing.T, member *provider.Snapshot) {
-				assert.False(t, member.ReadyToUse)
-			},
-		},
+		{name: "next page points to itself", pages: []*models.SnapshotList{firstPage, {Next: pageLink("start=page-2")}}, tokens: []string{"", "page-2"}, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "repeated a snapshot page token"},
+		{name: "next page points to an earlier token", pages: []*models.SnapshotList{firstPage, {Next: pageLink("start=page-3")}, {Next: pageLink("start=page-2")}}, tokens: []string{"", "page-2", "page-3"}, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "repeated a snapshot page token"},
+		{name: "next link is not a URL", pages: []*models.SnapshotList{{Next: &models.HReference{Href: "https://[bad"}}}, tokens: []string{""}, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "invalid snapshot next-page link"},
+		{name: "next token has invalid escaping", pages: []*models.SnapshotList{{Next: pageLink("start=%ZZ")}}, tokens: []string{""}, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "invalid snapshot next-page query"},
+		{name: "next link has no token", pages: []*models.SnapshotList{{Next: pageLink("limit=100")}}, tokens: []string{""}, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "one non-empty start token"},
+		{name: "next token is empty", pages: []*models.SnapshotList{{Next: pageLink("start=")}}, tokens: []string{""}, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "one non-empty start token"},
+		{name: "next link has two tokens", pages: []*models.SnapshotList{{Next: pageLink("start=a&start=b")}}, tokens: []string{""}, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "one non-empty start token"},
+		{name: "same snapshot on two pages", pages: []*models.SnapshotList{firstPage, {Snapshots: members}}, tokens: []string{"", "page-2"}, wantCode: "GroupSnapshotMemberLookupFailed", wantDetail: "more than once"},
+		{name: "last page did not include all members", pages: []*models.SnapshotList{lastPage}, tokens: []string{""}, wantCode: "GroupSnapshotMemberDetailsUnavailable", wantDetail: "snapshot-id-2"},
 	}
 
-	for _, tc := range testCases {
-		for _, operation := range groupSnapshotOperations {
-			t.Run(tc.name+"/"+operation.name, func(t *testing.T) {
-				logger, teardown := GetTestLogger(t)
-				defer teardown()
-				session, client, _, err := GetTestOpenSession(t, logger)
-				require.NoError(t, err)
+	for _, operation := range groupSnapshotOperations {
+		t.Run(operation.name, func(t *testing.T) {
+			for _, tc := range testCases {
+				t.Run(tc.name, func(t *testing.T) {
+					logger, teardown := GetTestLogger(t)
+					defer teardown()
+					session, client, _, err := GetTestOpenSession(t, logger)
+					require.NoError(t, err)
+					client.SnapshotConsistencyGroupServiceReturns(&fakeSnapshotConsistencyGroupManager{
+						createResult: group, getResult: group, getByNameResult: group,
+					})
+					snapshotService := &serviceFakes.SnapshotManager{}
+					for i, page := range tc.pages {
+						var pageErr error
+						if i == len(tc.pages)-1 {
+							pageErr = tc.lastErr
+						}
+						snapshotService.ListSnapshotsReturnsOnCall(i, page, pageErr)
+					}
+					client.SnapshotServiceReturns(snapshotService)
 
-				group := newGroupResponse(snapshotReadyState, snapshotReadyState)
-				tc.changeGroup(group)
-				groupService := &fakeSnapshotConsistencyGroupManager{
-					createResult: group, getResult: group, getByNameResult: group,
-				}
-				client.SnapshotConsistencyGroupServiceReturns(groupService)
+					result, err := operation.call(session)
+					require.Equal(t, len(tc.tokens), snapshotService.ListSnapshotsCallCount())
+					for i, token := range tc.tokens {
+						limit, start, filters, _ := snapshotService.ListSnapshotsArgsForCall(i)
+						assert.Equal(t, maxLimit, limit)
+						assert.Equal(t, token, start)
+						require.NotNil(t, filters)
+						assert.Equal(t, group.ID, filters.SnapshotConsistencyGroupID)
+					}
+					assert.Zero(t, snapshotService.GetSnapshotCallCount())
+					if tc.wantCode != "" {
+						require.Nil(t, result)
+						requireProviderError(t, err, tc.wantCode, group.ID, tc.wantDetail)
+						if tc.wantDescription != "" {
+							assert.ErrorContains(t, err, tc.wantDescription)
+						}
+						return
+					}
 
-				result, err := operation.call(session)
+					require.NoError(t, err)
+					require.NotNil(t, result)
+					require.Len(t, result.Snapshots, len(members))
+					assert.True(t, result.ReadyToUse)
+					for i, snapshot := range result.Snapshots {
+						assert.Equal(t, members[i].ID, snapshot.SnapshotID)
+						assert.Equal(t, members[i].SourceVolume.ID, snapshot.VolumeID)
+						assert.Equal(t, *members[i].CreatedAt, snapshot.SnapshotCreationTime)
+						assert.Equal(t, group.ID, snapshot.GroupSnapshotID)
+					}
+				})
+			}
+		})
+	}
+}
 
-				require.NoError(t, err)
-				require.NotNil(t, result)
-				require.Len(t, result.Snapshots, tc.wantMembers)
-				assert.Equal(t, "snapshot-id-1", result.Snapshots[0].SnapshotID)
-				assert.Equal(t, tc.wantReady, result.ReadyToUse)
-				if tc.checkMember != nil {
-					tc.checkMember(t, result.Snapshots[1])
-				}
-				assert.Equal(t, 1, groupService.createCalls+groupService.getCalls+groupService.getByNameCalls)
-				assert.Zero(t, client.SnapshotServiceCallCount())
-			})
+func TestGroupSnapshotRejectsIncompleteMembers(t *testing.T) {
+	testCases := []struct {
+		name   string
+		change func(*models.SnapshotConsistencyGroupResponse, *models.SnapshotList)
+	}{
+		{"nil group reference", func(g *models.SnapshotConsistencyGroupResponse, _ *models.SnapshotList) { g.Snapshots[1] = nil }},
+		{"group reference without ID", func(g *models.SnapshotConsistencyGroupResponse, _ *models.SnapshotList) { g.Snapshots[1].ID = "" }},
+		{"duplicate group reference", func(g *models.SnapshotConsistencyGroupResponse, _ *models.SnapshotList) {
+			g.Snapshots[1] = g.Snapshots[0]
+		}},
+		{"missing member", func(_ *models.SnapshotConsistencyGroupResponse, s *models.SnapshotList) { s.Snapshots[1] = nil }},
+		{"missing source volume", func(_ *models.SnapshotConsistencyGroupResponse, s *models.SnapshotList) {
+			s.Snapshots[1].SourceVolume = nil
+		}},
+		{"empty source volume ID", func(_ *models.SnapshotConsistencyGroupResponse, s *models.SnapshotList) {
+			s.Snapshots[1].SourceVolume.ID = ""
+		}},
+		{"missing CRN", func(_ *models.SnapshotConsistencyGroupResponse, s *models.SnapshotList) { s.Snapshots[1].CRN = "" }},
+		{"missing creation time", func(_ *models.SnapshotConsistencyGroupResponse, s *models.SnapshotList) {
+			s.Snapshots[1].CreatedAt = nil
+		}},
+		{"CRN differs from group reference", func(_ *models.SnapshotConsistencyGroupResponse, s *models.SnapshotList) {
+			s.Snapshots[1].CRN = "wrong-crn"
+		}},
+		{"member reports a different group", func(_ *models.SnapshotConsistencyGroupResponse, s *models.SnapshotList) {
+			s.Snapshots[1].SnapshotConsistencyGroup = &models.SnapshotConsistencyGroupReference{ID: "other-group"}
+		}},
+	}
+	for _, operation := range groupSnapshotOperations {
+		t.Run(operation.name, func(t *testing.T) {
+			for _, tc := range testCases {
+				t.Run(tc.name, func(t *testing.T) {
+					logger, teardown := GetTestLogger(t)
+					defer teardown()
+					session, client, _, err := GetTestOpenSession(t, logger)
+					require.NoError(t, err)
+					group, members := newGroupResponse(snapshotReadyState), newMemberList(snapshotReadyState)
+					tc.change(group, members)
+					client.SnapshotConsistencyGroupServiceReturns(&fakeSnapshotConsistencyGroupManager{
+						createResult: group, getResult: group, getByNameResult: group,
+					})
+					snapshotService := &serviceFakes.SnapshotManager{}
+					snapshotService.ListSnapshotsReturns(members, nil)
+					client.SnapshotServiceReturns(snapshotService)
+
+					result, err := operation.call(session)
+					require.Nil(t, result)
+					requireProviderError(t, err, "GroupSnapshotMemberDetailsUnavailable", group.ID, "")
+				})
+			}
+		})
+	}
+}
+
+// Use the real client to check that the cursor is decoded and sent back only once.
+func TestGroupSnapshotMemberCursorRoundTrip(t *testing.T) {
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+	session, client, _, err := GetTestOpenSession(t, logger)
+	require.NoError(t, err)
+
+	group := newGroupResponse(snapshotReadyState)
+	members := newMemberList(snapshotReadyState).Snapshots
+	queries := make(chan url.Values, 3)
+	mux, httpClient, stop := test.SetupServer(t)
+	defer stop()
+	mux.HandleFunc(vpcvolume.Version+"/snapshots", func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query()
+		queries <- query
+		page := &models.SnapshotList{Snapshots: members[1:]}
+		if query.Get("start") == "" {
+			page.Snapshots = members[:1]
+			page.Next = &models.HReference{Href: "https://vpc.example/v1/snapshots?start=a%2Bb%3D%26c&limit=100"}
 		}
+		assert.NoError(t, json.NewEncoder(w).Encode(page))
+	})
+	client.SnapshotServiceReturns(vpcvolume.NewSnapshotManager(httpClient))
+	client.SnapshotConsistencyGroupServiceReturns(&fakeSnapshotConsistencyGroupManager{getResult: group})
+
+	result, err := session.GetGroupSnapshot(group.ID)
+	require.NoError(t, err)
+	require.Len(t, result.Snapshots, 2)
+	require.Len(t, queries, 2)
+	first, second := <-queries, <-queries
+	for _, query := range []url.Values{first, second} {
+		assert.Equal(t, group.ID, query.Get("snapshot_consistency_group.id"))
+		assert.Equal(t, "100", query.Get("limit"))
 	}
+	assert.False(t, first.Has("start"))
+	assert.Equal(t, "a+b=&c", second.Get("start"))
 }
 
 // Malformed group responses are errors, not missing groups.
