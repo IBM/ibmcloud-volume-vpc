@@ -17,7 +17,9 @@
 package provider
 
 import (
+	"context"
 	"testing"
+	"testing/synctest"
 
 	"github.com/IBM/ibmcloud-volume-interface/lib/provider"
 	providerError "github.com/IBM/ibmcloud-volume-interface/lib/utils"
@@ -43,6 +45,8 @@ type fakeSnapshotConsistencyGroupManager struct {
 	deleteGroupID string
 	deleteErr     error
 
+	firstCreateErr error
+
 	getGroupID string
 	getResult  *models.SnapshotConsistencyGroupResponse
 	getErr     error
@@ -61,6 +65,11 @@ type fakeSnapshotConsistencyGroupManager struct {
 func (fake *fakeSnapshotConsistencyGroupManager) CreateSnapshotConsistencyGroup(req *models.SnapshotConsistencyGroupRequest, logger *zap.Logger) (*models.SnapshotConsistencyGroupResponse, error) {
 	fake.createCalls++
 	fake.createRequest = req
+
+	if fake.createCalls == 1 && fake.firstCreateErr != nil {
+		return nil, fake.firstCreateErr
+	}
+
 	return fake.createResult, fake.createErr
 }
 
@@ -265,4 +274,61 @@ func TestCreateGroupSnapshotWrapsBackendError(t *testing.T) {
 	requireProviderError(t, err, "FailedToCreateGroupSnapshot", "", "snapshots_source_volume_not_found")
 	assert.Equal(t, 1, groupService.createCalls)
 	assert.Zero(t, uc.SnapshotServiceCallCount())
+}
+
+func TestCreateGroupSnapshotStopsRetryingPermanentErrors(t *testing.T) {
+	cases := []struct {
+		name      string
+		finalCode models.ErrorCode
+		firstErr  error
+		wantPOSTs int
+	}{
+		{
+			name:      "invalid resource group",
+			finalCode: SnapshotConsistencyGroupResourceGroupInvalid,
+			wantPOSTs: 1,
+		},
+		{
+			name:      "duplicate name",
+			finalCode: SnapshotConsistencyGroupNameDuplicate,
+			wantPOSTs: 1,
+		},
+		{
+			name:      "timeout then duplicate name",
+			finalCode: SnapshotConsistencyGroupNameDuplicate,
+			firstErr:  context.DeadlineExceeded,
+			wantPOSTs: 2,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			logger, teardown := GetTestLogger(t)
+			defer teardown()
+
+			vpcs, client, _, err := GetTestOpenSession(t, logger)
+			require.NoError(t, err)
+			limitRetries(t, 3)
+
+			service := &fakeSnapshotConsistencyGroupManager{
+				firstCreateErr: tc.firstErr,
+				createErr: &models.Error{Errors: []models.ErrorItem{
+					{Code: tc.finalCode},
+				}},
+			}
+			client.SnapshotConsistencyGroupServiceReturns(service)
+
+			synctest.Test(t, func(t *testing.T) {
+				result, err := vpcs.CreateGroupSnapshot([]string{"volume-id-1"},
+					provider.GroupSnapshotParameters{
+						Name: "group-snapshot-name", ResourceGroup: "resource-group-id",
+					})
+
+				require.Nil(t, result)
+				requireProviderError(t, err, "FailedToCreateGroupSnapshot", "", string(tc.finalCode))
+				assert.Equal(t, tc.wantPOSTs, service.createCalls)
+				assert.Zero(t, client.SnapshotServiceCallCount())
+			})
+		})
+	}
 }

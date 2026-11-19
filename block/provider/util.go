@@ -50,12 +50,14 @@ var maxVPCRetryAttempt = 46
 
 // ConstantRetryGap ...
 const (
-	ConstantRetryGap                 = 10 // seconds
-	ConstMaxVPCRetryAttempt          = 46
-	ConstMinVPCRetryGap              = 3 //seconds
-	SnapshotIDNotFound               = "snapshot_id_not_found"
-	SnapshotNotFound                 = "snapshots_not_found"
-	SnapshotConsistencyGroupNotFound = "snapshot_consistency_groups_not_found"
+	ConstantRetryGap                             = 10 // seconds
+	ConstMaxVPCRetryAttempt                      = 46
+	ConstMinVPCRetryGap                          = 3 //seconds
+	SnapshotIDNotFound                           = "snapshot_id_not_found"
+	SnapshotNotFound                             = "snapshots_not_found"
+	SnapshotConsistencyGroupNotFound             = "snapshot_consistency_groups_not_found"
+	SnapshotConsistencyGroupNameDuplicate        = "snapshot_consistency_groups_name_duplicate"
+	SnapshotConsistencyGroupResourceGroupInvalid = "snapshot_consistency_groups_resource_group_invalid"
 )
 
 var volumeIDPartsCount = 5
@@ -77,6 +79,8 @@ var skipErrorCodes = map[string]bool{
 	"snapshots_not_authorized":                     true,
 	SnapshotIDNotFound:                             true,
 	SnapshotConsistencyGroupNotFound:               true,
+	SnapshotConsistencyGroupNameDuplicate:          true,
+	SnapshotConsistencyGroupResourceGroupInvalid:   true,
 	"snapshots_source_volume_not_found":            true,
 	"snapshots_source_volume_not_attached":         true,
 	"volume_capacity_maximum":                      true,
