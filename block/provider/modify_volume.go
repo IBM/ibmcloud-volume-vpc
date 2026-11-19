@@ -72,14 +72,26 @@ func (vpcs *VPCSession) ModifyVolume(modifyVolumeRequest provider.ModifyVolumeRe
 		return nil, userError.GetUserError("FailedToModifyVolume", fmt.Errorf("empty volume ID in response"), modifyVolumeRequest.VolumeID)
 	}
 
-	vpcs.Logger.Info("Successfully accepted volume modify request, now waiting for volume state equal to available")
+	vpcs.Logger.Info("Successfully accepted volume modify request, now waiting for volume state equal to available", zap.String("VolumeID", volume.ID), zap.String("State", string(volume.Status)))
 	err = WaitForValidVolumeState(vpcs, volume)
 	if err != nil {
 		return nil, userError.GetUserError("VolumeNotInValidState", err, volume.ID)
 	}
 
-	vpcs.Logger.Info("Volume got valid (available) state", zap.Reflect("VolumeDetails", volume))
+	vpcs.Logger.Info("Volume got valid (available) state", zap.String("VolumeID", volume.ID), zap.Reflect("VolumeDetails", volume))
+	if isIopsUpdate {
+		vpcs.Logger.Info("IOPS updated", zap.String("VolumeID", volume.ID),
+			zap.Int64("RequestedIops", modifyVolumeRequest.Iops), zap.Int64("CurrentIops", volume.Iops))
+	}
+	if isBandwidthUpdate {
+		vpcs.Logger.Info("Throughput (bandwidth) updated", zap.String("VolumeID", volume.ID),
+			zap.Int32("RequestedBandwidth", modifyVolumeRequest.Bandwidth), zap.Int32("CurrentBandwidth", volume.Bandwidth))
+	}
+
 	return &provider.ModifyVolumeResponse{
+		VolumeID: volume.ID,
+		Href:     volume.Href,
+		CRN:      volume.CRN,
 		VolumePerformance: provider.VolumePerformance{
 			Iops:      volume.Iops,
 			Bandwidth: volume.Bandwidth,

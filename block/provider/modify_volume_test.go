@@ -47,6 +47,9 @@ func TestModifyVolume(t *testing.T) {
 		expectedReasonCode string
 		expectedIops       int64
 		expectedBandwidth  int32
+		expectedVolumeID   string
+		expectedHref       string
+		expectedCRN        string
 	}{
 		{
 			testCaseName: "missing VolumeID returns error",
@@ -60,16 +63,22 @@ func TestModifyVolume(t *testing.T) {
 		{
 			testCaseName:     "successful IOPS modify",
 			request:          provider.ModifyVolumeRequest{VolumeID: "vol-id", VolumePerformance: provider.VolumePerformance{Iops: 5000}},
-			modifyVolumeResp: &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Iops: 5000},
-			getVolumeResp:    &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Iops: 5000},
+			modifyVolumeResp: &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Iops: 5000, Href: "https://example/volumes/vol-id", CRN: "crn:v1:vol-id"},
+			getVolumeResp:    &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Iops: 5000, Href: "https://example/volumes/vol-id", CRN: "crn:v1:vol-id"},
 			expectedIops:     5000,
+			expectedVolumeID: "vol-id",
+			expectedHref:     "https://example/volumes/vol-id",
+			expectedCRN:      "crn:v1:vol-id",
 		},
 		{
 			testCaseName:      "successful bandwidth modify",
 			request:           provider.ModifyVolumeRequest{VolumeID: "vol-id", VolumePerformance: provider.VolumePerformance{Bandwidth: 1000}},
-			modifyVolumeResp:  &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Bandwidth: 1000},
-			getVolumeResp:     &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Bandwidth: 1000},
+			modifyVolumeResp:  &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Bandwidth: 1000, Href: "https://example/volumes/vol-id", CRN: "crn:v1:vol-id"},
+			getVolumeResp:     &models.Volume{ID: "vol-id", Status: models.StatusType("available"), Bandwidth: 1000, Href: "https://example/volumes/vol-id", CRN: "crn:v1:vol-id"},
 			expectedBandwidth: 1000,
+			expectedVolumeID:  "vol-id",
+			expectedHref:      "https://example/volumes/vol-id",
+			expectedCRN:       "crn:v1:vol-id",
 		},
 		{
 			testCaseName:       "ModifyVolume client error returns FailedToModifyVolume",
@@ -126,6 +135,9 @@ func TestModifyVolume(t *testing.T) {
 				if assert.NotNil(t, resp) {
 					assert.Equal(t, testcase.expectedIops, resp.VolumePerformance.Iops)
 					assert.Equal(t, testcase.expectedBandwidth, resp.VolumePerformance.Bandwidth)
+					assert.Equal(t, testcase.expectedVolumeID, resp.VolumeID)
+					assert.Equal(t, testcase.expectedHref, resp.Href)
+					assert.Equal(t, testcase.expectedCRN, resp.CRN)
 				}
 			}
 		})
