@@ -143,3 +143,40 @@ func TestModifyVolume(t *testing.T) {
 		})
 	}
 }
+
+// TestModifyVolumeSkipRetryOnValidationErrors verifies the PATCH is attempted only once
+// for VPC iops/bandwidth validation errors (maxRetryAttempt is intentionally left at its default).
+func TestModifyVolumeSkipRetryOnValidationErrors(t *testing.T) {
+	userError.MessagesEn = userError.InitMessages()
+	logger, teardown := GetTestLogger(t)
+	defer teardown()
+
+	errorCodes := []string{
+		"validation_failed_maximum",            // bandwidth above profile max
+		"validation_failed_minimum",            // bandwidth below profile min
+		"volume_profile_capacity_iops_invalid", // iops out of range for profile/capacity
+		"volume_profile_invalid_maxbandwidth",  // profile does not accept the bandwidth
+		"invalid_request_field",                // tier/custom profile does not accept iops/bandwidth
+	}
+
+	for _, code := range errorCodes {
+		t.Run(code, func(t *testing.T) {
+			vpcs, uc, _, err := GetTestOpenSession(t, logger)
+			assert.Nil(t, err)
+
+			volumeService := &volumeServiceFakes.VolumeService{}
+			uc.VolumeServiceReturns(volumeService)
+			volumeService.ModifyVolumeReturns(nil, &models.Error{
+				Errors: []models.ErrorItem{{Code: models.ErrorCode(code), Message: "test"}},
+			})
+
+			resp, err := vpcs.ModifyVolume(provider.ModifyVolumeRequest{
+				VolumeID:          "vol-id",
+				VolumePerformance: provider.VolumePerformance{Iops: 5000},
+			})
+			assert.NotNil(t, err)
+			assert.Nil(t, resp)
+			assert.Equal(t, 1, volumeService.ModifyVolumeCallCount(), "PATCH must not be retried for %s", code)
+		})
+	}
+}
