@@ -121,7 +121,7 @@ func main() {
 
 	valid := true
 	for valid {
-		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- [Classic]Create volume \n 5- Snapshot details \n 6- Create volume from snapshot\n 7- Delete volume \n 8- Delete Snapshot \n 9- [Classic]Authorize volume \n 10- [VPC]Create VPC Volume \n 11- [VPC]Attach VPC volume \n 12- Detach VPC volume \n 13- Get volume by name \n 14- List volumes \n 15- Expand volume \n 16- [VPC]Get volume Attachment \n 17- Get snapshot by name \n Your choice?:")
+		fmt.Println("\n\nSelect your choice\n 1- Get volume details \n 2- Create snapshot \n 3- list snapshot \n 4- [Classic]Create volume \n 5- Snapshot details \n 6- Create volume from snapshot\n 7- Delete volume \n 8- Delete Snapshot \n 9- [Classic]Authorize volume \n 10- [VPC]Create VPC Volume \n 11- [VPC]Attach VPC volume \n 12- Detach VPC volume \n 13- Get volume by name \n 14- List volumes \n 15- Expand volume \n 16- [VPC]Get volume Attachment \n 17- Get snapshot by name \n 19- Modify volume \n Your choice?:")
 
 		var choiceN int
 		var volumeID string
@@ -560,6 +560,28 @@ func main() {
 		} else if choiceN == 18 {
 			volumeManager.UpdateVolume()
 			os.Exit(0)
+		} else if choiceN == 19 {
+			var iops int64
+			var bandwidth int32
+			fmt.Println("You selected choice to modify volume")
+			modifyReq := provider.ModifyVolumeRequest{}
+			fmt.Printf("Please enter volume ID to modify: ")
+			_, _ = fmt.Scanf("%s", &volumeID)
+			modifyReq.VolumeID = volumeID
+			fmt.Printf("Enter new IOPS (0 to skip): ")
+			_, _ = fmt.Scanf("%d", &iops)
+			fmt.Printf("Enter new Bandwidth (0 to skip): ")
+			_, _ = fmt.Scanf("%d", &bandwidth)
+			modifyReq.Iops = iops
+			modifyReq.Bandwidth = bandwidth
+			modifyResp, er11 := sess.ModifyVolume(modifyReq)
+			if er11 == nil {
+				ctxLogger.Info("Successfully modified volume ================>", zap.String("Volume ID", volumeID), zap.Int64("Updated IOPS", modifyResp.Iops), zap.Int32("Updated Bandwidth", modifyResp.Bandwidth))
+			} else {
+				er11 = updateRequestID(er11, requestID)
+				ctxLogger.Info("failed to modify volume================>", zap.String("Volume ID", volumeID), zap.Reflect("Error", er11))
+			}
+			fmt.Printf("\n\n")
 		} else {
 			fmt.Println("No right choice")
 			return

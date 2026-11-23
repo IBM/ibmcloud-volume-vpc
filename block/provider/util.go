@@ -93,6 +93,9 @@ var skipErrorCodes = map[string]bool{
 	"snapshots_service_unavailable":                true,
 	"snapshots_too_many_requests":                  true,
 	"snapshots_source_volume_busy":                 true,
+	"validation_failed_minimum":                    true,
+	"invalid_request_field":                        true,
+	"volume_profile_invalid_maxbandwidth":          true,
 
 	// IKS ms error code for skip re-try
 	"ST0008": true, //resources not found
