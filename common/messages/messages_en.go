@@ -125,7 +125,7 @@ var messagesEn = map[string]util.Message{
 		Code:        "GroupSnapshotNameLookupFailed",
 		Description: "Failed to retrieve the volume group snapshot named '%s'.",
 		Type:        util.RetrivalFailed,
-		RC:          404,
+		RC:          500,
 		Action:      "Review the backend error and verify that the volume group snapshot name and resource group are correct.",
 	},
 	"GroupSnapshotMemberLookupFailed": {

@@ -239,6 +239,7 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 
 		wantErrCode       string // Expected provider error code; empty means no error is expected.
 		wantBackendText   string
+		wantRC            int // Expected provider RC when an error is expected; 0 skips the check.
 		wantNilResult     bool
 		wantVolumeIDs     []string
 		wantByNameCalls   int
@@ -276,6 +277,7 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 			maxRetries:        1,
 			wantErrCode:       "GroupSnapshotNameLookupFailed",
 			wantBackendText:   "snapshots_not_authorized",
+			wantRC:            500,
 			wantByNameCalls:   1,
 			wantQueriedByName: "group-name",
 		},
@@ -287,6 +289,19 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 			maxRetries:        3,
 			wantErrCode:       "GroupSnapshotNameLookupFailed",
 			wantBackendText:   SnapshotConsistencyGroupNotFound,
+			wantByNameCalls:   1,
+			wantQueriedByName: "group-name",
+		},
+		{
+			// No VPC response at all. The lookup failed; it did not find "no group".
+			name:              "transport error is reported as a server-side failure, not 404",
+			groupName:         "group-name",
+			resourceGroup:     "my-resource-group",
+			groupErr:          errors.New("dial tcp: i/o timeout"),
+			maxRetries:        1,
+			wantErrCode:       "GroupSnapshotNameLookupFailed",
+			wantBackendText:   "i/o timeout",
+			wantRC:            500,
 			wantByNameCalls:   1,
 			wantQueriedByName: "group-name",
 		},
@@ -328,6 +343,11 @@ func TestGetGroupSnapshotByName(t *testing.T) {
 			case tc.wantErrCode != "":
 				assert.Nil(t, result)
 				requireProviderError(t, err, tc.wantErrCode, "", tc.wantBackendText)
+				if tc.wantRC != 0 {
+					var userMsg providerError.Message
+					require.ErrorAs(t, err, &userMsg)
+					assert.Equal(t, tc.wantRC, userMsg.RC)
+				}
 			case tc.wantNilResult:
 				require.NoError(t, err)
 				assert.Nil(t, result)
